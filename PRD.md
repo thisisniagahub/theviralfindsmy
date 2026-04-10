@@ -657,10 +657,10 @@ Mini Services → Notification Service (separate host)
              → OpenClaw Gateway (VPS-hosted, replaces MCP & A2A mini-services)
 ```
 
-### Environment Variables
+### Environment Variables (v6.0 — Updated for VPS)
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DATABASE_URL` | Yes | — | SQLite/PostgreSQL connection string |
+| `DATABASE_URL` | Yes | — | PostgreSQL: `postgresql://admin_tvf:<pw>@76.13.176.142:5432/theviralfinds` |
 | `NEXTAUTH_SECRET` | Yes | — | Secret for JWT signing |
 | `NEXTAUTH_URL` | Yes | — | Base URL for auth callbacks |
 | `ADMIN_PASSWORD` | Yes | — | Admin account password |
@@ -668,8 +668,10 @@ Mini Services → Notification Service (separate host)
 | `NEXT_PUBLIC_APP_URL` | No | — | Public app URL for OAuth |
 | `SHOPEE_API_KEY` | No | — | Shopee affiliate API key |
 | `NOTIFICATION_SERVICE_URL` | No | `http://127.0.0.1:3004` | Notification WebSocket service |
-| `MCP_SERVER_URL` | No | `http://127.0.0.1:3005` | MCP server URL |
-| `A2A_SERVER_URL` | No | `http://127.0.0.1:3006` | A2A agent server URL |
+| `OPENCLAW_GATEWAY_URL` | Yes | `https://operator.gangniaga.my` | OpenClaw Gateway base URL (replaces MCP & A2A) |
+| `OPENCLAW_GATEWAY_TOKEN` | Yes | — | Bearer token for OpenClaw API authentication |
+| ~~`MCP_SERVER_URL`~~ | ~~No~~ | ~~`http://127.0.0.1:3005`~~ | ~~REMOVED in v6.0 — replaced by OPENCLAW_GATEWAY_URL~~ |
+| ~~`A2A_SERVER_URL`~~ | ~~No~~ | ~~`http://127.0.0.1:3006`~~ | ~~REMOVED in v6.0 — replaced by OPENCLAW_GATEWAY_URL~~ |
 
 ---
 
@@ -715,6 +717,320 @@ Mini Services → Notification Service (separate host)
 | 8 | AI Integration | OpenClaw AI suite, MCP Server, A2A Agent Network, referral system |
 | 9 | Agent Office | Phaser 3 game, agent characters, productivity stats, agent grid/profile |
 | 10 | Production Hardening | NextAuth, Zod validation, secure redirect, error boundaries, demo mode, utility extraction, ESLint fixes, component splitting |
+| 11 | VPS Migration (IN PROGRESS) | PostgreSQL on VPS, MCP proxy → OpenClaw Gateway, A2A → Chained agent pipeline |
+
+---
+
+## 12.5 Fasa Perlaksanaan: Penyambungan Mutlak ke Pelayan VPS
+
+> **Technical Implementation Plan** — Pemindahan sepenuhnya infrastruktur TheViralFinds ke VPS 76.13.176.142, menamatkan semua sambungan tempatan (localhost) dan mengintegrasikan OpenClaw Gateway.
+
+### 12.5.1 VPS Discovery Report (Live Scan — 10 April 2026)
+
+Port scan dan API probing telah dilakukan terhadap VPS 76.13.176.142:
+
+| Port | Service | Status | Detail |
+|------|---------|--------|--------|
+| 22 | SSH | ❌ CLOSED/FILTERED | Tidak boleh diakses dari sandbox; perlu akses SSH manual |
+| 80 | HTTP | ❌ CLOSED/FILTERED | Tidak aktif |
+| 443 | HTTPS | ✅ OPEN | nginx melayan OpenClaw Control SPA |
+| 3000 | Next.js | ❌ CLOSED/FILTERED | Tidak diinstall di VPS |
+| 3004 | Notification | ❌ CLOSED/FILTERED | Tidak diinstall di VPS |
+| 3005 | MCP Server | ❌ CLOSED/FILTERED | **Akan dihapuskan** — diganti OpenClaw Gateway |
+| 3006 | A2A Agent | ❌ CLOSED/FILTERED | **Akan dihapuskan** — diganti OpenClaw Pipeline |
+| 5432 | PostgreSQL | ❌ CLOSED/FILTERED | **Belum dipasang** — perlu install via SSH |
+
+#### OpenClaw Gateway Discovery
+
+| Endpoint | Status | Response |
+|----------|--------|----------|
+| `GET /health` | ✅ 200 | `{"ok":true,"status":"live"}` |
+| `GET /v1/models` | 🔒 401 | `{"error":{"message":"Unauthorized","type":"unauthorized"}}` |
+| `POST /v1/chat/completions` | 🔒 401 (GET: 405) | Requires Bearer token |
+| `GET /api/channels` | 🔒 401 | Requires authentication |
+| `GET /` | ✅ 200 | OpenClaw Control SPA (2.9KB HTML) |
+
+#### OpenClaw Gateway Architecture (discovered from JS bundle — 651KB)
+
+| Component | Detail |
+|-----------|--------|
+| **Product** | OpenClaw Control (SPA with themes: claw, knot, dash) |
+| **Auth Model** | Gateway Token + Password + Device Identity + Tailscale |
+| **API Compatibility** | OpenAI-compatible (`/v1/chat/completions`, `/v1/models`, `/v1/embeddings`) |
+| **MCP Support** | Built-in (categories, labels, native names) |
+| **Agent System** | Full agent system (skills, files, chat, suggestions, file drafts) |
+| **Model System** | Model catalog with overrides, fallbacks, daily usage tracking |
+| **Auth Error Codes** | `AUTH_TOKEN_MISSING`, `AUTH_RATE_LIMITED`, `AUTH_SIGNATURE_EXPIRED`, `AUTH_NONCE_REQUIRED`, dll. |
+| **Security Headers** | `strict-transport-security`, `x-frame-options: SAMEORIGIN`, `x-content-type-options: nosniff`, `permissions-policy` |
+| **Server** | nginx (HTTPS only, TLS cert for `operator.gangniaga.my`) |
+
+### 12.5.2 ⚠️ User Review Required — Keputusan Pangkalan Data
+
+> **CAUTION**: Memindahkan dari SQLite (lokal) ke PostgreSQL (VPS) bermakna **semua data ujian terdahulu** (links, campaigns, dll.) **akan hilang/dikosongkan** kerana kita bermula di atas pangkalan data baharu yang sebenar. Adakah masa ini sesuai untuk kita "reset" pangkalan data?
+
+**Status**: ⏳ Menunggu pengesahan pengguna sebelum melaksanakan Langkah 1.
+
+---
+
+### Langkah 1: Pindah Migrasi Pangkalan Data (SQLite → VPS PostgreSQL)
+
+**Keadaan semasa**: `DATABASE_URL=file:/home/z/my-project/db/custom.db` (SQLite — tidak boleh menampung trafik berat, tersekat di lokal)
+
+#### Tindakan di VPS (via SSH — manual):
+
+```bash
+# 1. Semak jika PostgreSQL sudah wujud
+systemctl status postgresql
+
+# 2. Jika tiada, pasang PostgreSQL
+sudo apt update && sudo apt install -y postgresql postgresql-contrib
+
+# 3. Cipta pangkalan data rasmi
+sudo -u postgres psql -c "CREATE DATABASE theviralfinds;"
+
+# 4. Cipta pengguna dan berikan hak akses
+sudo -u postgres psql -c "CREATE USER admin_tvf WITH PASSWORD '<SECURE_PASSWORD>';"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE theviralfinds TO admin_tvf;"
+
+# 5. Konfigurasi akses luar
+# Edit /etc/postgresql/*/main/postgresql.conf:
+#   listen_addresses = '*'
+# Edit /etc/postgresql/*/main/pg_hba.conf:
+#   host all all 0.0.0.0/0 md5
+
+# 6. Buka port firewall
+sudo ufw allow 5432/tcp
+
+# 7. Restart PostgreSQL
+sudo systemctl restart postgresql
+```
+
+#### Tindakan di Kod Next.js:
+
+| File | Tindakan | Detail |
+|------|----------|--------|
+| `prisma/schema.prisma` | **MODIFY** | Tukar `provider = "sqlite"` → `provider = "postgresql"`; buang anotasi tidak serasi dengan Postgres |
+| `.env` | **MODIFY** | `DATABASE_URL=postgresql://admin_tvf:<password>@76.13.176.142:5432/theviralfinds` |
+| `prisma/seed.ts` | **VERIFY** | Pastikan seed script compatible dengan PostgreSQL (tiada SQLite-specific syntax) |
+| `src/lib/db.ts` | **VERIFY** | Prisma singleton sudah support PostgreSQL (no changes needed) |
+
+#### Verification — Check 1 (DB):
+
+```bash
+# Dari kod lokal, laksanakan:
+npx prisma db push
+# Buktikan pembinaan 8 struktur jadual berjaya pada server VPS
+npx prisma studio
+# Buka Prisma Studio untuk semak jadual secara visual
+```
+
+---
+
+### Langkah 2: Rombakan Proxy MCP (Model Context Protocol)
+
+**Keadaan semasa**: Aplikasi sentiasa cuba hubungi `http://127.0.0.1:3005` yang penuh dengan hardcoded mock capabilities seperti `'web_search'` olok-olokan.
+
+#### Tindakan di Kod Next.js:
+
+| File | Tindakan | Detail |
+|------|----------|--------|
+| `src/app/api/openclaw/mcp-proxy/route.ts` | **ROMBAK** | Padam panggilan ke `fetch(SERVICE_URLS.mcp + path)` |
+
+#### Rombakan Detail:
+
+| Endpoint | Semasa (Mock) | Baharu (OpenClaw Gateway) |
+|----------|--------------|---------------------------|
+| `GET /status` | `fetch(localhost:3005/status)` → hardcoded response | `fetch(https://operator.gangniaga.my/health)` → `{"ok":true,"status":"live"}` |
+| `GET /tools` | `fetch(localhost:3005/tools)` → mock 12 capabilities | Hubungi OpenClaw Gateway internal context → senarai kebolehan sebenar NiagaBot |
+| `POST /execute` | `fetch(localhost:3005/execute)` → sleep + mock result | Bina jambatan penterjemah: MCP command → OpenClaw-specific payload → `https://operator.gangniaga.my/v1/chat/completions` |
+
+#### MCP Translation Bridge Pattern:
+
+```typescript
+// lib/openclaw.ts — Translation Bridge
+export async function executeMCPTool(toolName: string, params: Record<string, unknown>) {
+  // Map MCP tool names to OpenClaw agent + prompt
+  const toolToAgent: Record<string, { model: string; systemPrompt: string }> = {
+    'web_search': {
+      model: 'openclaw/niagaresearch',
+      systemPrompt: 'Kaji pasaran dan cari maklumat terkini berdasarkan query berikut.'
+    },
+    'web_reader': {
+      model: 'openclaw/niagaresearch',
+      systemPrompt: 'Baca dan analisis kandungan dari URL berikut.'
+    },
+    // ... map semua MCP tools ke OpenClaw agents
+  };
+
+  const agent = toolToAgent[toolName];
+  if (!agent) throw new Error(`Unknown MCP tool: ${toolName}`);
+
+  // Call OpenClaw Gateway
+  return fetch('https://operator.gangniaga.my/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.OPENCLAW_GATEWAY_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: agent.model,
+      messages: [
+        { role: 'system', content: agent.systemPrompt },
+        { role: 'user', content: JSON.stringify(params) }
+      ],
+      stream: false
+    })
+  });
+}
+```
+
+#### Verification — Check 2 (MCP):
+
+1. Paksa aplikasi membaca maklumat laman berita yang **real**, terus ke ejen pintar NiagaBot melalui paip baharu
+2. `/status` harus return `{"ok":true,"status":"live"}` dari VPS
+3. `/tools` harus senaraikan kebolehan sebenar dari OpenClaw (bukan mock)
+
+---
+
+### Langkah 3: Integrasi Pelayan A2A (Ejen-Berhubung-Ejen)
+
+**Keadaan semasa**: Laluan proksi di aplikasi `http://127.0.0.1:3006/api/a2a` tidak menghasilkan kolaborasi ejen sebenar (sekadar melengahkan masa / sleep timer di frontend).
+
+#### Tindakan di Kod Next.js:
+
+| File | Tindakan | Detail |
+|------|----------|--------|
+| `src/app/api/openclaw/a2a-proxy/route.ts` | **ROMBAK** | Gantikan semua localhost calls dengan OpenClaw chained pipeline |
+
+#### Format Baharu Rangkaian A2A — Chained Sequential Pipeline:
+
+Apabila butang A2A ditekan di UI, proksi tidak akan menghantar kepada localhost. Sebaliknya ia akan:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  A2A Chained Pipeline via OpenClaw Gateway              │
+│                                                          │
+│  Step 1: openclaw/niagaresearch                          │
+│    Prompt: "Kaji Pasaran Pesaing"                        │
+│    ↓ (output injected as context)                        │
+│                                                          │
+│  Step 2: openclaw/niagamarketing                         │
+│    Prompt: "Berdasarkan kajian di atas, tulis ayat       │
+│    pemasaran terbaik untuk produk ini"                   │
+│    ↓ (output injected as context)                        │
+│                                                          │
+│  Step 3: openclaw/niagacomputer                          │
+│    Prompt: "Format output sebagai JSON dan pastikan      │
+│    kualiti akhir"                                        │
+│    ↓                                                     │
+│                                                          │
+│  Final Output → Return to UI                             │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### A2A Pipeline Implementation Pattern:
+
+```typescript
+// lib/openclaw-a2a.ts — Chained Agent Pipeline
+const OPENCLAW_BASE = 'https://operator.gangniaga.my/v1/chat/completions';
+const OPENCLAW_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
+
+interface PipelineStep {
+  model: string;        // e.g., 'openclaw/niagaresearch'
+  systemPrompt: string;
+  userMessage: string;
+}
+
+export async function executeA2APipeline(initialQuery: string) {
+  const pipeline: PipelineStep[] = [
+    {
+      model: 'openclaw/niagaresearch',
+      systemPrompt: 'Anda adalah ejen penyelidikan pasaran. Kaji dan analisis pesaing.',
+      userMessage: initialQuery
+    },
+    {
+      model: 'openclaw/niagamarketing',
+      systemPrompt: 'Anda adalah ejen pemasaran. Tulis ayat pemasaran terbaik berdasarkan kajian.',
+      userMessage: '' // Akan diisi dengan output step sebelumnya
+    },
+    {
+      model: 'openclaw/niagacomputer',
+      systemPrompt: 'Anda adalah ejen format. Bina format JSON dan pastikan kualiti akhir.',
+      userMessage: '' // Akan diisi dengan output step sebelumnya
+    }
+  ];
+
+  let previousOutput = '';
+  const results: Array<{ agent: string; output: string }> = [];
+
+  for (const step of pipeline) {
+    const messages = [
+      { role: 'system', content: step.systemPrompt },
+      { role: 'user', content: step.userMessage || previousOutput }
+    ];
+
+    const res = await fetch(OPENCLAW_BASE, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENCLAW_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ model: step.model, messages, stream: false })
+    });
+
+    if (!res.ok) {
+      // Error recovery — return partial results
+      return { success: false, completedSteps: results, error: `Agent ${step.model} failed: ${res.status}` };
+    }
+
+    const data = await res.json();
+    const output = data.choices?.[0]?.message?.content || '';
+    previousOutput = output;
+    results.push({ agent: step.model, output });
+  }
+
+  return { success: true, completedSteps: results };
+}
+```
+
+#### Verification — Check 3 (A2A):
+
+1. Sistem A2A pada front-end **tidak akan keluar teks dummy** lagi
+2. Ia akan memproses log `niagaresearch` → `niagamarketing` → `niagacomputer` secara **live nampak di skrin log perbualan**
+3. Setiap output ejen kelihatan secara berurutan di UI
+
+---
+
+### 12.5.3 Open Questions / Clarification Required
+
+| # | Soalan | Kepentingan | Keputusan |
+|---|--------|------------|-----------|
+| 1 | Adakah VPS 76.13.176.142 sudah mempunyai servis PostgreSQL berjalan, atau mahu dipasangkan sepenuhnya menggunakan SSH? | 🔴 CRITICAL | ⏳ Menunggu pengguna |
+| 2 | Sekiranya Postgres Port 5432 dibuka ke awam (public network) bagi laluan Next.js, adakah ia melanggar polisi firewall syarikat/projek? (Alternatif: Tailscale private IP) | 🔴 CRITICAL | ⏳ Menunggu pengguna |
+| 3 | Apakah **OPENCLAW_GATEWAY_TOKEN** yang sah untuk mengakses API `https://operator.gangniaga.my/v1/*`? (Semua endpoint return 401 tanpa token) | 🔴 BLOCKER | ⏳ Menunggu pengguna |
+| 4 | Adakah data ujian terdahulu boleh "reset" sepenuhnya? (Migrasi ke PostgreSQL = pangkalan data baharu kosong) | 🟠 HIGH | ⏳ Menunggu pengguna |
+
+### 12.5.4 Prasyarat Sebelum Pelaksanaan
+
+Sebelum Langkah 1-3 boleh dilaksanakan, perkara berikut **MESTI** diselesaikan:
+
+- [ ] **SSH Access**: Pasang SSH client di sandbox ATAU pengguna laksanakan arahan SSH secara manual
+- [ ] **PostgreSQL**: Pasang dan konfigurasi PostgreSQL di VPS (arahan disediakan di Langkah 1)
+- [ ] **Port 5432**: Buka port di UFW dan konfigurasi `pg_hba.conf`
+- [ ] **OPENCLAW_GATEWAY_TOKEN**: Pengguna mesti sediakan token yang sah dari OpenClaw Control (`operator.gangniaga.my/auth/login`)
+- [ ] **Database Reset Confirmation**: Pengguna mesti sahkan bahawa kehilangan data ujian boleh diterima
+- [ ] **Firewall Policy Confirmation**: Pengguna mesti sahkan port 5432 boleh dibuka ke awam, ATAU sediakan alternatif (Tailscale)
+
+### 12.5.5 Environment Variables Update (v6.0)
+
+| Variable | v5.0 (Old) | v6.0 (New) | Required |
+|----------|-----------|------------|----------|
+| `DATABASE_URL` | `file:./db/custom.db` | `postgresql://admin_tvf:<password>@76.13.176.142:5432/theviralfinds` | Yes |
+| `OPENCLAW_GATEWAY_URL` | _(tidak wujud)_ | `https://operator.gangniaga.my` | Yes |
+| `OPENCLAW_GATEWAY_TOKEN` | _(tidak wujud)_ | _(pengguna mesti sediakan)_ | Yes |
+| `MCP_SERVER_URL` | `http://127.0.0.1:3005` | **DIHAPUSKAN** — diganti OPENCLAW_GATEWAY_URL | No |
+| `A2A_SERVER_URL` | `http://127.0.0.1:3006` | **DIHAPUSKAN** — diganti OPENCLAW_GATEWAY_URL | No |
+| `NOTIFICATION_SERVICE_URL` | `http://127.0.0.1:3004` | `http://127.0.0.1:3004` (tidak berubah) | No |
 
 ---
 
@@ -729,7 +1045,7 @@ This section consolidates ALL improvement suggestions from code review, agent-to
 | ID | Improvement | Description | Impact | Effort |
 |----|-------------|-------------|--------|--------|
 | IMP-01 | **Real Shopee API Integration** | Replace mock product data with actual Shopee Product Search API; implement real affiliate link generation, order tracking, and commission sync | HIGH | HIGH (8-16h) |
-| IMP-02 | **PostgreSQL Migration** | Migrate from SQLite to PostgreSQL for production scalability; supports concurrent users, 100K+ records, connection pooling | HIGH | MEDIUM (4-8h) |
+| IMP-02 | **PostgreSQL Migration** | Migrate from SQLite to PostgreSQL for production scalability; supports concurrent users, 100K+ records, connection pooling | HIGH | MEDIUM (4-8h) | **🔄 IN PROGRESS — Phase 11 VPS Migration** |
 | IMP-03 | **Rate Limiting** | Add API rate limiting to prevent abuse; per-IP and per-user limits; 429 responses with retry-after headers | HIGH | LOW (2-3h) |
 | IMP-04 | **TypeScript Strict Mode** | Enable `strict: true` in tsconfig.json; fix all resulting type errors (~50+); ensures type safety | MEDIUM | HIGH (8-16h) |
 | IMP-05 | **OAuth Providers** | Add Google and Facebook OAuth via NextAuth; reduce friction for Malaysian users | MEDIUM | MEDIUM (4-8h) |
@@ -978,7 +1294,7 @@ These can be worked on in parallel with the main roadmap:
 | Risk | Probability | Impact | Mitigation |
 |------|------------|--------|------------|
 | Shopee API changes | Medium | High | Abstraction layer, mock fallback, version pinning |
-| Database scalability (SQLite) | High | High | PostgreSQL migration path (Phase 13), connection pooling |
+| ~~Database scalability (SQLite)~~ | ~~High~~ | ~~High~~ | ~~PostgreSQL migration path (Phase 13)~~ → ✅ **RESOLVED: v6.0 VPS migration in progress** |
 | AI SDK rate limits | Medium | Low | Caching (IMP-16), fallback responses, queue system |
 | Mobile performance | Low | Medium | Code splitting, lazy loading, image optimization |
 | Browser compatibility | Low | Low | Tailwind's built-in vendor prefixing, target modern browsers |
@@ -986,6 +1302,10 @@ These can be worked on in parallel with the main roadmap:
 | Worker stuck bugs | High | Medium | Stuck detection (IMP-10), path simplification (IMP-12) |
 | WebSocket reliability | Low | Medium | Auto-reconnect with exponential backoff, graceful fallback |
 | Production deployment complexity | Medium | Medium | Mini-services on separate hosts; health monitoring (IMP-17) |
+| **VPS PostgreSQL port exposure** | **High** | **High** | **Tailscale private IP alternative; SSL connections; IP whitelist in pg_hba.conf** |
+| **OpenClaw Gateway token leak** | **Medium** | **High** | **Server-side only env var; never expose to client; rotate on compromise** |
+| **OpenClaw Gateway downtime** | **Low** | **High** | **Health check endpoint; fallback to z-ai-web-dev-sdk; cached responses** |
+| **A2A pipeline chain failure** | **Medium** | **Medium** | **Error recovery with partial results; skip failed agent; retry logic** |
 
 ---
 
@@ -1065,6 +1385,58 @@ export const db = globalForDb.db ?? new PrismaClient({ log: ['warn', 'error'] })
 if (process.env.NODE_ENV !== 'production') globalForDb.db = db;
 ```
 
+### Pattern 6: OpenClaw Gateway Client (v6.0)
+```typescript
+// src/lib/openclaw.ts — Unified OpenClaw Gateway client
+const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://operator.gangniaga.my';
+const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
+
+async function openclawRequest(model: string, messages: Array<{role: string; content: string}>) {
+  const res = await fetch(`${GATEWAY_URL}/v1/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${GATEWAY_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ model, messages, stream: false })
+  });
+  if (!res.ok) throw new Error(`OpenClaw ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function checkGatewayHealth(): Promise<boolean> {
+  try {
+    const res = await fetch(`${GATEWAY_URL}/health`);
+    const data = await res.json();
+    return data.ok === true;
+  } catch { return false; }
+}
+```
+
+### Pattern 7: A2A Chained Pipeline (v6.0)
+```typescript
+// src/lib/openclaw-a2a.ts — Sequential agent pipeline
+export async function executeA2APipeline(query: string) {
+  const steps = [
+    { model: 'openclaw/niagaresearch', system: 'Ejen penyelidikan pasaran.' },
+    { model: 'openclaw/niagamarketing', system: 'Ejen pemasaran.' },
+    { model: 'openclaw/niagacomputer', system: 'Ejen format JSON.' },
+  ];
+  let context = query;
+  const results = [];
+  for (const step of steps) {
+    const data = await openclawRequest(step.model, [
+      { role: 'system', content: step.system },
+      { role: 'user', content: context }
+    ]);
+    const output = data.choices?.[0]?.message?.content || '';
+    context = output;
+    results.push({ agent: step.model, output });
+  }
+  return results;
+}
+```
+
 ---
 
 ## 18. Appendix
@@ -1091,10 +1463,13 @@ if (process.env.NODE_ENV !== 'production') globalForDb.db = db;
 |---------|---------|-------------------|
 | Shopee Affiliate API | Product search, order tracking | Mock data (Phase 13 planned) |
 | z-ai-web-dev-sdk | AI capabilities (search, LLM, web reader) | ✅ Integrated |
+| **OpenClaw Gateway** | **MCP tool execution, A2A agent pipeline, real AI capabilities** | **🔄 Integrating (v6.0 VPS migration)** |
 | Socket.IO | Real-time notifications | ✅ Integrated (port 3004) |
 | NextAuth.js | Authentication | ✅ Integrated (credentials) |
 | Vercel | Hosting and deployment | Configured |
-| Prisma ORM | Database management | ✅ Integrated (SQLite → PostgreSQL planned) |
+| Prisma ORM | Database management | ✅ Integrated (SQLite → PostgreSQL migration in progress) |
+| **PostgreSQL** | **Production database on VPS 76.13.176.142** | **🔄 Installing (v6.0 VPS migration)** |
+| **nginx** | **Reverse proxy on VPS** | ✅ Running (HTTPS, port 443) |
 
 ### C. Project Statistics
 
@@ -1135,3 +1510,4 @@ if (process.env.NODE_ENV !== 'production') globalForDb.db = db;
 | 3.0 | May 2025 | Added Phase 5-7 features (goals, sparklines, leaderboard, achievements, command palette) |
 | 4.0 | June 2025 | Added Phase 8-9 features (AI suite, MCP, A2A, Agent Office, Phaser game) |
 | 5.0 | July 2025 | **Comprehensive improvement roadmap** — 41 improvement items across 5 tiers; agent-town analysis; production hardening (Phase 10); updated database schema, API design, security requirements; implementation timeline |
+| 6.0 | April 2026 | **VPS Migration** — Section 12.5 Fasa Perlaksanaan added; SQLite → PostgreSQL migration plan; MCP proxy → OpenClaw Gateway overhaul; A2A → Chained agent pipeline; VPS Discovery Report (live scan 76.13.176.142); Open Questions & Prerequisites; New env vars (OPENCLAW_GATEWAY_URL, OPENCLAW_GATEWAY_TOKEN); IMP-02 status updated to IN PROGRESS; 4 new risks added; 2 new code patterns (Pattern 6, 7); Third-party services updated; Phase 11 added to Release History |
