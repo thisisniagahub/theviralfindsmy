@@ -2,11 +2,12 @@
 
 ## TheViralFinds: Shopee Affiliate Management System
 
-**Version:** 5.0
+**Version:** 6.0
 **Last Updated:** July 2025
-**Status:** Production-Ready (with Comprehensive Improvement Roadmap)
+**Status:** VPS Migration Phase (SQLite → PostgreSQL, MCP & A2A Overhaul)
 **Author:** TheViralFinds Team
 **Repository:** [github.com/thisisniagahub/theviralfindsmy](https://github.com/thisisniagahub/theviralfindsmy)
+**VPS:** 76.13.176.142 | **OpenClaw Gateway:** https://operator.gangniaga.my
 
 ---
 
@@ -22,14 +23,17 @@
 - **Mobile-first design** — Full functionality on any device with responsive layouts and iOS safe area support
 - **Pixel RPG Office** — Interactive Phaser 3 game scene with AI agents working in a virtual office
 
-### Current State (v4.0 → v5.0 Improvements Applied)
+### Current State (v5.0 → v6.0 VPS Migration In Progress)
 - **16 pages** including Agent Office with Phaser game
 - **40+ API routes** with Zod validation
 - **8 Prisma models** (AffiliateLink, Campaign, ClickRecord, Conversion, Payout, AppSetting, EarningGoal, Notification)
-- **3 mini-services** (notification-service, MCP server, A2A agent)
+- **3 mini-services** (notification-service, MCP server, A2A agent) — ⚠️ MCP & A2A being overhauled to VPS OpenClaw
 - **NextAuth.js authentication** with credentials provider
 - **Error boundaries** and production hardening applied
 - **Comprehensive CSS utility library** (2,000+ lines)
+- **🔴 CRITICAL MIGRATION IN PROGRESS**: SQLite → PostgreSQL on VPS 76.13.176.142
+- **🔴 MCP Proxy overhaul**: localhost:3005 → OpenClaw Gateway at operator.gangniaga.my
+- **🔴 A2A Agent Network overhaul**: localhost:3006 → Real chained agent pipeline via OpenClaw
 
 ---
 
@@ -83,15 +87,30 @@
 │                    API Layer (40+ Routes)                │
 │  REST API | Next.js App Router | Zod Validation         │
 │  NextAuth.js Authentication | Auth Middleware            │
-├──────────┬──────────┬───────────┬──────────────────────┤
-│ SQLite   │ AI SDK   │ MCP       │ A2A                   │
-│ (Prisma) │ (z-ai)   │ (Port     │ (Agent                │
-│ 8 Models │          │  3005)    │  Network 3006)        │
-├──────────┴──────────┴───────────┴──────────────────────┤
+├──────────┬──────────────────────────────────────────────┤
+│ PostgreSQL│ OpenClaw Gateway (VPS 76.13.176.142)        │
+│ (Prisma) │ https://operator.gangniaga.my               │
+│ 8 Models │ ├─ MCP Proxy → /health, /tools, /execute    │
+│          │ ├─ A2A Pipeline → Chained Agent Calls        │
+│          │ │   ├─ niagaresearch (Kaji Pasaran)          │
+│          │ │   ├─ niagamarketing (Ayat Pemasaran)       │
+│          │ │   └─ niagacomputer (Format JSON)           │
+│          │ └─ AI SDK (z-ai-web-dev-sdk)                 │
+├──────────┴──────────────────────────────────────────────┤
 │                 Real-time Layer                         │
 │  Socket.IO (Port 3004) | WebSocket Notifications       │
 └─────────────────────────────────────────────────────────┘
 ```
+
+#### Architecture Migration (v5.0 → v6.0)
+
+| Component | v5.0 (Local) | v6.0 (VPS) |
+|-----------|-------------|------------|
+| Database | SQLite (`file:./db/custom.db`) | PostgreSQL (`76.13.176.142:5432/theviralfinds`) |
+| MCP Server | `localhost:3005` (mock capabilities) | OpenClaw Gateway (`operator.gangniaga.my/health`) |
+| A2A Network | `localhost:3006` (sleep timer dummy) | OpenClaw Chained Pipeline (niagaresearch → niagamarketing → niagacomputer) |
+| AI Processing | z-ai-web-dev-sdk + local mock | z-ai-web-dev-sdk + OpenClaw real agents |
+| Notification Service | `localhost:3004` | `localhost:3004` (unchanged) |
 
 ### 3.2 Technology Stack
 
@@ -100,11 +119,13 @@
 | Framework | Next.js 16 (App Router) | Server components, streaming, edge runtime |
 | UI | shadcn/ui + Tailwind CSS 4 | Consistent design system, dark mode, accessibility |
 | State | Zustand + TanStack Query | Lightweight client state + powerful server state caching |
-| Database | SQLite + Prisma ORM | Zero-config, fast, portable, type-safe queries |
+| Database | PostgreSQL + Prisma ORM | Production-grade, concurrent connections, 100K+ records, VPS-hosted |
 | Charts | Recharts | Composable, responsive chart components |
 | Animations | Framer Motion | Declarative animations, layout transitions |
 | Real-time | Socket.IO | WebSocket with fallback, auto-reconnect |
 | AI | z-ai-web-dev-sdk | Web search, LLM chat, web reader, image generation |
+| AI Gateway | OpenClaw (operator.gangniaga.my) | MCP tool execution, A2A agent pipeline, real AI capabilities |
+| AI Agents | OpenClaw Agent System | niagaresearch, niagamarketing, niagacomputer, niagaaggregator, niagareporter |
 | Forms | React Hook Form + Zod | Performant forms with type-safe validation |
 | Auth | NextAuth.js v4 | Credentials provider, JWT sessions, middleware |
 | Game Engine | Phaser 3 | 2D game rendering, physics, sprite management |
@@ -291,25 +312,29 @@
 | FR-13.8 | AI Content | Generate affiliate marketing content |
 
 #### FR-14: MCP Server (Model Context Protocol)
-**Priority:** P2 | **Status:** ✅ Implemented
+**Priority:** P1 | **Status:** 🔄 Overhauling (localhost → OpenClaw Gateway)
 
 | ID | Requirement | Details |
 |----|-------------|---------|
-| FR-14.1 | Tool Registry | 12 pre-registered AI tools across 5 categories |
-| FR-14.2 | JSON-RPC Execution | Standard JSON-RPC 2.0 tool execution endpoint |
-| FR-14.3 | Plugin System | Dynamic plugin registration/unregistration |
-| FR-14.4 | Status Monitoring | Uptime, memory, tool execution tracking |
+| FR-14.1 | Tool Registry | Real tool capabilities from OpenClaw Gateway (replaces mock 12-tool registry) |
+| FR-14.2 | Health Check | GET /status → `https://operator.gangniaga.my/health` for real server health |
+| FR-14.3 | Tool Discovery | GET /tools → OpenClaw Gateway internal context for real NiagaBot capabilities |
+| FR-14.4 | Tool Execution | POST /execute → Bridge MCP commands to OpenClaw AI engine via `/lib/openclaw.ts` |
+| FR-14.5 | Translation Bridge | MCP commands (e.g., "Kaji URL INI") wrapped as OpenClaw-specific payload |
+| FR-14.6 | Status Monitoring | Real-time health from VPS; uptime, memory, tool execution tracking |
 
 #### FR-15: A2A Agent Network
-**Priority:** P2 | **Status:** ✅ Implemented
+**Priority:** P1 | **Status:** 🔄 Overhauling (localhost → OpenClaw Chained Pipeline)
 
 | ID | Requirement | Details |
 |----|-------------|---------|
-| FR-15.1 | Agent Registry | 6 specialized agents (research, content, analytics, SEO, competitor, scheduler) |
-| FR-15.2 | Orchestration | Multi-agent sequential pipeline execution |
-| FR-15.3 | Message Bus | Real-time WebSocket communication between agents |
-| FR-15.4 | Discovery | Agent discovery by capability, category, status |
-| FR-15.5 | Conversation Tracking | Thread-based message history |
+| FR-15.1 | Agent Registry | Real OpenClaw agents: niagaresearch, niagamarketing, niagacomputer, niagaaggregator, niagareporter |
+| FR-15.2 | Chained Pipeline | Sequential: niagaresearch → niagamarketing → niagacomputer (output injected as next input) |
+| FR-15.3 | Pipeline Execution | All chained calls via `https://operator.gangniaga.my/v1/chat/completions` |
+| FR-15.4 | Real-time Logging | Live agent conversation visible in UI (replaces sleep timer dummy) |
+| FR-15.5 | Context Injection | Previous agent output injected as message context for next agent |
+| FR-15.6 | Agent Format | `openclaw/<agentId>` model structure for all VPS agents |
+| FR-15.7 | Error Recovery | Graceful fallback if any agent in chain fails; partial result display |
 
 ### 4.4 UX Features
 
@@ -397,9 +422,9 @@
 ### 5.4 Scalability
 | ID | Requirement | Target | Current |
 |----|-------------|--------|---------|
-| NFR-16 | Concurrent Users | Support 1,000+ concurrent users | ⚠️ SQLite limits |
-| NFR-17 | Data Volume | Handle 100K+ link records | ⚠️ SQLite limits |
-| NFR-18 | Mini Services | Each service independently scalable | ✅ 3 services |
+| NFR-16 | Concurrent Users | Support 1,000+ concurrent users | ✅ PostgreSQL migration (v6.0) |
+| NFR-17 | Data Volume | Handle 100K+ link records | ✅ PostgreSQL migration (v6.0) |
+| NFR-18 | Mini Services | Each service independently scalable | ✅ 3 services (MCP & A2A → VPS OpenClaw) |
 
 ### 5.5 Compatibility
 | ID | Requirement | Target | Current |
@@ -420,6 +445,16 @@
 ---
 
 ## 6. Database Schema
+
+### Database Provider Migration (v6.0)
+| Property | v5.0 (SQLite) | v6.0 (PostgreSQL) |
+|----------|--------------|-------------------|
+| Provider | `sqlite` | `postgresql` |
+| Connection | `file:./db/custom.db` | `postgresql://admin_tvf:<password>@76.13.176.142:5432/theviralfinds` |
+| Concurrent Writes | Single writer | Multi-writer with row locking |
+| Max Record Volume | ~10K practical limit | 100K+ with indexing |
+| Connection Pooling | N/A | Prisma connection pool (default 5) |
+| Data Migration | N/A | ⚠️ **Full reset** — all test data will be lost; fresh seed required |
 
 ### Entity Relationship Diagram
 
@@ -487,7 +522,7 @@ Notification (standalone)
 | Referral | 1 | GET /api/referral |
 | Agents | 2 | CRUD + activity |
 | OpenClaw AI | 8 | trending, keywords, competitor, price-track, scheduler, web-reader, ai-insights, ai-content |
-| OpenClaw MCP/A2A | 2 | mcp-proxy, a2a-proxy |
+| OpenClaw MCP/A2A | 2 | mcp-proxy (→ OpenClaw Gateway), a2a-proxy (→ Chained Pipeline) |
 | Shopee Integration | 2 | search, import |
 | Shopee Office | 5 | join, status, memo, agents, guest-agents |
 
@@ -594,19 +629,32 @@ Agent Office → View 3D Office with AI Workers
 
 ## 10. Deployment Architecture
 
-### Current Setup
+### Current Setup (v6.0 — VPS Migration)
 ```
 User → Caddy Gateway → Next.js (port 3000)
                     → Notification Service (port 3004)
-                    → MCP Server (port 3005)
-                    → A2A Agent (port 3006)
+                    → PostgreSQL (VPS 76.13.176.142:5432)
+                    → OpenClaw Gateway (https://operator.gangniaga.my)
+                        ├─ MCP Proxy → /health, /tools, /execute
+                        └─ A2A Pipeline → niagaresearch → niagamarketing → niagacomputer
 ```
 
-### Production (Vercel)
+### Pre-Migration Setup (v5.0 — Archived)
+```
+User → Caddy Gateway → Next.js (port 3000)
+                    → Notification Service (port 3004)
+                    → MCP Server (port 3005) [MOCK — removed in v6.0]
+                    → A2A Agent (port 3006) [DUMMY — removed in v6.0]
+                    → SQLite (local file) [REPLACED in v6.0]
+```
+
+### Production (Vercel + VPS)
 ```
 User → Vercel CDN → Next.js Serverless Functions
                   → Vercel Edge Network (static assets)
-Mini Services → Separate hosting (Railway, Fly.io, etc.)
+                  → VPS 76.13.176.142 (PostgreSQL + OpenClaw Gateway)
+Mini Services → Notification Service (separate host)
+             → OpenClaw Gateway (VPS-hosted, replaces MCP & A2A mini-services)
 ```
 
 ### Environment Variables
