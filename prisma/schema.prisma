@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,20 +7,107 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
+model AffiliateLink {
+  id           String   @id @default(cuid())
+  name         String
+  productUrl   String
+  affiliateUrl String
+  productId    String?
+  productName  String?
+  productImage String?
+  productPrice Float?
+  commission   Float?
+  category     String?
+  campaignId   String?
+  clicks       Int      @default(0)
+  conversions  Int      @default(0)
+  earnings     Float    @default(0)
+  status       String   @default("active") // active, paused, expired
+  shortCode    String   @unique
+  expiresAt    DateTime?
+  campaign     Campaign?  @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  clickRecords ClickRecord[]
+  conversionRecords Conversion[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("active") // active, paused, completed
+  budget      Float?
+  spent       Float    @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  links       AffiliateLink[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClickRecord {
+  id           String   @id @default(cuid())
+  linkId       String
+  affiliateLink AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  ip           String?
+  country      String?
+  referer      String?
+  device       String?
+  converted    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Conversion {
+  id          String   @id @default(cuid())
+  linkId      String
+  affiliateLink AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  orderId     String?
+  amount      Float
+  commission  Float
+  status      String   @default("pending") // pending, confirmed, rejected, paid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payout {
+  id          String   @id @default(cuid())
+  method      String   @default("bank_transfer")
+  amount      Float
+  status      String   @default("pending") // pending, processing, completed, failed
+  bankName    String?
+  accountNo   String?
+  accountName String?
+  requestedAt DateTime @default(now())
+  processedAt DateTime?
+  note        String?
+}
+
+model AppSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
   updatedAt DateTime @updatedAt
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model EarningGoal {
+  id            String   @id @default(cuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  period        String
+  startDate     DateTime @default(now())
+  endDate       DateTime?
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String   @default("system")
+  title       String
+  description String
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }

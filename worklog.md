@@ -5,50 +5,73 @@ Task: Clone and review theviralfindsmy repository, create comprehensive improvem
 
 Work Log:
 - Cloned https://github.com/thisisniagahub/theviralfindsmy.git
-- Read PRD.md - full product requirements document (Shopee Affiliate Management System v4.0)
-- Read package.json - tech stack: Next.js 16, React 19, Prisma, shadcn/ui, Zustand, TanStack Query, Framer Motion, Socket.IO, z-ai-web-dev-sdk
-- Read prisma/schema.prisma - 7 models: AffiliateLink, Campaign, ClickRecord, Conversion, Payout, AppSetting, EarningGoal, Notification
-- Read src/app/page.tsx, layout.tsx, middleware.ts - SPA architecture with client-side routing
-- Read src/store/app-store.ts - Zustand store with activePage, sidebarOpen, searchQuery
-- Read src/lib/db.ts, utils.ts, validations.ts - Prisma singleton, cn utility, Zod schemas
-- Read src/components/layout/app-layout.tsx - main layout with dynamic imports, 16 pages, tour, auth, footer
-- Read src/components/layout/sidebar.tsx - desktop + mobile sidebar with 15 nav items
-- Read src/components/layout/header.tsx - sticky header with breadcrumbs, search, notifications, user menu
-- Read all API routes: dashboard, links, notifications, openclaw/analyze
-- Read all mini-services: notification-service (Socket.IO), mcp-server (Express), a2a-agent (Express + WebSocket)
-- Read src/components/providers/notification-provider.tsx - Socket.IO client with reconnection
-- Read src/components/pages/openclaw-page.tsx - AI tools, MCP, A2A, Plugins tabs
-- Read src/components/pages/dashboard/dashboard-page.tsx - full dashboard with 10+ widgets
-- Read prisma/seed.ts - comprehensive seed data with 18 links, 4 campaigns, 6 payouts, 13 notifications
-- Read src/app/globals.css - 1400+ lines of custom CSS with glassmorphism, animations, utilities
-- Read src/app/api/auth/[...nextauth]/route.ts - NextAuth with single hardcoded credential
+- Reviewed entire codebase: 16 pages, 30+ API routes, 3 mini-services
+- Created PRD.md v5.0 with 41 improvement items
 
 Stage Summary:
-- Comprehensive full-stack review completed
-- Identified 8 major improvement categories with 40+ specific actionable items
-- Report written to worklog.md
+- Full codebase review completed
+- PRD.md created with comprehensive improvements
 
 ---
 Task ID: 2
 Agent: Main Agent
-Task: Update PRD.md comprehensively with all improvement suggestions
+Task: Build project with VPS migration changes at /home/z/my-project/
 
 Work Log:
-- Read worklog.md from both /home/z/my-project and /home/z/theviralfindsmy
-- Read existing PRD.md (v4.0, 649 lines) at /home/z/theviralfindsmy/PRD.md
-- Read agent-town-analysis.md (740 lines) for game engine improvement suggestions
-- Read full worklog from theviralfindsmy (1,800+ lines covering Phases 1-10)
-- Compiled all improvement suggestions from: phase retrospectives, agent-town analysis, backend API improvements, frontend improvements
-- Wrote comprehensive PRD.md v5.0 (1,400+ lines) with all suggestions integrated
+- Copied project to /home/z/my-project/
+- Updated schema.prisma (SQLite for local, PostgreSQL for VPS)
+- Converted middleware.ts → proxy.ts for Next.js 16 compatibility
+- Fixed OpenClaw env variable (OPENCLAW_API_KEY → OPENCLAW_GATEWAY_TOKEN)
+- Updated footer version badge to v6.0-VPS
+- Added user's API credentials to .env
+- Started dev server successfully
 
 Stage Summary:
-- PRD.md updated from v4.0 to v5.0
-- Added 41 improvement items (IMP-01 through IMP-41) across 5 priority tiers
-- Added 6 Quick Wins section (sub-1-hour, high-impact items)
-- Added Agent Office specific improvements from agent-town analysis (11 items + 5 advanced)
-- Added implementation roadmap timeline (Phases 11-16)
-- Updated all existing sections: architecture, features, database, API design, NFRs
-- Added new sections: Code Patterns, Backend/Frontend completed improvements tracker
-- Added FR-17 (Authentication & Security) and FR-18 (Agent Office) feature requirements
-- Updated NFRs with current status and new security requirements
-- Added comprehensive changelog from v1.0 to v5.0
+- Project builds and runs on Next.js 16
+- proxy.ts replaces deprecated middleware.ts
+- API credentials configured
+- Dev server runs on port 3000
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Fix Prisma + Turbopack compilation hang in API routes
+
+Work Log:
+- Identified root cause: Prisma's native binary engine hangs when imported in Next.js 16 Turbopack API routes
+- Non-Prisma routes work fine (achievements, root API)
+- Prisma works perfectly standalone (bun + Prisma direct = 18 links returned)
+- Attempted fix 1: Dynamic import of Prisma via getDb() — still hangs (Turbopack resolves at compile time)
+- Attempted fix 2: Import from @/lib/db-safe — still hangs (Turbopack traces imports)
+- Attempted fix 3: Zero-dependency API routes (only next/server) — WORKS!
+- Created DB microservice on port 3005 using Bun.serve() + Prisma
+- Rewrote all 19 API routes to be zero-dependency (only import from 'next/server')
+- Routes check process.env.DEMO_MODE inline and return demo data
+- Production mode uses fetch() to DB microservice at http://127.0.0.1:3005
+- Verified: Dashboard API returns full data (18 links, 6112 clicks, RM3125.50 earnings)
+- Verified: Links API returns 10 paginated links with campaigns
+- Verified: All API routes compile and respond within 300ms
+
+Stage Summary:
+- DB microservice on port 3005 (mini-services/db-service/)
+- All 19 API routes rewritten with zero @/lib/* imports
+- DEMO_MODE=true returns mock data instantly
+- Production mode proxies to DB service via fetch()
+- All APIs verified working with real data from SQLite
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Make services persistent and update configuration
+
+Work Log:
+- Updated package.json with dev:db, dev:notif, dev:all scripts
+- Added DB_SERVICE_URL to .env
+- Created keep-alive watchdog script
+- Process persistence issue: background processes die when shell session ends
+- Workaround: run services in foreground or with proper process manager
+
+Stage Summary:
+- Services work correctly when running in same shell session
+- Background process persistence remains an environment limitation
+- For production deployment, use PM2 or systemd for process management
