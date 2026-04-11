@@ -1,10 +1,9 @@
 /**
- * Timeout wrapper for Prisma queries in Next.js 16 + Turbopack
- * Prisma queries can hang in Turbopack route handlers due to binary engine loading issues.
- * This wrapper adds a timeout and falls back to demo data if the query hangs.
+ * Timeout wrapper for database queries
+ *
+ * Provides a generic timeout wrapper that falls back to default values
+ * when queries take too long. Used with the DB microservice or Prisma.
  */
-
-import { getDb } from '@/lib/db-safe'
 
 const QUERY_TIMEOUT_MS = 8_000 // 8 seconds max per query
 
@@ -33,25 +32,17 @@ export function withTimeout<T>(
 }
 
 /**
- * Check if Prisma is responsive by doing a simple count query
+ * Check if the DB microservice is responsive
  */
-let prismaReady: boolean | null = null
-
-export async function isPrismaResponsive(): Promise<boolean> {
-  if (prismaReady === true) return true
-
+export async function isDbServiceResponsive(): Promise<boolean> {
+  const DB_SERVICE_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
   try {
-    const db = await getDb()
-    const result = await Promise.race([
-      db.affiliateLink.count(),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-    ])
-    if (typeof result === 'number') {
-      prismaReady = true
-      return true
-    }
+    const res = await fetch(`${DB_SERVICE_URL}/health`, {
+      signal: AbortSignal.timeout(3000),
+      cache: 'no-store',
+    })
+    return res.ok
   } catch {
-    prismaReady = false
+    return false
   }
-  return false
 }

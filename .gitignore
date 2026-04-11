@@ -32,10 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
-
 
 # typescript
 *.tsbuildinfo
@@ -48,7 +48,31 @@ dev.log
 dev.out.log
 test
 prompt
-
 server.log
+
 # Skills directory
-/skills/
+skills/
+
+# Database files
+db/*.db
+db/*.db-journal
+
+# Mini-services runtime
+mini-services/*/node_modules
+
+# Dev scripts PID
+.zscripts/dev.pid
+
+# Upload directory
+upload/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Keep-alive script
+keep-alive.sh
+
+# Build info
+download/
