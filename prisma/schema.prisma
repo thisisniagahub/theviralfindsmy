@@ -134,3 +134,17 @@ model Notification {
   @@index([createdAt])
   @@index([type])
 }
+
+model AgentMemory {
+  id        String   @id @default(cuid())
+  agentId   String
+  sessionId String?
+  role      String // 'user' | 'assistant' | 'system'
+  content   String
+  metadata  String? // JSON string for extra data
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+  @@index([sessionId])
+  @@index([createdAt])
+}

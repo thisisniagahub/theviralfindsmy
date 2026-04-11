@@ -118,15 +118,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { runChainedPipeline, openClawCompletion } = await getOpenClawLib()
 
-    // POST /execute — Execute chained pipeline
+    // POST /execute — Execute chained or parallel pipeline
     if (path === '/execute' || path === '/orchestrate') {
       const userQuery = body.task || body.query || body.message || body.prompt || ''
       if (!userQuery) {
         return NextResponse.json({ error: 'Query/task is required. Send {task: "..."} in body.' }, { status: 400 })
       }
 
-      const result = await runChainedPipeline(userQuery)
-      return NextResponse.json(result)
+      const mode = body.mode || 'sequential' // 'sequential' or 'parallel'
+      const { runChainedPipeline, runParallelPipeline } = await getOpenClawLib()
+
+      const result = mode === 'parallel'
+        ? await runParallelPipeline(userQuery)
+        : await runChainedPipeline(userQuery)
+
+      return NextResponse.json({ ...result, mode })
     }
 
     // POST /agents/{agentId}/message — Send message to individual agent
