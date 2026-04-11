@@ -128,9 +128,18 @@ export async function POST(request: NextRequest) {
       const mode = body.mode || 'sequential' // 'sequential' or 'parallel'
       const { runChainedPipeline, runParallelPipeline } = await getOpenClawLib()
 
+      console.log(`[A2A] Starting ${mode} pipeline for: "${userQuery.substring(0, 80)}..."`)
+      console.log(`[A2A] Gateway: ${getGatewayUrl()}`)
+
       const result = mode === 'parallel'
         ? await runParallelPipeline(userQuery)
         : await runChainedPipeline(userQuery)
+
+      // Log pipeline result
+      console.log(`[A2A] Pipeline ${result.status}. Duration: ${result.totalDurationMs}ms. Source: ${(result as any)._source}`)
+      for (const step of result.pipeline) {
+        console.log(`[A2A]   ${step.agent}: ${step.status} (${step.durationMs}ms)`)
+      }
 
       return NextResponse.json({ ...result, mode })
     }
@@ -152,11 +161,11 @@ export async function POST(request: NextRequest) {
       }
 
       const agentSystemPrompts: Record<string, string> = {
-        niagaresearch: 'You are NiagaResearch, a deep research agent specializing in Shopee Malaysia affiliate marketing. Analyze trends, gather data, and identify opportunities.',
-        niagamarketing: 'You are NiagaMarketing, a marketing strategy agent for Shopee Malaysia affiliates. Develop actionable marketing strategies and content plans.',
-        niagacomputer: 'You are NiagaComputer, a computational agent for Shopee Malaysia affiliates. Calculate ROI, optimize budgets, and generate performance projections.',
-        niagaaggregator: 'You are NiagaAggregator, an aggregation agent. Consolidate outputs, resolve conflicts, and create unified reports.',
-        niagareporter: 'You are NiagaReporter, a reporting agent. Create polished final reports with summaries and actionable next steps.',
+        niagaresearch: 'Anda adalah NiagaResearch, ejen penyelidikan pakar dari NiagaBot. Tugas anda: analisis pasaran Shopee Malaysia, kenal pasti trend produk, kaji pesaing, dan berikan data yang tepat. Jawab dalam Bahasa Melayu campur Bahasa Inggeris (Manglish style). Berikan fakta dan nombor yang spesifik.',
+        niagamarketing: 'Anda adalah NiagaMarketing, ejen pemasaran dari NiagaBot. Tugas anda: tulis ayat pemasaran yang viral, buat strategi content untuk TikTok/Instagram/Facebook, dan sasarkan audiens Malaysia. Gunakan bahasa santai dan menarik. Sertakan emoji dan hashtag.',
+        niagacomputer: 'Anda adalah NiagaComputer, ejen pengiraan dari NiagaBot. Tugas anda: kira ROI, optimumkan bajet, buat unjuran prestasi, dan format output sebagai JSON yang kemas. Berikan nombor yang tepat dan cadangan berdasarkan data.',
+        niagaaggregator: 'Anda adalah NiagaAggregator dari NiagaBot. Tugas anda: gabungkan output dari semua ejen lain, selesaikan konflik, dan cipta laporan bersepadu yang jelas dan boleh diambil tindakan.',
+        niagareporter: 'Anda adalah NiagaReporter dari NiagaBot. Tugas anda: cipta laporan akhir yang profesional dengan ringkasan eksekutif, visualisasi data (dalam bentuk markdown), dan senarai tindakan seterusnya.',
       }
 
       const result = await openClawCompletion({
@@ -171,6 +180,8 @@ export async function POST(request: NextRequest) {
       const responseText: string = typeof result === 'object' && result !== null
         ? (result as any).choices?.[0]?.message?.content || JSON.stringify(result)
         : String(result)
+
+      console.log(`[A2A] NiagaBot "${agentId}" responded. Source: ${(result as Record<string, string>)?._source || 'unknown'}`)
 
       return NextResponse.json({
         agentId,

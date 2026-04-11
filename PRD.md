@@ -2,9 +2,9 @@
 
 ## TheViralFinds: Shopee Affiliate Management System
 
-**Version:** 7.0
-**Last Updated:** July 2025
-**Status:** VPS Migration + Pixel-Agents Enhancement Phase
+**Version:** 8.0
+**Last Updated:** April 2026
+**Status:** Production Hardening + NiagaBot Full Integration Phase
 **Author:** TheViralFinds Team
 **Repository:** [github.com/thisisniagahub/theviralfindsmy](https://github.com/thisisniagahub/theviralfindsmy)
 **VPS:** 76.13.176.142 | **OpenClaw Gateway:** https://operator.gangniaga.my
@@ -1602,20 +1602,11 @@ export async function executeA2APipeline(query: string) {
 - [Zod Validation](https://zod.dev/)
 - [Agent Town Reference](https://github.com/geezerrrr/agent-town)
 
-### E. Changelog
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | April 2025 | Initial PRD — 8 pages, 12 API routes |
-| 2.0 | April 2025 | Added Phase 2-4 features (social sharing, calculator, bulk actions, QR codes, heatmap) |
-| 3.0 | May 2025 | Added Phase 5-7 features (goals, sparklines, leaderboard, achievements, command palette) |
-| 4.0 | June 2025 | Added Phase 8-9 features (AI suite, MCP, A2A, Agent Office, Phaser game) |
-| 5.0 | July 2025 | **Comprehensive improvement roadmap** — 41 improvement items across 5 tiers; agent-town analysis; production hardening (Phase 10); updated database schema, API design, security requirements; implementation timeline |
-| 6.0 | April 2026 | **VPS Migration** — Section 12.5 Fasa Perlaksanaan added; SQLite → PostgreSQL migration plan; MCP proxy → OpenClaw Gateway overhaul; A2A → Chained agent pipeline; VPS Discovery Report (live scan 76.13.176.142); Open Questions & Prerequisites; New env vars (OPENCLAW_GATEWAY_URL, OPENCLAW_GATEWAY_TOKEN); IMP-02 status updated to IN PROGRESS; 4 new risks added; 2 new code patterns (Pattern 6, 7); Third-party services updated; Phase 11 added to Release History |
-
-| 7.0 | July 2025 | **Pixel-Agents Enhancement** — Section 12.6 added; FR-19 through FR-25 feature requirements; Isometric Office View (CSS-based); Enhanced Agent State Machine (9 states); Real-time Activity Monitor (dual detection); Agent Conversation Panel (OpenClaw chat bridge); Minimap Overlay; Office Theme System (Day/Night/Neon); Agent Performance Dashboard |
+| 7.0 | July 2025 | **Pixel-Agents Enhancement** — (see Section 12.6) |
+| 8.0 | April 2026 | **Production Hardening + NiagaBot Full Integration** — (see Sections 12.7–12.10) |
 
 ---
+
 
 ## 12.6 Fasa 12: Pixel-Agents Inspired Enhancement
 
@@ -1698,3 +1689,190 @@ export async function executeA2APipeline(query: string) {
 | 🟠 P1 | Langkah 7: Agent Performance Dashboard | 2 jam |
 | 🟡 P2 | Langkah 5: Minimap Overlay | 1 jam |
 | 🟡 P2 | Langkah 6: Office Theme System | 1.5 jam |
+
+---
+
+## 12.7 TASK IMPROVEMENT 1: Foundation, Quality & Advanced AI (Sprints 1–5)
+
+> **Source:** `codex-prompts.md` — 18 prompts across 5 sprints covering foundation fixes, code quality, advanced AI, premium features, and CSS optimization.
+> 
+> **Status: ✅ ALL 18 PROMPTS COMPLETED** (confirmed 11 April 2026)
+
+### Pre-Sprint: Repository & Deployment (10 items) ✅
+
+| # | Task | Detail | Status |
+|---|------|--------|--------|
+| PS-1 | **Hapus `.env` dari git** | Secrets tak exposed lagi | ✅ Done |
+| PS-2 | **Hapus `skills/` dari git** | 620+ files, 126K lines — repo size turun 60% | ✅ Done |
+| PS-3 | **Hapus `db/custom.db` dari git** | Binary DB file removed | ✅ Done |
+| PS-4 | **Buat `.env.example`** | Template semua env vars untuk Vercel | ✅ Done |
+| PS-5 | **Fix `next.config.ts`** | Buang `output: "standalone"`, buang `eslint` key | ✅ Done |
+| PS-6 | **Add `postinstall: "prisma generate"`** | Wajib untuk Vercel auto-generate | ✅ Done |
+| PS-7 | **Migrate SQLite → PostgreSQL** | Prisma provider ditukar (Neon format) | ✅ Done |
+| PS-8 | **Fix 19 API routes localhost fallback** | Null check DB_SERVICE_URL, return 503 | ✅ Done |
+| PS-9 | **OFFICE_JOIN_KEY configurable** | Via env var (bukan hardcoded) | ✅ Done |
+| PS-10 | **Move `socket.io` ke devDeps** | Tak masuk production bundle | ✅ Done |
+
+### Sprint 1: Foundation Fix (Prompts 1–6) ✅
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 1 | **Database Indexes** | `@@index` pada AffiliateLink (4), ClickRecord (3), Conversion (3), Notification (3), Payout (2), EarningGoal (2) | ✅ Done |
+| 2 | **Environment Variable Validation** | `src/lib/env.ts` — Zod validate DATABASE_URL, NEXTAUTH_SECRET, NODE_ENV, TELEGRAM_BOT_TOKEN, dll. Dev-mode fallback, production crash kalau missing | ✅ Done |
+| 3 | **Remove SKIP_AUTH bypass** | Authentication sentiasa enforce; demo mode handle di login page | ✅ Done |
+| 4 | **Health Check Endpoint** | `/api/health` — check DB, OpenClaw, Notification service; return status, version, uptime | ✅ Done |
+| 5 | **Migrate to App Router** | `(dashboard)/` route group, 16 page routes, login page, server layout | ✅ Done |
+| 6 | **Fix Authentication Flow** | Proper `/login` page, buang auto-signIn, middleware redirect | ✅ Done |
+
+### Sprint 2: Code Quality & DX (Prompts 7–11) ✅
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 7 | **TypeScript Strict Mode** | `noImplicitAny: true` dalam tsconfig.json; fix 7 files yang ada implicit any errors | ✅ Done |
+| 8 | **ESLint Rules Re-enable** | 5 rules dari "off" → "warn": `no-explicit-any`, `no-unused-vars`, `prefer-const`, `no-console`, `no-debugger` | ✅ Done |
+| 9 | **Zod Validation on All API Routes** | 6 mutation routes validated: links, links/bulk, campaigns, payouts, goals, settings | ✅ Done |
+| 10 | **API Response Caching** | `src/lib/cache.ts` — MemoryCache with TTL (SHORT 30s, MEDIUM 2m, LONG 5m, DASHBOARD 60s), pattern invalidation, max 100 entries | ✅ Done |
+| 11 | **Rate Limiting** | 11 API routes: mutation (30 req/min), read (60 req/min), AI (10 req/min), auth (5 req/5min) | ✅ Done |
+
+### Sprint 3: Advanced AI & Real-time (Prompts 12–14)
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 12 | **Streaming AI Responses** | Add `streamOpenClawCompletion()` to `openclaw.ts`; create SSE endpoint `/api/openclaw/stream`; create `useStreamingAI` hook | ✅ Done (on GitHub) |
+| 13 | **Parallel A2A Pipeline** | Add `runParallelPipeline()` — fan-out to 3 agents simultaneously, fan-in with aggregator; add `mode` param to A2A proxy | ✅ Done (on GitHub) |
+| 14 | **WebSocket Event Bus** | Create `src/lib/event-bus.ts` (typed EventBus class) + `src/hooks/use-event-bus.ts`; integrate with NotificationProvider | ✅ Done (on GitHub) |
+
+### Sprint 4: Premium Features (Prompts 15–17) ✅
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 15 | **Agent Memory & Context** | `AgentMemory` Prisma model, `agent-memory.ts` — saveAgentMessage, getConversationContext, clearAgentMemory. `/api/agents/memory` endpoint | ✅ Done |
+| 16 | **PWA Support** | `manifest.json`, `sw.js` (cache-first), `sw-provider.tsx`, icon-192.png + icon-512.png (Shopee orange bar chart design) | ✅ Done |
+| 17 | **Testing Infrastructure** | Vitest configured, 16 tests passing: cache (5), rate-limit (3), validations (8). Scripts: `test`, `test:watch`, `test:coverage` | ✅ Done |
+
+### Sprint 5: CSS & Performance (Prompt 18) ✅
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 18 | **CSS Modularization** | 3352-line `globals.css` → 7 modules: `base.css` (129), `scrollbar.css` (32), `sidebar.css` (26), `animations.css` (979), `components.css` (1654), `charts.css` (82), `utilities.css` (442) | ✅ Done |
+
+---
+
+## 12.8 TASK IMPROVEMENT 2: Shopee Office Hardening (4 Phases)
+
+> **Source:** `implementation_plan_shopee_office.md` — Transforms the monolithic 1,560-line Phaser demo into a modular, integrated, and performant A2A visualization system.
+
+### Phase 1: Core Architecture & State Management ✅
+
+| Task | File | Status |
+|------|------|--------|
+| Strip `phaser-game.tsx` monolith → use `game/` subsystem | `phaser-game.tsx` | ✅ Done |
+| Create `SceneEventBridge.ts` (React ↔ Phaser bridge) | `game/SceneEventBridge.ts` | ✅ Done |
+| Connect `agentStateTracker` to `Worker` entities | `game/entities/Worker.ts` | ✅ Done |
+| Use `game/config.ts` for all seat positions and zones | `game/config.ts` | ✅ Done |
+
+### Phase 2: Bug Fixes & Interactivity ✅
+
+| Task | File | Status |
+|------|------|--------|
+| **Input Focus Guard** — stop Boss movement while typing | `game/entities/Player.ts` | ✅ Done |
+| **Diagonal Speed Normalization** — ~41% speed fix | `Worker.ts`, `Player.ts` | ✅ Done |
+| **Task Queue Consumer** — auto-process queue on task complete | `game/entities/Worker.ts` | ✅ Done |
+| Proximity greetings ("Hi Boss!") | `game/entities/Worker.ts` | ✅ Done |
+| **ShortcutsOverlay** — press H/? for help HUD | `game/entities/ShortcutsOverlay.ts` | ✅ Done |
+
+### Phase 3: Performance & UX ✅
+
+| Task | File | Status |
+|------|------|--------|
+| **Deferred Asset Loading** — critical assets first, then spritesheets | `phaser-game.tsx` | ✅ Done |
+| **Asset Loading Progress Bar** — visual feedback during load | `phaser-game.tsx` | ✅ Done |
+| **Tween Accumulation Fix** — prevent memory leaks from bobble/glow | `game/entities/Worker.ts` | ✅ Done |
+
+### Phase 4: Real Data Integration ✅
+
+| Task | File | Status |
+|------|------|--------|
+| Remove random event generator → use real `GameEventBus` | `activity-monitor.tsx` | ✅ Done |
+| Sync Minimap positions with `game/config.ts` | `minimap-overlay.tsx` | ✅ Done |
+
+### Verification Checklist
+
+- [x] **Boss Test**: Walk to agent, press E → proximity interaction works
+- [x] **Typing Test**: Type in Chat Panel → Boss does NOT move
+- [x] **Pipeline Test**: Run A2A pipeline → agents show 'executing'/'syncing' states
+- [x] **Performance Test**: Network tab → `office_bg` loads first, spritesheets deferred
+- [x] **Minimap Test**: Click agent dot → correct agent highlighted
+
+---
+
+## 12.9 TASK IMPROVEMENT 3: VPS & NiagaBot Full Integration (Sprint 0 + Sprint 6)
+
+> **Source:** `codex-prompts-vps-niagabot.md` — 10 prompts ensuring VPS connectivity is bulletproof and NiagaBot handles ALL AI operations.
+
+### Sprint 0: VPS & NiagaBot Integration (Run First!)
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 0A | **OpenClaw Gateway Client Hardening** | Add retry logic (3 attempts), circuit breaker (5 failures → 30s cooldown), connection state tracking to `gatewayFetch()` | ⬜ Pending |
+| 0B | **VPS Health Dashboard Widget** | Create `vps-health-widget.tsx` — real-time status of OpenClaw, PostgreSQL, Notification, NiagaBot Pipeline; auto-refresh 60s | ✅ Partial (file exists, needs wiring) |
+| 0C | **Replace Demo Chat → Real NiagaBot** | Replace `DEMO_RESPONSES` in `agent-chat-panel.tsx` with real `/api/openclaw/a2a-proxy` calls; keep fallback; add Live/Demo badge | ⬜ Pending |
+| 0D | **MCP Proxy Real Integration** | Make `GET /status` check real gateway health; `GET /tools` fetch real capabilities; `POST /execute` log source tracking | ⬜ Pending |
+| 0E | **A2A Pipeline Full Integration** | Add per-step timeout, parallel mode support, Malay system prompts for agents, enhanced error logging | ⬜ Pending |
+
+### Sprint 6: Advanced NiagaBot Features
+
+| # | Task | Description | Status |
+|---|------|-------------|--------|
+| 19 | **NiagaBot Auto-Pilot** | Create `niagabot-autopilot.ts` — scheduled tasks (daily trending scan, keyword research, competitor analysis, content suggestions); API + `autopilot-panel.tsx` UI | ⬜ Pending |
+| 20 | **NiagaBot Database Bridge** | Create `niagabot-data-bridge.ts` — agents read real affiliate data (top links, conversions, goals) and use as context for responses | ⬜ Pending |
+| 21 | **NiagaBot Multi-Modal** | Create `/api/openclaw/analyze-image` — upload product screenshots → NiagaBot vision analysis (product ID, pricing, competition); `image-analyzer.tsx` UI | ⬜ Pending |
+| 22 | **NiagaBot Notification Triggers** | Create `niagabot-triggers.ts` — auto-fire NiagaBot analysis on high-value conversions, click spikes, goal achievements, earnings milestones | ⬜ Pending |
+| 23 | **NiagaBot Smart Link Generator** | Create `/api/openclaw/smart-links` — NiagaBot suggests best affiliate links based on trending data; "🤖 NiagaBot Suggest" button on Links page | ⬜ Pending |
+
+### NiagaBot Agent System Prompts (Bahasa Melayu)
+
+| Agent | Model | Tugas |
+|-------|-------|-------|
+| **NiagaResearch** | `niagaresearch` | Analisis pasaran Shopee Malaysia, kenal pasti trend produk, kaji pesaing, berikan data spesifik |
+| **NiagaMarketing** | `niagamarketing` | Tulis ayat pemasaran viral, strategi content TikTok/Instagram/Facebook, sasaran audiens Malaysia |
+| **NiagaComputer** | `niagacomputer` | Kira ROI, optimumkan bajet, unjuran prestasi, format output JSON |
+| **NiagaAggregator** | `niagaaggregator` | Gabungkan output semua ejen, selesaikan konflik, cipta laporan bersepadu |
+| **NiagaReporter** | `niagareporter` | Cipta laporan akhir profesional dengan ringkasan eksekutif dan senarai tindakan |
+
+---
+
+## 12.10 Unified Sprint Execution Order
+
+> [!IMPORTANT]
+> **This is the master execution plan.** All 3 improvement tasks are consolidated into a single prioritized order. Follow this sequence for implementation.
+
+| Order | Sprint | Tasks | Priority | Est. Time |
+|-------|--------|-------|----------|-----------|
+| 1 | **Sprint 0** (VPS Hardening) | 0A–0E: Gateway retry/circuit breaker, VPS widget, real NiagaBot chat, MCP/A2A full integration | 🔴 CRITICAL | 12–16h |
+| 2 | **Pre-Sprint** (Repo Cleanup) | PS-1–PS-10: Remove secrets, skills, standalone, migrate PostgreSQL, fix 19 API routes | ✅ DONE | — |
+| 3 | **Sprint 1** (Foundation) | Prompts 1–6: DB indexes, env validation, middleware, health check, App Router, auth | ✅ DONE | — |
+| 4 | **Sprint 2** (Quality) | Prompts 7–11: TypeScript strict, ESLint, Zod validation, caching, rate limiting | ✅ DONE | — |
+| 5 | **Shopee Office** (Hardening) | Phases 1–4: Modular refactor, input guard, deferred loading, real data integration | ✅ DONE | — |
+| 6 | **Sprint 3** (AI) | Prompts 12–14: Streaming AI, parallel pipeline, event bus | ✅ DONE | — |
+| 7 | **Sprint 4** (Premium) | Prompts 15–17: Agent memory, PWA (with icons), 16 tests passing | ✅ DONE | — |
+| 8 | **Sprint 5** (CSS) | Prompt 18: 3352-line CSS → 7 modular files | ✅ DONE | — |
+| 9 | **Sprint 6** (NiagaBot) | Prompts 19–23: Auto-pilot, DB bridge, multi-modal, triggers, smart links | 🟠 HIGH | 24–32h |
+
+### Current Focus: Sprint 0 (VPS Hardening) → Sprint 6 (NiagaBot Advanced)
+
+---
+
+### E. Changelog
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | April 2025 | Initial PRD — 8 pages, 12 API routes |
+| 2.0 | April 2025 | Added Phase 2-4 features (social sharing, calculator, bulk actions, QR codes, heatmap) |
+| 3.0 | May 2025 | Added Phase 5-7 features (goals, sparklines, leaderboard, achievements, command palette) |
+| 4.0 | June 2025 | Added Phase 8-9 features (AI suite, MCP, A2A, Agent Office, Phaser game) |
+| 5.0 | July 2025 | **Comprehensive improvement roadmap** — 41 improvement items across 5 tiers; agent-town analysis; production hardening (Phase 10); updated database schema, API design, security requirements; implementation timeline |
+| 6.0 | April 2026 | **VPS Migration** — Section 12.5 Fasa Perlaksanaan added; SQLite → PostgreSQL migration plan; MCP proxy → OpenClaw Gateway overhaul; A2A → Chained agent pipeline; VPS Discovery Report (live scan 76.13.176.142); Open Questions & Prerequisites; New env vars (OPENCLAW_GATEWAY_URL, OPENCLAW_GATEWAY_TOKEN); IMP-02 status updated to IN PROGRESS; 4 new risks added; 2 new code patterns (Pattern 6, 7); Third-party services updated; Phase 11 added to Release History |
+| 7.0 | July 2025 | **Pixel-Agents Enhancement** — Section 12.6 added; FR-19 through FR-25 feature requirements; Isometric Office View (CSS-based); Enhanced Agent State Machine (9 states); Real-time Activity Monitor (dual detection); Agent Conversation Panel (OpenClaw chat bridge); Minimap Overlay; Office Theme System (Day/Night/Neon); Agent Performance Dashboard |
+| 8.0 | April 2026 | **Production Hardening + NiagaBot Full Integration** — 3 TASK IMPROVEMENTS consolidated into PRD: (1) Section 12.7: Foundation, Quality & Advanced AI Sprints 1-5 with 18 prompts, (2) Section 12.8: Shopee Office 4-Phase Hardening (modular architecture, deferred loading, real data integration — ALL DONE), (3) Section 12.9: VPS & NiagaBot Full Integration Sprint 0+6 with 10 prompts (gateway hardening, auto-pilot, DB bridge, multi-modal, smart links). Section 12.10: Unified Sprint Execution Order. Sprint 1 & 3 marked DONE. Shopee Office fully hardened. |
+

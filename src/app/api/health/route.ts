@@ -1,73 +1,54 @@
-import { NextResponse } from 'next/server'
-import { checkOpenClawHealth } from '@/lib/openclaw'
-import { env } from '@/lib/env'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
-  const version = '0.7.0'
-  const timestamp = new Date().toISOString()
-  const uptime = process.uptime()
+/**
+ * Health Check API — Returns status of all VPS services with latency measurements
+ */
 
-  // In demo mode, return healthy status without checking services
-  if (env.DEMO_MODE === 'true') {
-    return NextResponse.json({
-      status: 'healthy',
-      version,
-      timestamp,
-      uptime,
-      services: {
-        database: 'healthy',
-        openclaw: 'healthy',
-        notification: 'healthy',
-      },
-      _demo: true,
-    })
-  }
+export const maxDuration = 10
+export const dynamic = 'force-dynamic'
 
-  // Check database
-  let databaseStatus = 'unhealthy'
+async function checkWithLatency(url: string, timeoutMs = 3000): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy'; latencyMs?: number }> {
+  const start = Date.now()
   try {
-    const { db } = await import('@/lib/db')
-    await db.$queryRaw`SELECT 1`
-    databaseStatus = 'healthy'
-  } catch {
-    databaseStatus = 'unhealthy'
-  }
-
-  // Check OpenClaw
-  let openclawStatus = 'unhealthy'
-  try {
-    const health = await checkOpenClawHealth()
-    openclawStatus = health.status === 'healthy' ? 'healthy' : 'degraded'
-  } catch {
-    openclawStatus = 'unhealthy'
-  }
-
-  // Check notification service
-  let notificationStatus = 'unhealthy'
-  try {
-    const res = await fetch(`${env.NOTIFICATION_SERVICE_URL}/health`, {
-      signal: AbortSignal.timeout(3000),
+    const res = await fetch(url, {
+      method: 'GET',
+      signal: AbortSignal.timeout(timeoutMs),
       cache: 'no-store',
     })
-    notificationStatus = res.ok ? 'healthy' : 'unhealthy'
+    const latencyMs = Date.now() - start
+    if (res.ok) return { status: 'healthy', latencyMs }
+    return { status: 'degraded', latencyMs }
   } catch {
-    notificationStatus = 'unhealthy'
+    return { status: 'unhealthy', latencyMs: Date.now() - start }
+  }
+}
+
+export async function GET(_request: NextRequest) {
+  const gatewayUrl = process.env.OPENCLAW_GATEWAY_URL || 'https://operator.gangniaga.my'
+  const notifUrl = process.env.NOTIFICATION_SERVICE_URL || 'http://127.0.0.1:3004'
+
+  // Check OpenClaw Gateway
+  const [openclawResult, dbResult, notifResult] = await Promise.all([
+    checkWithLatency(`${gatewayUrl}/health`, 5000),
+    // Check DB by hitting the dashboard API (which uses Prisma)
+    checkWithLatency(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/dashboard`, 5000),
+    checkWithLatency(notifUrl, 3000),
+  ])
+
+  const services = {
+    openclaw: openclawResult.status,
+    openclawLatencyMs: openclawResult.latencyMs,
+    openclawDetail: gatewayUrl,
+    database: dbResult.status,
+    databaseLatencyMs: dbResult.latencyMs,
+    notification: notifResult.status,
   }
 
-  // Determine overall status
-  const services = { database: databaseStatus, openclaw: openclawStatus, notification: notificationStatus }
-  let status = 'healthy'
-  if (databaseStatus === 'unhealthy') {
-    status = 'unhealthy'
-  } else if (openclawStatus === 'unhealthy' || notificationStatus === 'unhealthy') {
-    status = 'degraded'
-  }
+  const overallHealthy = Object.values(services).every(v => v === 'healthy' || typeof v === 'number' || v === undefined)
 
   return NextResponse.json({
-    status,
-    version,
-    timestamp,
-    uptime,
+    status: overallHealthy ? 'healthy' : 'degraded',
+    timestamp: new Date().toISOString(),
     services,
   })
 }

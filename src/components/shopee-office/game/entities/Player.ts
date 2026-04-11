@@ -132,6 +132,19 @@ export class Player {
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     const speed = MOVE_SPEED
 
+    // Input Focus Guard — don't move when typing in inputs or when a dialog is open
+    const active = document.activeElement
+    if (active && (
+      active.tagName === 'INPUT' ||
+      active.tagName === 'TEXTAREA' ||
+      active.getAttribute('contenteditable') === 'true' ||
+      active.closest('[role="dialog"]') ||
+      active.closest('.shopee-office-panel')
+    )) {
+      body.setVelocity(0, 0)
+      return
+    }
+
     let vx = 0
     let vy = 0
 
@@ -168,10 +181,10 @@ export class Player {
     }
 
     if (moving) {
-      if (vx < 0) { this.facing = 'left'; void this.facing }
-      else if (vx > 0) { this.facing = 'right'; void this.facing }
-      else if (vy < 0) { this.facing = 'up'; void this.facing }
-      else if (vy > 0) { this.facing = 'down'; void this.facing }
+      if (vx < 0) { this.facing = 'left' }
+      else if (vx > 0) { this.facing = 'right' }
+      else if (vy < 0) { this.facing = 'up' }
+      else if (vy > 0) { this.facing = 'down' }
     }
   }
 

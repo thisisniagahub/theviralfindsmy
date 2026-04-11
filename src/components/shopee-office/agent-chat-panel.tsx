@@ -110,13 +110,41 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
     onSetAgentStatus?.(targetAgentId, 'writing')
     setIsTyping(true)
 
-    // Simulate agent response (demo mode)
-    // In production, this would call /api/shopee-office/chat with OpenClaw
-    const demoResponses = DEMO_RESPONSES[targetAgentId] || ['✅ Task completed. Processing...']
-    const responseText = demoResponses[Math.floor(Math.random() * demoResponses.length)]
+    // Map UI agent IDs to NiagaBot agent IDs
+    const agentIdToNiagaBot: Record<string, string> = {
+      'product-scout': 'niagaresearch',
+      'content-writer': 'niagamarketing',
+      'seo-optimizer': 'niagacomputer',
+      'analytics-agent': 'niagaresearch',
+      'link-builder': 'niagacomputer',
+      'campaign-master': 'niagamarketing',
+      'review-monitor': 'niagaresearch',
+      'payout-checker': 'niagacomputer',
+    }
 
-    // Simulate typing delay
-    await new Promise((resolve) => setTimeout(resolve, 1500 + Math.random() * 2000))
+    const niagaBotId = agentIdToNiagaBot[targetAgentId] || 'niagaresearch'
+    let responseText = ''
+
+    try {
+      const res = await fetch('/api/openclaw/a2a-proxy?path=/agents/' + niagaBotId + '/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        responseText = data.response || data.output || 'NiagaBot response received.'
+      } else {
+        // Fallback to demo response if NiagaBot is unavailable
+        const demoResponses = DEMO_RESPONSES[targetAgentId] || ['⚠️ NiagaBot offline. Using cached response.']
+        responseText = '⚠️ [Offline Mode] ' + demoResponses[Math.floor(Math.random() * demoResponses.length)]
+      }
+    } catch {
+      // Network error — use demo fallback
+      const demoResponses = DEMO_RESPONSES[targetAgentId] || ['⚠️ Connection error.']
+      responseText = '⚠️ [Offline] ' + demoResponses[Math.floor(Math.random() * demoResponses.length)]
+    }
 
     // Add agent response
     const agentMsg: ChatMessage = {
@@ -150,30 +178,84 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
       timestamp: Date.now(),
     }])
 
-    for (let i = 0; i < pipelineAgents.length; i++) {
-      const agentId = pipelineAgents[i]
-      const agent = agents.find((a) => a.agentId === agentId)
-      if (!agent) continue
+    // Call real A2A pipeline via proxy
+    try {
+      const res = await fetch('/api/openclaw/a2a-proxy?path=/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task: 'Kaji pasaran Shopee Malaysia, buat ayat pemasaran, dan format sebagai JSON.' }),
+      })
 
-      onSetAgentStatus?.(agentId, 'executing')
-      setIsTyping(true)
+      if (res.ok) {
+        const result = await res.json()
 
-      await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 1500))
+        // Display each pipeline step
+        if (result.pipeline && Array.isArray(result.pipeline)) {
+          for (const step of result.pipeline) {
+            const agent = agents.find((a) => {
+              const mapping: Record<string, string> = {
+                'niagaresearch': 'product-scout',
+                'niagamarketing': 'content-writer',
+                'niagacomputer': 'seo-optimizer',
+              }
+              return a.agentId === (mapping[step.agent] || step.agent)
+            })
 
-      const demoResponses = DEMO_RESPONSES[agentId] || ['✅ Step completed.']
-      const response = demoResponses[Math.floor(Math.random() * demoResponses.length)]
+            onSetAgentStatus?.(agent?.agentId || step.agent, 'executing')
 
-      setMessages((prev) => [...prev, {
-        id: `msg-${Date.now()}-pipeline-${i}`,
-        role: 'agent',
-        agentId,
-        agentName: agent.name,
-        agentEmoji: agent.emoji,
-        content: `${pipelineLabels[i]}\n${response}`,
+            setMessages(prev => [...prev, {
+              id: `msg-${Date.now()}-pipeline-${step.agent}`,
+              role: 'agent',
+              agentId: agent?.agentId || step.agent,
+              agentName: agent?.name || step.agent,
+              agentEmoji: agent?.emoji || '🤖',
+              content: step.output || 'Processing...',
+              timestamp: Date.now(),
+            }])
+
+            onSetAgentStatus?.(agent?.agentId || step.agent, 'idle')
+          }
+        }
+      } else {
+        throw new Error('Pipeline request failed')
+      }
+    } catch (err) {
+      // Fallback to demo pipeline
+      setMessages(prev => [...prev, {
+        id: `msg-${Date.now()}-error`,
+        role: 'system',
+        content: '⚠️ NiagaBot pipeline unavailable. Using demo mode. Error: ' + String(err),
         timestamp: Date.now(),
       }])
 
-      onSetAgentStatus?.(agentId, 'idle')
+      const agents_demo = ['product-scout', 'content-writer', 'seo-optimizer']
+      const labels = ['🔍 Research', '✍️ Content', '📊 Format']
+
+      for (let i = 0; i < agents_demo.length; i++) {
+        const agentId = agents_demo[i]
+        const agent = agents.find((a) => a.agentId === agentId)
+        if (!agent) continue
+
+        onSetAgentStatus?.(agentId, 'executing')
+        setIsTyping(true)
+
+        await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 1500))
+
+        const demoResponses = DEMO_RESPONSES[agentId] || ['✅ Step completed.']
+        const response = demoResponses[Math.floor(Math.random() * demoResponses.length)]
+
+        setMessages((prev) => [...prev, {
+          id: `msg-${Date.now()}-pipeline-${i}`,
+          role: 'agent',
+          agentId,
+          agentName: agent.name,
+          agentEmoji: agent.emoji,
+          content: `${labels[i]}\n${response}`,
+          timestamp: Date.now(),
+        }])
+
+        onSetAgentStatus?.(agentId, 'idle')
+      }
     }
 
     setIsTyping(false)
@@ -221,6 +303,10 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
       <div className="shopee-panel-title flex items-center justify-between">
         <span className="flex items-center gap-2">
           💬 {t.title}
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-medium" style={{ background: '#22c55e22', color: '#22c55e' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            Live
+          </span>
           {selectedAgent && (
             <span style={{ fontSize: 10, color: '#888', fontWeight: 'normal' }}>
               → {selectedAgent.emoji} {selectedAgent.name}

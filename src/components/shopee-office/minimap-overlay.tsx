@@ -16,11 +16,13 @@ interface MinimapOverlayProps {
   onToggle?: () => void
 }
 
-// ===== Constants =====
-const MINIMAP_W = 180
-const MINIMAP_H = 100
-const OFFICE_W = 1280
-const OFFICE_H = 720
+import { 
+  AGENT_SEAT_DEFS, 
+  OFFICE_COLLISIONS, 
+  OFFICE_POIS,
+  GAME_WIDTH as OFFICE_W,
+  GAME_HEIGHT as OFFICE_H
+} from './game/config'
 
 // Status colors
 const STATUS_COLORS: Record<string, string> = {
@@ -36,30 +38,19 @@ const STATUS_COLORS: Record<string, string> = {
   break: '#6b7280',
 }
 
-// Agent positions (scaled from game config)
-const AGENT_POSITIONS: Record<string, { x: number; y: number; zone: string }> = {
-  'product-scout': { x: 540, y: 180, zone: 'Research' },
-  'link-builder': { x: 640, y: 180, zone: 'Research' },
-  'campaign-master': { x: 740, y: 180, zone: 'Create' },
-  'analytics-agent': { x: 200, y: 350, zone: 'Create' },
-  'content-writer': { x: 300, y: 350, zone: 'Optimize' },
-  'payout-checker': { x: 750, y: 480, zone: 'Optimize' },
-  'seo-optimizer': { x: 850, y: 480, zone: 'Execute' },
-  'review-monitor': { x: 950, y: 350, zone: 'Execute' },
-}
-
-// Zone colors
-const ZONE_COLORS: Record<string, string> = {
-  Research: '#a855f7',
-  Create: '#f97316',
-  Optimize: '#eab308',
-  Execute: '#22c55e',
+// Find agent pos helper
+const getAgentHomePos = (agentId: string) => {
+  const seat = AGENT_SEAT_DEFS.find(s => s.seatId === agentId)
+  return seat ? { x: seat.x, y: seat.y } : { x: 0, y: 0 }
 }
 
 // ===== Component =====
 export function MinimapOverlay({ agents, visible = true, onToggle }: MinimapOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null)
+
+  const MINIMAP_W = 180
+  const MINIMAP_H = 100
 
   const drawMinimap = useCallback(() => {
     const canvas = canvasRef.current
@@ -75,35 +66,29 @@ export function MinimapOverlay({ agents, visible = true, onToggle }: MinimapOver
     ctx.fillStyle = '#0a0e1a'
     ctx.fillRect(0, 0, MINIMAP_W, MINIMAP_H)
 
-    // Draw zone regions
-    const zones = [
-      { name: 'Research', x: 100, y: 60, w: 700, h: 200, color: 'Research' },
-      { name: 'Create', x: 100, y: 260, w: 400, h: 200, color: 'Create' },
-      { name: 'Optimize', x: 600, y: 300, w: 400, h: 200, color: 'Optimize' },
-      { name: 'Execute', x: 800, y: 260, w: 400, h: 300, color: 'Execute' },
-    ]
+    // Draw collisions (furniture/walls)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
+    OFFICE_COLLISIONS.forEach(col => {
+      ctx.fillRect(col.x * scaleX, col.y * scaleY, col.width * scaleX, col.height * scaleY)
+    })
 
-    zones.forEach((zone) => {
-      const zx = zone.x * scaleX
-      const zy = zone.y * scaleY
-      const zw = zone.w * scaleX
-      const zh = zone.h * scaleY
-      ctx.fillStyle = `${ZONE_COLORS[zone.color] || '#333'}11`
-      ctx.strokeStyle = `${ZONE_COLORS[zone.color] || '#333'}33`
-      ctx.lineWidth = 0.5
-      ctx.fillRect(zx, zy, zw, zh)
-      ctx.strokeRect(zx, zy, zw, zh)
+    // Draw POIs
+    ctx.fillStyle = 'rgba(238, 77, 45, 0.2)'
+    OFFICE_POIS.forEach(poi => {
+      ctx.beginPath()
+      ctx.arc(poi.x * scaleX, poi.y * scaleY, 2, 0, Math.PI * 2)
+      ctx.fill()
     })
 
     // Draw walls (border)
     ctx.strokeStyle = '#2a2d3e'
     ctx.lineWidth = 1
-    ctx.strokeRect(2, 2, MINIMAP_W - 4, MINIMAP_H - 4)
+    ctx.strokeRect(0, 0, MINIMAP_W, MINIMAP_H)
 
     // Draw agent dots
     agents.forEach((agent) => {
-      const pos = AGENT_POSITIONS[agent.agentId]
-      if (!pos) return
+      const pos = getAgentHomePos(agent.agentId)
+      if (pos.x === 0 && pos.y === 0) return
 
       const x = pos.x * scaleX
       const y = pos.y * scaleY
@@ -143,13 +128,7 @@ export function MinimapOverlay({ agents, visible = true, onToggle }: MinimapOver
     ctx.strokeStyle = '#fff'
     ctx.lineWidth = 1
     ctx.stroke()
-
-    // "You" label
-    ctx.font = '7px monospace'
-    ctx.fillStyle = '#EE4D2D'
-    ctx.textAlign = 'center'
-    ctx.fillText('YOU', bossX, bossY + 10)
-  }, [agents, hoveredAgent])
+  }, [agents, hoveredAgent, OFFICE_W, OFFICE_H])
 
   useEffect(() => {
     if (visible) drawMinimap()

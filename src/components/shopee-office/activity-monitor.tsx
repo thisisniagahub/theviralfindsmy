@@ -40,74 +40,82 @@ const EVENT_TYPES: Record<ActivityEvent['type'], { color: string; icon: string; 
   pipeline_step: { color: '#a855f7', icon: '🔗', label: { en: 'Pipeline', cn: '流水线', jp: 'パイプライン' } },
 }
 
-// ===== Status change detector =====
+import { gameEvents } from './game/events'
+
+// ===== Event hook =====
 function useActivityGenerator(agents: ActivityMonitorProps['agents']) {
   const [events, setEvents] = useState<ActivityEvent[]>([])
   const [totalCommission, setTotalCommission] = useState(0)
   const prevStatusRef = useRef<Record<string, string>>({})
 
+  const addEvent = useCallback((event: Omit<ActivityEvent, 'id' | 'timestamp'>) => {
+    const newEvent: ActivityEvent = {
+      ...event,
+      id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: Date.now(),
+    }
+    setEvents((prev) => [newEvent, ...prev].slice(0, 100))
+  }, [])
+
   useEffect(() => {
-    // Detect status changes
+    // Detect status changes from props
     agents.forEach((agent) => {
       const prevStatus = prevStatusRef.current[agent.agentId]
       if (prevStatus && prevStatus !== agent.status) {
         const eventType: ActivityEvent['type'] = agent.status === 'error' ? 'error' : 'status_change'
-        const event: ActivityEvent = {
-          id: `evt-${Date.now()}-${agent.agentId}`,
-          timestamp: Date.now(),
+        addEvent({
           agentId: agent.agentId,
           agentName: agent.name,
           agentEmoji: agent.emoji,
           type: eventType,
           detail: `${prevStatus} → ${agent.status}`,
-        }
-        setEvents((prev) => [event, ...prev].slice(0, 100))
+        })
       }
       prevStatusRef.current[agent.agentId] = agent.status
     })
-  }, [agents])
+  }, [agents, addEvent])
 
-  // Generate simulated events periodically
+  // Listen to real Game Events
   useEffect(() => {
-    if (agents.length === 0) return
+    const unsubs: Array<() => void> = []
 
-    const interval = setInterval(() => {
-      const randomAgent = agents[Math.floor(Math.random() * agents.length)]
-      if (!randomAgent) return
-
-      const eventTypes: ActivityEvent['type'][] = ['task_complete', 'commission_earned', 'collaboration', 'pipeline_step']
-      const type = eventTypes[Math.floor(Math.random() * eventTypes.length)]
-      const commission = type === 'commission_earned' ? parseFloat((Math.random() * 15 + 1).toFixed(2)) : 0
-
-      if (commission > 0) {
-        setTotalCommission((prev) => prev + commission)
+    unsubs.push(gameEvents.on('task-assigned', (runId, message, agentId) => {
+      const agent = agents.find(a => a.agentId === agentId)
+      if (agent) {
+        addEvent({
+          agentId: agent.agentId,
+          agentName: agent.name,
+          agentEmoji: agent.emoji,
+          type: 'task_start',
+          detail: `Started: ${message}`,
+        })
       }
+    }))
 
-      const detailMap: Record<ActivityEvent['type'], string> = {
-        status_change: 'Status updated',
-        task_start: `Started: ${randomAgent.detail || 'New task'}`,
-        task_complete: `Completed task #${randomAgent.tasksCompleted + 1}`,
-        commission_earned: `+RM ${commission.toFixed(2)}`,
-        error: 'Encountered an issue',
-        collaboration: `Working with team`,
-        pipeline_step: `Pipeline step completed`,
-      }
+    unsubs.push(gameEvents.on('task-completed', (runId) => {
+      addEvent({
+        type: 'task_complete',
+        agentId: 'system',
+        agentName: 'System',
+        agentEmoji: '✅',
+        detail: `Task ${runId} completed successfully.`,
+      })
+    }))
+    
+    // Example: commission_earned could be emitted by real backend hooks
+    unsubs.push(gameEvents.on('commission-earned', (amount, source) => {
+      setTotalCommission(prev => prev + amount)
+      addEvent({
+        type: 'commission_earned',
+        agentId: 'payout-checker',
+        agentName: 'Payout Checker',
+        agentEmoji: '💰',
+        detail: `+RM ${amount.toFixed(2)} from ${source}`,
+      })
+    }))
 
-      const event: ActivityEvent = {
-        id: `evt-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        timestamp: Date.now(),
-        agentId: randomAgent.agentId,
-        agentName: randomAgent.name,
-        agentEmoji: randomAgent.emoji,
-        type,
-        detail: detailMap[type],
-      }
-
-      setEvents((prev) => [event, ...prev].slice(0, 100))
-    }, 4000 + Math.random() * 6000)
-
-    return () => clearInterval(interval)
-  }, [agents])
+    return () => unsubs.forEach(u => u())
+  }, [agents, addEvent])
 
   return { events, totalCommission }
 }

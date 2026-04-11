@@ -29,23 +29,25 @@ export async function GET(request: NextRequest) {
 
   try {
     if (path === '/status') {
-      return NextResponse.json({
-        protocol: { name: 'MCP (Model Context Protocol)', version: '2024-11-05' },
-        connection: { status: 'available', gateway: GATEWAY, latencyMs: null },
-        tools: { total: MCP_TOOLS.length, active: MCP_TOOLS.filter(t => t.status === 'active').length },
-        server: { uptime: 'N/A', version: 'N/A' },
-        health: { status: 'healthy', gateway: GATEWAY, timestamp: new Date().toISOString() },
-      })
+      const { getMCPStatus } = await import('@/lib/openclaw')
+      const status = await getMCPStatus()
+      return NextResponse.json(status)
     }
 
     if (path === '/tools') {
+      // Try to discover real tools from OpenClaw Gateway
+      const { checkOpenClawHealth, getMCPTools } = await import('@/lib/openclaw')
+      const health = await checkOpenClawHealth()
+      const tools = getMCPTools()
+
       return NextResponse.json({
-        tools: MCP_TOOLS,
-        total: MCP_TOOLS.length,
-        active: MCP_TOOLS.filter(t => t.status === 'active').length,
+        tools,
+        total: tools.length,
+        active: tools.filter(t => t.status === 'active').length,
         gateway: GATEWAY,
-        gatewayStatus: 'available',
-        _source: 'openclaw-gateway',
+        gatewayStatus: health.status,
+        gatewayLatencyMs: health.latencyMs,
+        _source: health.status === 'healthy' ? 'openclaw-gateway-live' : 'openclaw-gateway-cached',
       })
     }
 
@@ -77,21 +79,27 @@ export async function POST(request: NextRequest) {
 
     const toolMatch = path.match(/\/tools\/(.+)\/execute/)
     if (toolMatch) {
+      console.log(`[MCP] Executing tool "${toolMatch[1]}" via NiagaBot...`)
       const result = await executeMCPTool(toolMatch[1], body.params || body.arguments || {}, body.id)
+      console.log(`[MCP] Tool "${toolMatch[1]}" completed. Source: ${result._source}`)
       return NextResponse.json(result)
     }
 
     if (path === '/execute' || path === '/tools/execute') {
       const toolName = body.tool || body.name || body.method
       if (!toolName) return NextResponse.json({ error: 'Tool name required' }, { status: 400 })
+      console.log(`[MCP] Executing tool "${toolName}" via NiagaBot...`)
       const result = await executeMCPTool(toolName, body.params || body.arguments || {}, body.id)
+      console.log(`[MCP] Tool "${toolName}" completed. Source: ${result._source}`)
       return NextResponse.json(result)
     }
 
     if (path === '/tools/call') {
       const toolName = body.name || body.method
       if (!toolName) return NextResponse.json({ error: 'Tool name required' }, { status: 400 })
+      console.log(`[MCP] Executing tool "${toolName}" via NiagaBot...`)
       const result = await executeMCPTool(toolName, body.params || body.arguments || {}, body.id)
+      console.log(`[MCP] Tool "${toolName}" completed. Source: ${result._source}`)
       return NextResponse.json(result)
     }
 

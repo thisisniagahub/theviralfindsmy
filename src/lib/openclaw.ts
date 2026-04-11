@@ -96,21 +96,75 @@ const extractContent = (data: unknown): string => {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+export interface GatewayState {
+  isHealthy: boolean
+  consecutiveFailures: number
+  lastError: string | null
+  breakerOpenUntil: number | null
+}
+
+const gatewayState: GatewayState = {
+  isHealthy: true,
+  consecutiveFailures: 0,
+  lastError: null,
+  breakerOpenUntil: null,
+}
+
+export function getGatewayState(): GatewayState {
+  return gatewayState
+}
+
 // ─── Gateway HTTP helpers ─────────────────────────────────────────
 
 async function gatewayFetch(path: string, options?: RequestInit): Promise<Response> {
+  // Check circuit breaker
+  if (gatewayState.breakerOpenUntil && Date.now() < gatewayState.breakerOpenUntil) {
+    throw new Error('Circuit breaker open. Gateway is temporarily unavailable.')
+  }
+
   const url = `${OPENCLAW_GATEWAY}${path}`
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(OPENCLAW_API_KEY ? { Authorization: `Bearer ${OPENCLAW_API_KEY}` } : {}),
     ...(options?.headers as Record<string, string> || {}),
   }
-  return fetch(url, {
-    ...options,
-    headers,
-    signal: options?.signal || AbortSignal.timeout(GATEWAY_TIMEOUT),
-    cache: 'no-store',
-  })
+
+  let attempt = 0
+  const maxRetries = 2
+  
+  while (attempt <= maxRetries) {
+    try {
+      const res = await fetch(url, {
+        ...options,
+        headers,
+        signal: options?.signal || AbortSignal.timeout(GATEWAY_TIMEOUT),
+        cache: 'no-store',
+      })
+      
+      // Success resets the circuit breaker
+      if (res.ok) {
+        gatewayState.isHealthy = true
+        gatewayState.consecutiveFailures = 0
+        gatewayState.lastError = null
+      }
+      return res
+    } catch (error) {
+      attempt++
+      if (attempt > maxRetries) {
+        gatewayState.consecutiveFailures++
+        gatewayState.lastError = String(error)
+        if (gatewayState.consecutiveFailures >= 5) {
+          gatewayState.isHealthy = false
+          gatewayState.breakerOpenUntil = Date.now() + 30000 // 30s cooldown
+          console.warn('[OpenClaw] Circuit breaker opened due to 5 consecutive failures')
+        }
+        throw error
+      }
+      // Exponential backoff: 1s, 2s
+      await new Promise(r => setTimeout(r, attempt === 1 ? 1000 : 2000))
+    }
+  }
+  throw new Error('Gateway fetch failed after retries')
 }
 
 // ─── Health Check ─────────────────────────────────────────────────
@@ -608,13 +662,20 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
   ].join('\n\n---\n\n')
 
   const hasErrors = pipeline.some(p => p.status === 'error')
+
+  // Determine source from the first successful step
+  const sourceStep = pipeline.find(p => p.status === 'success')
+  const source = sourceStep ? 'gateway' : 'sdk-fallback'
+
+  console.log(`[OpenClaw] Pipeline ${hasErrors ? 'partial' : 'completed'}. Duration: ${Date.now() - pipelineStart}ms. Source: ${source}`)
+
   return {
     status: hasErrors ? 'partial' : 'completed',
     query: userQuery,
     pipeline,
     finalOutput,
     totalDurationMs: Date.now() - pipelineStart,
-    _source: 'sdk-fallback', // Will be 'gateway' when gateway is available
+    _source: source as 'gateway' | 'sdk-fallback',
   }
 }
 

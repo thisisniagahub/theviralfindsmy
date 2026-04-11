@@ -7,6 +7,7 @@
 import * as Phaser from 'phaser'
 import { ChatBubble } from './ChatBubble'
 import type { Pathfinder, PathPoint } from '../utils/Pathfinder'
+import { agentStateTracker } from '../../agent-state-machine'
 import {
   WANDER_MIN_DELAY,
   WANDER_MAX_DELAY,
@@ -246,8 +247,16 @@ function updateMovement(ctx: WorkerCtx) {
     }
 
     const speed = 80 * WORKER_SPEED_FACTOR
-    const vx = (wdx / wdist) * speed
-    const vy = (wdy / wdist) * speed
+    let vx = (wdx / wdist) * speed
+    let vy = (wdy / wdist) * speed
+
+    // Normalize diagonal movement
+    if (vx !== 0 && vy !== 0) {
+      const factor = Math.SQRT1_2
+      vx *= factor
+      vy *= factor
+    }
+
     const body = ctx.sprite.body as Phaser.Physics.Arcade.Body
     body.setVelocity(vx, vy)
 
@@ -270,8 +279,16 @@ function updateMovement(ctx: WorkerCtx) {
       }
     } else {
       const speed = 80 * WORKER_SPEED_FACTOR
-      const vx = (dx / dist) * speed
-      const vy = (dy / dist) * speed
+      let vx = (dx / dist) * speed
+      let vy = (dy / dist) * speed
+
+      // Normalize diagonal movement
+      if (vx !== 0 && vy !== 0) {
+        const factor = Math.SQRT1_2
+        vx *= factor
+        vy *= factor
+      }
+
       const body = ctx.sprite.body as Phaser.Physics.Arcade.Body
       body.setVelocity(vx, vy)
     }
@@ -345,6 +362,8 @@ export class Worker implements WorkerCtx {
   private taskStatusText: Phaser.GameObjects.Text
   private initTimer: Phaser.Time.TimerEvent | null = null
   private paused = false
+  private bobbleTween: Phaser.Tweens.Tween | null = null
+  private glowTween: Phaser.Tweens.Tween | null = null
 
   constructor(
     scene: Phaser.Scene,
@@ -439,16 +458,72 @@ export class Worker implements WorkerCtx {
   }
 
   setStatus(status: WorkerStatus) {
+    if (this._status === status) return
     this._status = status
+    
+    // Record state change in tracker
+    agentStateTracker.recordStateChange(this.seatId, status as any)
+
     const colors: Record<WorkerStatus, number> = STATUS_COLORS
     this.statusDot.setFillStyle(colors[status])
 
     if (status === 'idle') {
+      this.stopBobble()
+      // Check task queue first
+      if (this.taskQueue.length > 0) {
+        const next = this.taskQueue.shift()!
+        this.assignedRunId = next.runId
+        this.currentTaskMessage = next.message
+        this.setStatus('executing')
+        if (next.onReady) next.onReady()
+        return
+      }
+
       this.canWander = true
       scheduleWander(this)
     } else {
       stopIdleActivity(this)
       this.canWander = false
+      this.startBobble()
+    }
+  }
+
+  // ===== Visuals =====
+  private startBobble() {
+    if (this.bobbleTween?.isPlaying()) return
+    this.bobbleTween = this.scene.tweens.add({
+      targets: [this.sprite, this.nameTag, this.statusDot, this.taskStatusText],
+      y: '+=4',
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    })
+  }
+
+  private stopBobble() {
+    if (this.bobbleTween) {
+      this.bobbleTween.stop()
+      this.bobbleTween = null
+      // Reset positions to home/current
+      this.sprite.setY(this.sprite.y)
+    }
+  }
+
+  setGlow(active: boolean) {
+    if (active) {
+      if (this.glowTween?.isPlaying()) return
+      this.glowTween = this.scene.tweens.add({
+        targets: this.sprite,
+        alpha: 0.6,
+        duration: 800,
+        yoyo: true,
+        repeat: -1
+      })
+    } else {
+      this.glowTween?.stop()
+      this.glowTween = null
+      this.sprite.setAlpha(1)
     }
   }
 
@@ -535,6 +610,8 @@ export class Worker implements WorkerCtx {
     this.nameTag.destroy()
     this.taskStatusText.destroy()
     this.statusDot.destroy()
+    this.stopBobble()
+    this.glowTween?.stop()
     this.bubble.destroy()
     this.pathfinder = null
     this.onArrival = null
