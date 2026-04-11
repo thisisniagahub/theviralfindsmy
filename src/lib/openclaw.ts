@@ -8,9 +8,10 @@
 // to prevent the large SDK bundle from crashing the Next.js dev server on initial compile.
 
 // ─── Configuration ────────────────────────────────────────────────
+// Use the secure nginx proxy endpoint (adds CORS headers, hides token)
 import { env } from '@/lib/env'
 
-const OPENCLAW_GATEWAY = env.OPENCLAW_GATEWAY_URL
+const OPENCLAW_GATEWAY = env.OPENCLAW_GATEWAY_PROXY_URL
 const OPENCLAW_API_KEY = env.OPENCLAW_GATEWAY_TOKEN || ''
 const GATEWAY_TIMEOUT = 15_000 // 15s default timeout
 

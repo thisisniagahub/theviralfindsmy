@@ -9,6 +9,7 @@ const envSchema = z.object({
   DEMO_MODE: z.enum(['true', 'false']).default('false'),
   SKIP_AUTH: z.enum(['true', 'false']).default('false'),
   OPENCLAW_GATEWAY_URL: z.string().url().default('https://operator.gangniaga.my'),
+  OPENCLAW_GATEWAY_PROXY_URL: z.string().url().default('https://api.gangniaga.my/openclaw'),
   OPENCLAW_GATEWAY_TOKEN: z.string().optional(),
   NOTIFICATION_SERVICE_URL: z.string().url().default('http://127.0.0.1:3004'),
   DB_SERVICE_URL: z.string().url().default('http://127.0.0.1:3005'),
