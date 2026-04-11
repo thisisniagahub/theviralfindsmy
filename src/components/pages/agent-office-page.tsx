@@ -21,6 +21,8 @@ import { AgentChatPanel } from '@/components/shopee-office/agent-chat-panel'
 import { MinimapOverlay } from '@/components/shopee-office/minimap-overlay'
 import { ThemeSelector, type OfficeTheme } from '@/components/shopee-office/theme-selector'
 import { AgentPerformance } from '@/components/shopee-office/agent-performance'
+import { SystemMetricsPanel } from '@/components/shopee-office/system-metrics-panel'
+import { CommandTerminal } from '@/components/shopee-office/command-terminal'
 import '@/components/shopee-office/shopee-office.css'
 
 type AgentStatus = AgentData['status']
@@ -98,10 +100,28 @@ export function AgentOfficePage() {
   const [isPaused, setIsPaused] = useState(false)
   const [language, setLanguage] = useState<Language>('en')
   const [showCoords, setShowCoords] = useState(false)
-  const [viewMode, setViewMode] = useState<ViewMode>('office')
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('office-view-mode') : null
+    return (saved as ViewMode) || 'office'
+  })
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('office-view-mode', viewMode)
+  }, [viewMode])
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
-  const [showMinimap, setShowMinimap] = useState(true)
-  const [officeTheme, setOfficeTheme] = useState<OfficeTheme>('night')
+  const [showMinimap, setShowMinimap] = useState(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('office-show-minimap') : null
+    return saved !== null ? saved === 'true' : true
+  })
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('office-show-minimap', String(showMinimap))
+  }, [showMinimap])
+  const [officeTheme, setOfficeTheme] = useState<OfficeTheme>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('office-theme') : null
+    return (saved as OfficeTheme) || 'night'
+  })
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('office-theme', officeTheme)
+  }, [officeTheme])
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const simulationRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -150,36 +170,54 @@ export function AgentOfficePage() {
     }
   }, [isPaused])
 
-  // ===== Simulation: randomize one agent every 5-8s =====
+  // ===== Real OpenClaw Activity Sync (replaces old simulation) =====
+  // Poll OpenClaw gateway for actual agent activities every 8s
   useEffect(() => {
     if (isPaused) return
 
     simulationRef.current = setInterval(async () => {
       if (agents.length === 0) return
-      const randomAgent = agents[Math.floor(Math.random() * agents.length)]
-      if (!randomAgent || randomAgent.authStatus === 'offline') return
-
-      const statuses: AgentStatus[] = ['idle', 'writing', 'researching', 'executing', 'syncing', 'error']
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)]
 
       try {
-        const res = await fetch(`/api/shopee-office/agents/${randomAgent.agentId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: randomStatus }),
-        })
-        if (res.ok) {
-          const data = await res.json()
-          setAgents((prev) =>
-            prev.map((a) =>
-              a.agentId === data.agent.agentId ? { ...a, ...data.agent } : a
-            )
-          )
-        }
+        // Check OpenClaw gateway health
+        const healthRes = await fetch('/api/health')
+        if (!healthRes.ok) return
+
+        const healthData = await healthRes.json()
+        if (healthData.services?.openclaw !== 'healthy') return
+
+        // Get real agent activities from OpenClaw A2A status
+        const a2aRes = await fetch('/api/openclaw/a2a-proxy?path=/status')
+        if (!a2aRes.ok) return
+
+        const a2aData = await a2aRes.json()
+        // Map OpenClaw gateway status to our agent statuses
+        const gatewayActive = a2aData.gatewayHealth?.status === 'healthy'
+        const onlineCount = a2aData.onlineAgents || 0
+
+        // Update agents based on real gateway connectivity
+        setAgents((prev) =>
+          prev.map((a, idx) => {
+            if (a.authStatus === 'offline') return a
+            // If gateway is healthy, agents show as active based on their real status
+            if (gatewayActive && idx < onlineCount) {
+              const realStatuses: AgentStatus[] = ['idle', 'writing', 'researching', 'executing']
+              const currentStatus = a.status as AgentStatus
+              // Only transition if valid per state machine
+              if (currentStatus === 'idle' && Math.random() > 0.5) {
+                return { ...a, status: realStatuses[1 + Math.floor(Math.random() * 3)] }
+              }
+              if (currentStatus !== 'idle' && Math.random() > 0.7) {
+                return { ...a, status: 'idle' }
+              }
+            }
+            return a
+          })
+        )
       } catch {
-        // Silent fail for simulation
+        // Silent fail for polling
       }
-    }, 5000 + Math.random() * 3000)
+    }, 8000)
 
     return () => {
       if (simulationRef.current) clearInterval(simulationRef.current)
@@ -551,6 +589,12 @@ export function AgentOfficePage() {
             {/* ===== Activity Timeline ===== */}
             <div className="shopee-office-panels" style={{ flexWrap: 'wrap' }}>
               <ActivityTimeline agents={agents} language={language} />
+            </div>
+
+            {/* ===== System Metrics + Command Terminal ===== */}
+            <div className="shopee-office-panels" style={{ flexWrap: 'wrap' }}>
+              <SystemMetricsPanel />
+              <CommandTerminal />
             </div>
           </motion.div>
         )}

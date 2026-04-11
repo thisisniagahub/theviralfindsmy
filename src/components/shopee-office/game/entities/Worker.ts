@@ -26,8 +26,8 @@ import {
 } from '../config'
 import type { POI } from '../config'
 
-// ===== Worker Types =====
-export type WorkerStatus = 'idle' | 'writing' | 'researching' | 'executing' | 'syncing' | 'error'
+// ===== Worker Types (extended to match agent-state-machine.ts 10 states) =====
+export type WorkerStatus = 'idle' | 'writing' | 'researching' | 'executing' | 'syncing' | 'error' | 'thinking' | 'collaborating' | 'reporting' | 'break'
 
 export interface QueuedTask {
   runId: string
@@ -70,7 +70,7 @@ export interface WorkerCtx {
   bubble: ChatBubble
 }
 
-// ===== Status Colors =====
+// ===== Status Colors (all 10 states) =====
 const STATUS_COLORS: Record<WorkerStatus, number> = {
   idle: 0x22c55e,
   writing: 0xf97316,
@@ -78,6 +78,10 @@ const STATUS_COLORS: Record<WorkerStatus, number> = {
   executing: 0xeab308,
   syncing: 0x3b82f6,
   error: 0xef4444,
+  thinking: 0x06b6d4,
+  collaborating: 0xec4899,
+  reporting: 0x8b5cf6,
+  break: 0x6b7280,
 }
 
 // ===== Wander Clock (stagger wandering so agents don't all move at once) =====
@@ -426,6 +430,14 @@ export class Worker implements WorkerCtx {
 
     // Status dot
     this.statusDot = scene.add.circle(x - 20, y + 34, 3, 0x888888).setDepth(20)
+
+    // Health/Productivity Bar
+    const healthBarBg = scene.add.rectangle(x, y + 40, 40, 3, 0x000000, 0.5).setOrigin(0.5, 0).setDepth(20)
+    const healthBar = scene.add.rectangle(x - 20 + 20, y + 40, 40, 3, 0x22c55e, 1).setOrigin(0, 0).setDepth(21)
+    healthBarBg.setSize(40, 3)
+    healthBar.setSize(40 * 0.8, 3) // Start at 80% productivity
+    this.sprite.setData('healthBar', healthBar)
+    this.sprite.setData('healthBarBg', healthBarBg)
 
     // Task status text
     this.taskStatusText = scene.add

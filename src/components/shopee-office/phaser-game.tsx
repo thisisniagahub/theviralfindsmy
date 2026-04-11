@@ -91,6 +91,10 @@ function createOfficeScene(
     private errorBug: Phaser.GameObjects.Sprite | null = null
     private syncAnimation: Phaser.GameObjects.Sprite | null = null
     private catSprite: Phaser.GameObjects.Sprite | null = null
+
+    // Sound Effects
+    private sounds: { click: Phaser.Sound.NoAudioSound | null; taskComplete: Phaser.Sound.NoAudioSound | null; notification: Phaser.Sound.NoAudioSound | null } = { click: null, taskComplete: null, notification: null }
+    private soundEnabled = true
     
     // Timers
     private earningsTimer: Phaser.Time.TimerEvent | null = null
@@ -214,6 +218,28 @@ function createOfficeScene(
         })
       }
       this.serverRoom.play('server_run')
+
+      // Server Rack LED Lights (blinking activity indicators)
+      const ledColors = [0x22c55e, 0x3b82f6, 0xeab308, 0x06b6d4]
+      const ledPositions = [
+        { x: 950, y: 80 }, { x: 960, y: 80 }, { x: 970, y: 80 },
+        { x: 950, y: 120 }, { x: 960, y: 120 }, { x: 970, y: 120 },
+        { x: 1070, y: 80 }, { x: 1080, y: 80 }, { x: 1090, y: 80 },
+        { x: 1070, y: 120 }, { x: 1080, y: 120 }, { x: 1090, y: 120 },
+      ]
+      const leds: Phaser.GameObjects.Arc[] = []
+      for (const pos of ledPositions) {
+        const led = this.add.circle(pos.x, pos.y, 2, ledColors[Math.floor(Math.random() * ledColors.length)], 0.8).setDepth(10)
+        leds.push(led)
+        // Random blinking interval
+        this.time.addEvent({
+          delay: 200 + Math.random() * 800,
+          repeat: -1,
+          callback: () => {
+            led.setAlpha(led.alpha > 0.3 ? 0.2 : 0.8 + Math.random() * 0.2)
+          },
+        })
+      }
 
       // Cat
       this.catSprite = this.add.sprite(94, 557, 'cat', 0).setOrigin(0.5, 0.5).setInteractive()

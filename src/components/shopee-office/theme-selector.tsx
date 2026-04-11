@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Sun, Moon, Zap, Clock } from 'lucide-react'
+import { Sun, Moon, Zap, Clock, Radio } from 'lucide-react'
 
 // ===== Theme Types =====
-export type OfficeTheme = 'day' | 'night' | 'neon' | 'auto'
+export type OfficeTheme = 'day' | 'night' | 'neon' | 'cyberpunk' | 'auto'
 
 interface ThemeSelectorProps {
   currentTheme: OfficeTheme
@@ -61,6 +61,18 @@ export const THEME_CONFIG: Record<OfficeTheme, {
       glow: 'rgba(0, 255, 136, 0.3)',
     },
   },
+  cyberpunk: {
+    label: 'Cyberpunk',
+    icon: Radio,
+    colors: {
+      bg: 'linear-gradient(135deg, #0a0e27 0%, #0f1432 100%)',
+      panelBg: '#0f1432',
+      border: '#1a1f42',
+      text: '#e0e0ff',
+      accent: '#00d4ff',
+      glow: 'rgba(0, 212, 255, 0.35)',
+    },
+  },
   auto: {
     label: 'Auto',
     icon: Clock,
@@ -76,7 +88,7 @@ export const THEME_CONFIG: Record<OfficeTheme, {
 }
 
 // ===== Get effective theme (resolves 'auto') =====
-export function getEffectiveTheme(theme: OfficeTheme): 'day' | 'night' | 'neon' {
+export function getEffectiveTheme(theme: OfficeTheme): 'day' | 'night' | 'neon' | 'cyberpunk' {
   if (theme !== 'auto') return theme
   const hour = new Date().getHours()
   return hour >= 6 && hour < 18 ? 'day' : 'night'
@@ -146,7 +158,7 @@ export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProp
             borderRadius: 6,
             padding: 4,
             zIndex: 50,
-            minWidth: 100,
+            minWidth: 120,
           }}
         >
           {(Object.entries(THEME_CONFIG) as [OfficeTheme, typeof THEME_CONFIG.day][]).map(([key, config]) => {
