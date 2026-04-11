@@ -6,26 +6,26 @@ import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/app-store'
 import { useTheme } from 'next-themes'
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  Link2,
-  BarChart3,
-  Calculator,
-  Megaphone,
-  Wallet,
-  Settings,
-  Bell,
+  LayoutGrid,
+  Package,
+  Paperclip,
+  LineChart,
+  Divide,
+  Rocket,
+  Coins,
+  Settings2,
+  BellDot,
   Moon,
   Sun,
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Trophy,
-  Building2,
-  Award,
+  Crown,
+  Bot,
+  Star,
   Activity,
-  Plug,
-  Zap,
+  Globe,
+  BrainCircuit,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -37,21 +37,21 @@ import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 
 const navItems = [
-  { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'products', path: '/products', label: 'Products', icon: ShoppingBag },
-  { id: 'links', path: '/links', label: 'Affiliate Links', icon: Link2 },
-  { id: 'analytics', path: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'calculator', path: '/calculator', label: 'Calculator', icon: Calculator },
-  { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: Megaphone, badge: '3' },
-  { id: 'leaderboard', path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
-  { id: 'agent-office', path: '/agent-office', label: 'Agent Office', icon: Building2 },
-  { id: 'achievements', path: '/achievements', label: 'Achievements', icon: Award },
-  { id: 'activity', path: '/activity', label: 'Activity', icon: Activity },
-  { id: 'shopee-integration', path: '/shopee-integration', label: 'Shopee Integration', icon: Plug },
-  { id: 'openclaw', path: '/openclaw', label: 'OpenClaw AI', icon: Zap, badge: 'AI' },
-  { id: 'notifications', path: '/notifications', label: 'Notifications', icon: Bell, isNotification: true },
-  { id: 'earnings', path: '/earnings', label: 'Earnings', icon: Wallet },
-  { id: 'settings', path: '/settings', label: 'Settings', icon: Settings },
+  { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutGrid, theme: 'blue' },
+  { id: 'products', path: '/products', label: 'Products', icon: Package, theme: 'shopee' },
+  { id: 'links', path: '/links', label: 'Affiliate Links', icon: Paperclip, theme: 'shopee' },
+  { id: 'analytics', path: '/analytics', label: 'Analytics', icon: LineChart, theme: 'blue' },
+  { id: 'calculator', path: '/calculator', label: 'Calculator', icon: Divide, theme: 'blue' },
+  { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: Rocket, theme: 'shopee', badge: '3' },
+  { id: 'leaderboard', path: '/leaderboard', label: 'Leaderboard', icon: Crown, theme: 'gold' },
+  { id: 'agent-office', path: '/agent-office', label: 'Agent Office', icon: Bot, theme: 'purple' },
+  { id: 'achievements', path: '/achievements', label: 'Achievements', icon: Star, theme: 'gold' },
+  { id: 'activity', path: '/activity', label: 'Activity', icon: Activity, theme: 'slate' },
+  { id: 'shopee-integration', path: '/shopee-integration', label: 'Shopee Integration', icon: Globe, theme: 'slate' },
+  { id: 'openclaw', path: '/openclaw', label: 'OpenClaw AI', icon: BrainCircuit, theme: 'purple', badge: 'AI' },
+  { id: 'notifications', path: '/notifications', label: 'Notifications', icon: BellDot, theme: 'slate', isNotification: true },
+  { id: 'earnings', path: '/earnings', label: 'Earnings', icon: Coins, theme: 'green' },
+  { id: 'settings', path: '/settings', label: 'Settings', icon: Settings2, theme: 'slate' },
 ]
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -69,7 +69,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex flex-col h-full glass-sidebar">
       {/* Logo */}
-      <div className="flex items-center justify-center border-b border-border h-[80px] relative pointer-events-none">
+      <div className="flex items-center justify-center border-b border-border h-[80px] relative pointer-events-none mb-2">
         {sidebarOpen ? (
           <img src="/logo-full.png" alt="TheViralFinds" className="absolute h-[250px] w-auto object-contain" />
         ) : (
@@ -78,7 +78,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 py-4 px-3 space-y-2 overflow-y-auto custom-scrollbar">
         {navItems.map((item, index) => {
           const Icon = item.icon
           const isActive = item.path === '/'
@@ -95,16 +95,34 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 href={item.path}
                 onClick={() => onNavigate?.()}
                 className={cn(
-                  'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 nav-item-slide relative group',
+                  'flex items-center gap-3 w-full px-2 py-2 rounded-xl text-sm font-medium transition-all duration-300 relative group overflow-hidden',
                   isActive
-                    ? 'bg-shopee/10 text-shopee dark:bg-shopee/20 nav-glow'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'bg-shopee/5 text-shopee nav-active'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}
               >
-                <Icon className={cn('w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110', isActive && 'text-shopee')} />
-                {sidebarOpen && <span className="truncate">{item.label}</span>}
+                {/* Unique Icon Container */}
+                <div className={cn(
+                  'sidebar-icon-container flex-shrink-0 transition-transform duration-300 group-hover:scale-110',
+                  `icon-theme-${item.theme}`,
+                  isActive && 'scale-110'
+                )}>
+                  <div className="sidebar-icon-glow" />
+                  <Icon className="w-5 h-5 relative z-10" />
+                </div>
+
+                {sidebarOpen && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="truncate font-semibold tracking-tight"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+                
                 {sidebarOpen && item.badge && (
-                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee/10 text-shopee border-0">
+                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee/10 text-shopee border-0 font-bold">
                     {item.badge}
                   </Badge>
                 )}
@@ -116,10 +134,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {!sidebarOpen && item.isNotification && unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-shopee badge-pulse" />
                 )}
+                
                 {isActive && (
                   <motion.div
-                    layoutId="active-nav-glow"
-                    className="absolute left-0 w-1 h-6 bg-shopee rounded-r-full shadow-[0_0_8px_rgba(238,77,45,0.5)]"
+                    layoutId="active-indicator"
+                    className="absolute right-0 w-1.5 h-6 bg-shopee rounded-l-full shadow-[0_0_15px_rgba(238,77,45,0.6)]"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   />

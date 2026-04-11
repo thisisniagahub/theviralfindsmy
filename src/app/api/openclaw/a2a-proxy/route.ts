@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
       }
 
       const result = await openClawCompletion({
-        model: agentId,
+        model: `openclaw/${agentId}`,
         messages: [
           { role: 'system', content: agentSystemPrompts[agentId] || `You are ${agent.name}. ${agent.description}` },
           { role: 'user', content: message },

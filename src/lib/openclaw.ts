@@ -605,7 +605,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
   let researchOutput = ''
   try {
     const researchResult = await openClawCompletion({
-      model: 'niagaresearch',
+      model: 'openclaw/niagaresearch',
       messages: [
         { role: 'system', content: 'You are NiagaResearch, a deep research agent specializing in Shopee Malaysia affiliate marketing. Analyze the query, gather key data points, identify trends and opportunities. Be thorough and data-driven.' },
         { role: 'user', content: userQuery },
@@ -623,7 +623,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
   let marketingOutput = ''
   try {
     const marketingResult = await openClawCompletion({
-      model: 'niagamarketing',
+      model: 'openclaw/niagamarketing',
       messages: [
         { role: 'system', content: 'You are NiagaMarketing, a marketing strategy agent for Shopee Malaysia affiliates. Based on the research findings, develop actionable marketing strategies, content plans, and audience targeting recommendations.' },
         { role: 'user', content: `Based on this research:\n${researchOutput}\n\nDevelop a marketing strategy for: ${userQuery}` },
@@ -641,7 +641,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
   let computerOutput = ''
   try {
     const computerResult = await openClawCompletion({
-      model: 'niagacomputer',
+      model: 'openclaw/niagacomputer',
       messages: [
         { role: 'system', content: 'You are NiagaComputer, a computational agent for Shopee Malaysia affiliates. Based on the research and marketing strategy, calculate projected ROI, budget allocations, expected performance metrics, and provide optimization recommendations.' },
         { role: 'user', content: `Research:\n${researchOutput}\n\nMarketing Strategy:\n${marketingOutput}\n\nCompute ROI and projections for: ${userQuery}` },

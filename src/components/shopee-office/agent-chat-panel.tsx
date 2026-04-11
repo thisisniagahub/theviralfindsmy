@@ -110,23 +110,23 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
     onSetAgentStatus?.(targetAgentId, 'writing')
     setIsTyping(true)
 
-    // Map UI agent IDs to NiagaBot agent IDs
+    // Map UI agent IDs to NiagaBot agent IDs (with openclaw/ prefix per OpenClaw docs)
     const agentIdToNiagaBot: Record<string, string> = {
-      'product-scout': 'niagaresearch',
-      'content-writer': 'niagamarketing',
-      'seo-optimizer': 'niagacomputer',
-      'analytics-agent': 'niagaresearch',
-      'link-builder': 'niagacomputer',
-      'campaign-master': 'niagamarketing',
-      'review-monitor': 'niagaresearch',
-      'payout-checker': 'niagacomputer',
+      'product-scout': 'openclaw/niagaresearch',
+      'content-writer': 'openclaw/niagamarketing',
+      'seo-optimizer': 'openclaw/niagacomputer',
+      'analytics-agent': 'openclaw/niagaresearch',
+      'link-builder': 'openclaw/niagacomputer',
+      'campaign-master': 'openclaw/niagamarketing',
+      'review-monitor': 'openclaw/niagaresearch',
+      'payout-checker': 'openclaw/niagacomputer',
     }
 
-    const niagaBotId = agentIdToNiagaBot[targetAgentId] || 'niagaresearch'
+    const niagaBotId = agentIdToNiagaBot[targetAgentId] || 'openclaw/niagaresearch'
     let responseText = ''
 
     try {
-      const res = await fetch('/api/openclaw/a2a-proxy?path=/agents/' + niagaBotId + '/message', {
+      const res = await fetch('/api/openclaw/a2a-proxy?path=/agents/' + niagaBotId.replace('openclaw/', '') + '/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text }),

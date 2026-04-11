@@ -32,12 +32,89 @@
   background-color: oklch(0.22 0.01 25) !important;
 }
 
-/* Nav item slide hover */
-.nav-item-slide {
-  transition: transform 0.15s ease, background-color 0.2s ease;
+/* Nav item slide hover *//* ========== 3. Sidebar Icon System ========== */
+
+.sidebar-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: oklch(1 0 0 / 0.05);
+  border: 1px solid oklch(1 0 0 / 0.08);
 }
-.nav-item-slide:hover {
-  transform: translateX(4px);
+
+.sidebar-icon-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+.group:hover .sidebar-icon-glow,
+.nav-active .sidebar-icon-glow {
+  opacity: 1;
+}
+
+/* Category Gradients */
+.icon-theme-shopee {
+  background: linear-gradient(135deg, oklch(0.637 0.237 25.331 / 0.15), oklch(0.637 0.237 25.331 / 0.02));
+  border-color: oklch(0.637 0.237 25.331 / 0.2);
+  color: oklch(0.637 0.237 25.331);
+}
+.icon-theme-shopee .sidebar-icon-glow {
+  background: oklch(0.637 0.237 25.331 / 0.25);
+}
+
+.icon-theme-blue {
+  background: linear-gradient(135deg, oklch(0.6 0.18 250 / 0.15), oklch(0.6 0.18 250 / 0.02));
+  border-color: oklch(0.6 0.18 250 / 0.2);
+  color: oklch(0.6 0.18 250);
+}
+.icon-theme-blue .sidebar-icon-glow {
+  background: oklch(0.6 0.18 250 / 0.25);
+}
+
+.icon-theme-green {
+  background: linear-gradient(135deg, oklch(0.62 0.17 145 / 0.15), oklch(0.62 0.17 145 / 0.02));
+  border-color: oklch(0.62 0.17 145 / 0.2);
+  color: oklch(0.62 0.17 145);
+}
+.icon-theme-green .sidebar-icon-glow {
+  background: oklch(0.62 0.17 145 / 0.25);
+}
+
+.icon-theme-purple {
+  background: linear-gradient(135deg, oklch(0.55 0.18 300 / 0.15), oklch(0.55 0.18 300 / 0.02));
+  border-color: oklch(0.55 0.18 300 / 0.2);
+  color: oklch(0.55 0.18 300);
+}
+.icon-theme-purple .sidebar-icon-glow {
+  background: oklch(0.55 0.18 300 / 0.25);
+}
+
+.icon-theme-gold {
+  background: linear-gradient(135deg, oklch(0.795 0.184 86.047 / 0.15), oklch(0.795 0.184 86.047 / 0.02));
+  border-color: oklch(0.795 0.184 86.047 / 0.2);
+  color: oklch(0.795 0.184 86.047);
+}
+.icon-theme-gold .sidebar-icon-glow {
+  background: oklch(0.795 0.184 86.047 / 0.25);
+}
+
+.icon-theme-slate {
+  background: linear-gradient(135deg, oklch(0.5 0.01 90 / 0.1), oklch(0.5 0.01 90 / 0.02));
+  border-color: oklch(0.5 0.01 90 / 0.15);
+  color: oklch(0.5 0.01 90);
+}
+.icon-theme-slate .sidebar-icon-glow {
+  background: oklch(0.5 0.01 90 / 0.15);
 }
 
 /* Mobile floating hamburger */
