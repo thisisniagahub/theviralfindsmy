@@ -85,6 +85,17 @@ export interface OpenClawModel {
   category: string
 }
 
+// ─── Deep property extraction helper ────────────────────────────────
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const extractContent = (data: unknown): string => {
+  if (typeof data === 'object' && data !== null) {
+    const obj = data as any
+    return obj.choices?.[0]?.message?.content || JSON.stringify(data)
+  }
+  return String(data)
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 // ─── Gateway HTTP helpers ─────────────────────────────────────────
 
 async function gatewayFetch(path: string, options?: RequestInit): Promise<Response> {
@@ -547,9 +558,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
       ],
       thinking: { type: 'disabled' },
     })
-    researchOutput = typeof researchResult === 'object' && researchResult !== null
-      ? (researchResult as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(researchResult)
-      : String(researchResult)
+    researchOutput = extractContent(researchResult)
   } catch (err) {
     researchOutput = `Research phase encountered an error: ${String(err)}. Proceeding with available context.`
   }
@@ -567,9 +576,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
       ],
       thinking: { type: 'disabled' },
     })
-    marketingOutput = typeof marketingResult === 'object' && marketingResult !== null
-      ? (marketingResult as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(marketingResult)
-      : String(marketingResult)
+    marketingOutput = extractContent(marketingResult)
   } catch (err) {
     marketingOutput = `Marketing phase encountered an error: ${String(err)}. Proceeding with available context.`
   }
@@ -587,9 +594,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
       ],
       thinking: { type: 'disabled' },
     })
-    computerOutput = typeof computerResult === 'object' && computerResult !== null
-      ? (computerResult as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(computerResult)
-      : String(computerResult)
+    computerOutput = extractContent(computerResult)
   } catch (err) {
     computerOutput = `Computation phase encountered an error: ${String(err)}.`
   }
@@ -633,9 +638,9 @@ export async function streamOpenClawCompletion(
 
     if (!res.ok || !res.body) {
       const data = await openClawCompletion(request)
-      const content = (data as Record<string, unknown>)?.choices?.[0]?.message?.content || JSON.stringify(data)
-      onChunk(content as string)
-      return content as string
+      const content = extractContent(data)
+      onChunk(content)
+      return content
     }
 
     const reader = res.body.getReader()
@@ -668,9 +673,9 @@ export async function streamOpenClawCompletion(
     return fullText
   } catch {
     const result = await openClawCompletion(request)
-    const content = (result as Record<string, unknown>)?.choices?.[0]?.message?.content || JSON.stringify(result)
-    onChunk(content as string)
-    return content as string
+    const content = extractContent(result)
+    onChunk(content)
+    return content
   }
 }
 
@@ -709,7 +714,7 @@ export async function runParallelPipeline(userQuery: string): Promise<ChainedPip
       return {
         agent,
         status: 'success' as const,
-        output: (data as Record<string, unknown>)?.choices?.[0]?.message?.content || JSON.stringify(data),
+        output: extractContent(data),
         durationMs: 0,
       }
     }
@@ -736,15 +741,15 @@ export async function runParallelPipeline(userQuery: string): Promise<ChainedPip
     ],
   })
 
-  const aggregatorOutput = (aggregatorResult as Record<string, unknown>)?.choices?.[0]?.message?.content || ''
-  pipeline.push({ agent: 'niagaaggregator', status: 'success', output: aggregatorOutput as string, durationMs: 0 })
+  const aggregatorOutput = extractContent(aggregatorResult) || ''
+  pipeline.push({ agent: 'niagaaggregator', status: 'success', output: aggregatorOutput, durationMs: 0 })
 
   const hasErrors = pipeline.some(p => p.status === 'error')
   return {
     status: hasErrors ? 'partial' : 'completed',
     query: userQuery,
     pipeline,
-    finalOutput: (aggregatorOutput as string) || pipeline.map(p => p.output).join('\n\n---\n\n'),
+    finalOutput: aggregatorOutput || pipeline.map(p => p.output).join('\n\n---\n\n'),
     totalDurationMs: Date.now() - pipelineStart,
     _source: 'gateway',
   }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -64,6 +65,9 @@ function getDemoDashboard(period: string) {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  if (rateLimited) return rateLimited
+
   if (process.env.DEMO_MODE === 'true') {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'

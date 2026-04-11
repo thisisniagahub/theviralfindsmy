@@ -6,8 +6,6 @@ import { getToken } from 'next-auth/jwt'
 const publicRoutes = ['/login']
 const publicApiRoutes = ['/api/auth', '/api/redirect', '/api/products/search', '/api/route', '/api/health']
 
-// TODO: Add rate limiting with Upstash
-
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -26,10 +24,15 @@ export default async function proxy(request: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon') ||
     pathname.startsWith('/images') ||
+    pathname.startsWith('/icons') ||
     pathname.includes('.')
   ) {
     return NextResponse.next()
   }
+
+  // NOTE: SKIP_AUTH bypass has been intentionally removed.
+  // Authentication is always enforced regardless of the SKIP_AUTH env var.
+  // In demo mode, the login page auto-fills credentials instead.
 
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
 

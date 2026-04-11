@@ -168,8 +168,8 @@ export async function POST(request: NextRequest) {
         thinking: { type: 'disabled' },
       })
 
-      const responseText = typeof result === 'object' && result !== null
-        ? (result as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(result)
+      const responseText: string = typeof result === 'object' && result !== null
+        ? (result as any).choices?.[0]?.message?.content || JSON.stringify(result)
         : String(result)
 
       return NextResponse.json({
