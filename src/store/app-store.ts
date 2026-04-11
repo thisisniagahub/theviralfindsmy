@@ -11,7 +11,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  activePage: 'dashboard',
+  activePage: 'agent-office',
   sidebarOpen: true,
   searchQuery: '',
   setActivePage: (page) => set({ activePage: page }),

@@ -11,6 +11,12 @@ export { AgentGrid } from './agent-grid'
 export type { AgentGridAgent } from './agent-grid'
 export { AgentProfile } from './agent-profile'
 export type { ProfileAgent } from './agent-profile'
+export { ActivityTimeline } from './activity-timeline'
+export type { TimelineEvent } from './activity-timeline'
+export { CommissionWidget } from './commission-widget'
+export { AgentCommandPanel } from './agent-command-panel'
+export { OfficeHealthCard } from './office-health-card'
+export { PipelineWorkflow } from './pipeline-workflow'
 
 // Game engine modules are NOT exported here to avoid SSR issues.
 // Phaser.js requires `window` which doesn't exist on the server.

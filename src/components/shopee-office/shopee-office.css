@@ -1,5 +1,7 @@
 /* ========================================================================
    Shopee Office — Pixel-Art Inspired Styling (Shopee Brand Theme)
+   Enhanced with Activity Feed, Commission Widget, Agent Command,
+   Office Health, and Pipeline Workflow styles
    ======================================================================== */
 
 /* ===== Container ===== */
@@ -8,6 +10,8 @@
   font-family: 'Courier New', monospace;
   padding: 20px 0;
   gap: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ===== Game Wrapper ===== */
@@ -551,6 +555,7 @@
 
   .shopee-office-panels {
     gap: 12px;
+    flex-wrap: wrap;
   }
 
   .shopee-panel-title {
@@ -778,4 +783,146 @@
 @keyframes borderGlow {
   0%, 100% { box-shadow: 0 0 0 2px #7a2210, 0 0 15px rgba(238, 77, 45, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.4); }
   50% { box-shadow: 0 0 0 2px #7a2210, 0 0 25px rgba(238, 77, 45, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.4); }
+}
+
+/* ========================================================================
+   v6.0 ENHANCEMENT STYLES
+   Activity Feed, Commission Widget, Agent Command, Office Health, Pipeline
+   ======================================================================== */
+
+/* ===== Custom scrollbar for new panels ===== */
+.shopee-office-panel ::-webkit-scrollbar {
+  width: 4px;
+}
+
+.shopee-office-panel ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shopee-office-panel ::-webkit-scrollbar-thumb {
+  background: #EE4D2D33;
+  border-radius: 2px;
+}
+
+.shopee-office-panel ::-webkit-scrollbar-thumb:hover {
+  background: #EE4D2D66;
+}
+
+/* ===== Enhanced Mobile Responsive for New Components ===== */
+@media (max-width: 1280px) {
+  /* Middle row wraps on medium screens */
+  .shopee-office-panels[style*="flex-wrap: wrap"] > * {
+    flex: 1 1 calc(50% - 8px) !important;
+    min-width: 280px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* All panels stack vertically on mobile */
+  .shopee-office-panels > * {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Reduce font sizes on mobile */
+  .shopee-panel-title {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Compact stats bar on mobile */
+  .shopee-stats-bar {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .shopee-stat-chip {
+    padding: 3px 8px;
+    font-size: 9px;
+  }
+
+  /* Ensure game canvas scales properly */
+  .shopee-office-game-frame {
+    max-height: 400px;
+  }
+
+  .shopee-office-game-frame canvas {
+    max-height: 400px;
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 480px) {
+  .shopee-office-container {
+    padding: 8px 0;
+    gap: 8px;
+  }
+
+  /* Compact view tabs for mobile */
+  .shopee-view-tab {
+    padding: 4px 8px;
+    font-size: 10px;
+    gap: 2px;
+  }
+
+  .shopee-view-tab-icon {
+    font-size: 11px;
+  }
+
+  /* Smaller buttons on mobile */
+  .shopee-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .shopee-productivity-card {
+    padding: 6px;
+  }
+
+  .shopee-productivity-value {
+    font-size: 14px;
+  }
+}
+
+/* ===== Data Flow Animation for Pipeline ===== */
+@keyframes dataFlowRight {
+  0% { left: -6px; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: 32px; opacity: 0; }
+}
+
+/* ===== Pulse Animation for Live Indicators ===== */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+}
+
+/* ===== Commission Counter Glow ===== */
+@keyframes counterGlow {
+  0%, 100% { text-shadow: 0 0 12px rgba(255, 215, 0, 0.3); }
+  50% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.2); }
+}
+
+/* ===== Chat Message Typing Animation ===== */
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+
+/* ===== Print Styles (hide unnecessary elements) ===== */
+@media print {
+  .shopee-office-game-wrapper,
+  .shopee-coords-btn,
+  .shopee-office-scanlines,
+  .shopee-pause-indicator,
+  .shopee-view-tab {
+    display: none !important;
+  }
+
+  .shopee-office-container {
+    background: white !important;
+    color: black !important;
+  }
 }

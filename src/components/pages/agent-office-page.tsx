@@ -8,11 +8,16 @@ import { AgentsPanel, type AgentInfo } from '@/components/shopee-office/agents-p
 import { MemoPanel, type MemoData } from '@/components/shopee-office/memo-panel'
 import { AgentGrid, type AgentGridAgent } from '@/components/shopee-office/agent-grid'
 import { AgentProfile, type ProfileAgent } from '@/components/shopee-office/agent-profile'
+import { ActivityTimeline } from '@/components/shopee-office/activity-timeline'
+import { CommissionWidget } from '@/components/shopee-office/commission-widget'
+import { AgentCommandPanel } from '@/components/shopee-office/agent-command-panel'
+import { OfficeHealthCard } from '@/components/shopee-office/office-health-card'
+import { PipelineWorkflow } from '@/components/shopee-office/pipeline-workflow'
 import { LanguageToggle, type Language } from '@/components/shopee-office/language-toggle'
 import '@/components/shopee-office/shopee-office.css'
 
 type AgentStatus = AgentData['status']
-type ViewMode = 'office' | 'grid' | 'profile'
+type ViewMode = 'office' | 'grid' | 'profile' | 'pipeline'
 
 // ===== Helpers =====
 function mapApiAgentToPhaser(apiAgent: AgentInfo): AgentData {
@@ -283,6 +288,7 @@ export function AgentOfficePage() {
       // Tab switching shortcuts
       if (e.key === 'q') setViewMode('office')
       if (e.key === 'w') setViewMode('grid')
+      if (e.key === 'e') setViewMode('pipeline')
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -316,16 +322,16 @@ export function AgentOfficePage() {
 
   // ===== View Labels =====
   const viewLabels: Record<Language, Record<ViewMode, string>> = {
-    en: { office: 'Office', grid: 'Agents', profile: 'Profile' },
-    cn: { office: '办公室', grid: '代理', profile: '档案' },
-    jp: { office: 'オフィス', grid: 'エージェント', profile: 'プロファイル' },
+    en: { office: 'Office', grid: 'Agents', profile: 'Profile', pipeline: 'Pipeline' },
+    cn: { office: '办公室', grid: '代理', profile: '档案', pipeline: '流水线' },
+    jp: { office: 'オフィス', grid: 'エージェント', profile: 'プロファイル', pipeline: 'パイプライン' },
   }
 
   return (
     <div className="shopee-office-container">
       {/* ===== Header Bar ===== */}
       <motion.div
-        className="flex items-center justify-between px-4 max-w-[1280px] mx-auto"
+        className="flex items-center justify-between px-4 max-w-[1280px] mx-auto flex-wrap gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
@@ -341,6 +347,10 @@ export function AgentOfficePage() {
             }} />
             <span>{isPaused ? 'PAUSED' : 'LIVE'}</span>
           </div>
+          {/* Version badge */}
+          <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded text-[8px] font-bold bg-[#EE4D2D15] text-[#EE4D2D] border border-[#EE4D2D33] font-mono">
+            v6.0
+          </span>
         </div>
 
         {/* View Mode Tabs */}
@@ -356,6 +366,12 @@ export function AgentOfficePage() {
             icon="👥"
             isActive={viewMode === 'grid'}
             onClick={() => setViewMode('grid')}
+          />
+          <ViewTab
+            label={viewLabels[language].pipeline}
+            icon="🔗"
+            isActive={viewMode === 'pipeline'}
+            onClick={() => setViewMode('pipeline')}
           />
           {viewMode === 'profile' && (
             <ViewTab
@@ -462,6 +478,27 @@ export function AgentOfficePage() {
               )}
             </motion.div>
 
+            {/* ===== Middle Row: Health + Command + Commission ===== */}
+            <div className="shopee-office-panels" style={{ flexWrap: 'wrap' }}>
+              <OfficeHealthCard
+                agents={agents}
+                isPaused={isPaused}
+                language={language}
+              />
+
+              <AgentCommandPanel
+                agents={agents}
+                selectedAgentId={selectedAgentId}
+                onSetAgentStatus={handleSetAgentStatus}
+                language={language}
+              />
+
+              <CommissionWidget
+                agents={agents}
+                language={language}
+              />
+            </div>
+
             {/* ===== Bottom Panels ===== */}
             <div className="shopee-office-panels">
               <ControlPanel
@@ -486,6 +523,14 @@ export function AgentOfficePage() {
                 language={language}
               />
             </div>
+
+            {/* ===== Activity Timeline ===== */}
+            <div className="shopee-office-panels" style={{ flexWrap: 'wrap' }}>
+              <ActivityTimeline
+                agents={agents}
+                language={language}
+              />
+            </div>
           </motion.div>
         )}
 
@@ -501,7 +546,10 @@ export function AgentOfficePage() {
           >
             <AgentGrid
               agents={gridAgents}
-              onSelectAgent={(agentId) => setSelectedAgentId(agentId)}
+              onSelectAgent={(agentId) => {
+                setSelectedAgentId(agentId)
+                setViewMode('profile')
+              }}
               selectedAgentId={selectedAgentId}
               language={language}
             />
@@ -550,6 +598,53 @@ export function AgentOfficePage() {
                 language={language}
               />
             </motion.div>
+          </motion.div>
+        )}
+
+        {/* ===== PIPELINE VIEW ===== */}
+        {viewMode === 'pipeline' && (
+          <motion.div
+            key="pipeline"
+            className="max-w-[1280px] mx-auto"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Pipeline Workflow Visualization */}
+            <PipelineWorkflow
+              agents={agents}
+              language={language}
+            />
+
+            {/* Pipeline stats + Activity side by side */}
+            <div className="shopee-office-panels" style={{ flexWrap: 'wrap' }}>
+              <CommissionWidget
+                agents={agents}
+                language={language}
+              />
+              <ActivityTimeline
+                agents={agents}
+                language={language}
+              />
+            </div>
+
+            {/* Agent Command Panel */}
+            <div className="shopee-office-panels" style={{ flexWrap: 'wrap' }}>
+              <AgentCommandPanel
+                agents={agents}
+                selectedAgentId={selectedAgentId}
+                onSetAgentStatus={handleSetAgentStatus}
+                language={language}
+              />
+              <AgentsPanel
+                agents={agents}
+                onSetAgentStatus={handleSetAgentStatus}
+                onApproveAgent={handleApproveAgent}
+                onRejectAgent={handleRejectAgent}
+                language={language}
+              />
+            </div>
           </motion.div>
         )}
 
