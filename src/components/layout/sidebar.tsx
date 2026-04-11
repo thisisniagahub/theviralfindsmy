@@ -70,9 +70,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       {/* Logo */}
       <div className="flex items-center justify-center border-b border-border h-[80px] relative pointer-events-none">
         {sidebarOpen ? (
-          <img src="/logo-full.png" alt="TheViralFinds" className="absolute h-[250px] w-auto object-contain drop-shadow-xl" />
+          <img src="/logo-full.png" alt="TheViralFinds" className="absolute h-[250px] w-auto object-contain" />
         ) : (
-          <img src="/logo-icon.png" alt="Icon" className="absolute h-[150px] w-auto object-contain drop-shadow-lg" />
+          <img src="/logo-icon.png" alt="Icon" className="absolute h-[150px] w-auto object-contain" />
         )}
       </div>
 

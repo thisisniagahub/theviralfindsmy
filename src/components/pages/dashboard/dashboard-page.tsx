@@ -28,6 +28,7 @@ import { ClicksChart } from './clicks-chart'
 import { TopProducts } from './top-products'
 import { RecentActivity } from './recent-activity'
 import { ActivityFeed } from './activity-feed'
+import { ForecastChart } from './forecast-chart'
 
 export function DashboardPage() {
   const router = useRouter()
@@ -257,6 +258,9 @@ export function DashboardPage() {
 
         {/* Clicks Bar Chart — hidden on mobile */}
         <ClicksChart earningsData={data?.earningsData || []} />
+
+        {/* Earnings Forecast */}
+        <ForecastChart days={30} />
       </div>
 
       {/* Goals Tracker Row */}
