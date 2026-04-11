@@ -48,6 +48,10 @@
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-info: #3B82F6;
+  --color-glass: rgba(255, 255, 255, 0.7);
+  --color-glass-dark: rgba(20, 20, 25, 0.6);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+  --color-glass-border-dark: rgba(255, 255, 255, 0.1);
 }
 
 :root {

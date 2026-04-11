@@ -13,7 +13,7 @@ export interface WidgetDef {
 }
 
 export const WIDGET_REGISTRY: WidgetDef[] = [
-  { id: 'welcome-banner', title: 'Welcome Banner', description: 'Personalized greeting with today's earnings', defaultEnabled: true, defaultOrder: 0, category: 'stats' },
+  { id: 'welcome-banner', title: 'Welcome Banner', description: "Personalized greeting with today's earnings", defaultEnabled: true, defaultOrder: 0, category: 'stats' },
   { id: 'stat-cards', title: 'Stat Cards', description: 'Total clicks, conversions, earnings, conversion rate', defaultEnabled: true, defaultOrder: 1, category: 'stats' },
   { id: 'performance-score', title: 'Performance Score', description: 'Circular progress ring with grade breakdown', defaultEnabled: true, defaultOrder: 2, category: 'stats' },
   { id: 'vps-health', title: 'VPS Health', description: 'Real-time VPS service connectivity status', defaultEnabled: true, defaultOrder: 3, category: 'stats' },

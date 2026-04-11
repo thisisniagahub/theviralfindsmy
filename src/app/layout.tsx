@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'TheViralFinds — Shopee Affiliate Manager',
-  description: 'All-in-one Shopee affiliate management dashboard with AI-powered tools',
+  title: 'TheViralFinds — Shopee Affiliate Intelligence',
+  description: 'AI-powered Shopee affiliate management and intelligence dashboard',
   manifest: '/manifest.json',
   icons: {
     icon: '/icons/icon-192.png',

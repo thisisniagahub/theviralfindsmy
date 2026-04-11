@@ -126,7 +126,7 @@ export function ShopeeIntegrationPage() {
     <div className="space-y-6">
       {/* Section A: Connection Status Banner */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <Card className="gradient-border overflow-hidden">
+        <Card className="glass-panel overflow-hidden border-shopee/10 shadow-xl">
           <CardContent className="p-6 bg-gradient-to-r from-shopee/5 via-orange-500/5 to-shopee/5 dark:from-shopee/10 dark:via-orange-500/10 dark:to-shopee/10">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               {/* Shopee Logo */}
@@ -135,7 +135,7 @@ export function ShopeeIntegrationPage() {
                   <ShoppingBag className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">Shopee Integration</h1>
+                  <h1 className="text-xl font-bold text-foreground">Integrasi Pintar</h1>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="w-2 h-2 rounded-full bg-green-500 badge-pulse" />
                     <span className="text-xs font-medium text-green-600 dark:text-green-400">Connected</span>
@@ -213,7 +213,7 @@ export function ShopeeIntegrationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {/* Quick Import */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
-          <Card className="glass-card card-accent border-shopee/20 h-full">
+          <Card className="glass-card premium-border h-full">
             <CardHeader className="pb-3">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <Download className="w-4 h-4 text-shopee" />

@@ -85,7 +85,7 @@ export function Header() {
   const currentPageName = pageNames[pathname] || 'Dashboard'
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white/80 dark:bg-card/80 backdrop-blur-md safe-area-inset-top">
+    <header className="sticky top-0 z-40 glass-header safe-area-inset-top transition-all duration-300">
       <div className="flex items-center justify-between h-14 px-3 lg:h-16 lg:px-6">
         {/* Left: Breadcrumb */}
         <div className="flex items-center gap-4 pl-12 lg:pl-0">

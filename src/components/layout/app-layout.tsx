@@ -77,8 +77,8 @@ const pages: Record<string, React.ComponentType> = {
 
 const TOUR_STEPS = [
   {
-    title: 'Welcome to Shopee Affiliate Manager!',
-    description: 'This is your dashboard where you can track earnings, clicks, and conversions at a glance.',
+    title: 'Welcome to TheViralFinds!',
+    description: 'Track your earnings, clicks, and conversions with AI-powered intelligence.',
     icon: LayoutDashboard,
     targetId: 'tour-dashboard',
   },
@@ -183,7 +183,7 @@ export function AppLayout() {
             <div>
               <h2 className="text-xl font-bold text-foreground">Authentication Required</h2>
               <p className="text-sm text-muted-foreground mt-2">
-                Please sign in to access the Shopee Affiliate Management dashboard.
+                Sila log masuk untuk mengakses dashboard TheViralFinds Intelligence.
               </p>
             </div>
             <Button
@@ -234,7 +234,7 @@ export function AppLayout() {
                 <div className="w-8 h-8 rounded-lg bg-shopee flex items-center justify-center">
                   <BarChart3 className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-bold text-foreground text-sm">Shopee Affiliate Manager Pro</span>
+                <span className="font-bold text-foreground text-sm uppercase tracking-wider">TheViralFinds Pro</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Empowering Malaysian affiliates with powerful analytics and link management tools
@@ -292,7 +292,7 @@ export function AppLayout() {
           {/* Bottom Bar */}
           <div className="border-t border-border px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} Shopee Affiliate Manager Pro — Built with ❤️ for Malaysian Affiliates
+              &copy; {new Date().getFullYear()} TheViralFinds Pro — Empowering Smart Affiliates
             </p>
             <Badge variant="secondary" className="text-[10px] font-mono bg-shopee/10 text-shopee border-shopee/20">
               v6.0-VPS
@@ -311,7 +311,7 @@ export function AppLayout() {
         </motion.button>
 
         {/* Mobile Bottom Tab Bar - replaces sidebar on mobile */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-background/95 backdrop-blur-lg safe-area-inset-bottom">
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border glass-header safe-area-inset-bottom">
           <div className="flex items-center justify-around h-16 px-2">
             {mobileNavItems.map((item) => {
               const Icon = item.icon

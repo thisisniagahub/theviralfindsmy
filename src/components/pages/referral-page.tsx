@@ -95,7 +95,7 @@ const TIER_CONFIG = [
 const HOW_IT_WORKS = [
   { step: 1, title: 'Share your link', description: 'Share your unique referral link with friends' },
   { step: 2, title: 'They sign up', description: 'They sign up using your link' },
-  { step: 3, title: 'You earn', description: 'You earn 5% commission on their earnings' },
+  { step: 3, title: 'Anda Jana Pendapatan', description: 'Anda jana komisen 5% daripada pendapatan mereka' },
 ]
 
 export function ReferralPage() {
@@ -125,10 +125,10 @@ export function ReferralPage() {
   }
 
   const shareMessages = {
-    whatsapp: `Join Shopee Affiliate and start earning! 🛒💰 Sign up here: ${referralLink}`,
-    telegram: `Join Shopee Affiliate and start earning! Sign up here: ${referralLink}`,
-    facebook: `Check out Shopee Affiliate Manager - earn commissions by sharing products! ${referralLink}`,
-    twitter: `Just earned commissions with @ShopeeAffiliate! Join now: ${referralLink}`,
+    whatsapp: `Sertai TheViralFinds Pro dan jana pendapatan pasif! 🛒💰 Daftar di sini: ${referralLink}`,
+    telegram: `Sertai TheViralFinds Pro dan jana pendapatan pasif! Daftar di sini: ${referralLink}`,
+    facebook: `Lihat TheViralFinds Intelligence - jana komisen dengan berkongsi produk! ${referralLink}`,
+    twitter: `Jana komisen dengan @TheViralFinds! Sertai sekarang: ${referralLink}`,
   }
 
   const handleShare = (platform: 'whatsapp' | 'telegram' | 'facebook' | 'twitter') => {
@@ -202,7 +202,7 @@ export function ReferralPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Card className="border-border/50 shadow-sm bg-gradient-to-r from-shopee/5 via-shopee/10 to-shopee/5 dark:from-shopee/10 dark:via-shopee/20 dark:to-shopee/10 overflow-hidden relative card-shine">
+        <Card className="glass-panel overflow-hidden border-shopee/10 shadow-xl relative card-shine">
           <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-shopee/10 dark:bg-shopee/20 blur-2xl pointer-events-none" />
           <CardContent className="p-6 relative">
             <div className="flex items-center gap-3 mb-2">

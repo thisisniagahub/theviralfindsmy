@@ -1,0 +1,50 @@
+/**
+ * TheViralFinds Chrome Extension — Content Styles
+ * Styles for injected affiliate link button on Shopee pages.
+ */
+
+#tvf-generate-link {
+  z-index: 9999;
+  margin: 12px 0;
+}
+
+#tvf-generate-link button {
+  transition: all 0.2s ease;
+}
+
+#tvf-generate-link button:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(238, 77, 45, 0.4);
+}
+
+#tvf-generate-link button:active {
+  transform: scale(0.98);
+}
+
+/* Floating badge for affiliate earnings */
+.tvf-earnings-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #EE4D2D, #D73211);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(238, 77, 45, 0.3);
+  z-index: 10000;
+  display: none;
+  animation: slideIn 0.3s ease-out;
+}
+
+.tvf-earnings-badge.show {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

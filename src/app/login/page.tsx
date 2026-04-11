@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { BarChart3, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Eye, EyeOff, Loader2, ShieldCheck, Sparkles } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -30,168 +32,185 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError('Invalid email or password. Please try again.')
+        setError('Akses ditolak. Sila semak emel dan kata laluan anda.')
       } else {
         router.push('/')
         router.refresh()
       }
     } catch {
-      setError('An unexpected error occurred. Please try again.')
+      setError('Ralat sistem. Sila cuba sebentar lagi.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-orange-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 p-4">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#EE4D2D]/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#EE4D2D]/5 rounded-full blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center bg-[#09090B] overflow-hidden relative selection:bg-shopee/30">
+      {/* Premium Animated Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-shopee/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-shopee-gold/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
       </div>
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#EE4D2D] shadow-lg shadow-[#EE4D2D]/25 mb-4">
-            <BarChart3 className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">
-            TheViralFinds
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Shopee Affiliate Management System
-          </p>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="w-full max-w-[440px] px-6 relative z-10"
+      >
+        {/* Branding Section */}
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5, type: 'spring' }}
+            className="inline-flex items-center justify-center p-4 mb-6 rounded-3xl bg-shopee/10 border border-shopee/20 backdrop-blur-xl shadow-2xl overflow-hidden relative group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-shopee/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <img src="/logo-icon.png" alt="Logo" className="w-16 h-16 object-contain relative z-10 scale-[1.3]" />
+          </motion.div>
+          
+          <motion.h1 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl font-bold tracking-tight text-white mb-2"
+          >
+            THE VIRAL FINDS
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-muted-foreground font-medium text-sm flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-shopee-gold" />
+            Sistem Pengurusan Affiliate Pintar
+          </motion.p>
         </div>
 
-        {/* Login Card */}
-        <Card className="border-border/50 shadow-xl">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl font-semibold text-center">
-              Welcome back
-            </CardTitle>
-            <CardDescription className="text-center">
-              Sign in to your affiliate dashboard
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm text-center">
-                  {error}
-                </div>
-              )}
+        {/* Login Form Card */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <Card className="glass-panel border-white/5 shadow-2xl overflow-visible">
+              <CardContent className="pt-8 pb-8 px-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-medium text-center"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="admin@theviralfinds.my"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  className="h-11"
-                  disabled={loading}
-                />
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                      Emel Admin
+                    </Label>
+                    <div className="relative group">
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="admin@theviralfinds.my"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/10 h-12 px-4 focus:ring-shopee/30 focus:border-shopee/50 transition-all rounded-xl placeholder:text-muted-foreground/30"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                    className="h-11 pr-10"
-                    disabled={loading}
-                  />
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between ml-1">
+                      <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                        Kata Laluan
+                      </Label>
+                    </div>
+                    <div className="relative group">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="bg-white/5 border-white/10 h-12 px-4 pr-12 focus:ring-shopee/30 focus:border-shopee/50 transition-all rounded-xl placeholder:text-muted-foreground/30"
+                        disabled={loading}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-white transition-colors"
+                        onClick={() => setShowPassword(!showPassword)}
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
+                    type="submit"
+                    variant="premium"
+                    className="w-full h-12 text-sm font-bold tracking-wide rounded-xl shadow-[0_8px_20px_rgba(238,77,45,0.3)] hover:shadow-[0_12px_28px_rgba(238,77,45,0.4)]"
+                    disabled={loading}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Mengesahkan...
+                      </div>
+                    ) : (
+                      'MASUK DASHBOARD'
+                    )}
                   </Button>
+                </form>
+
+                <div className="mt-8 flex items-center justify-center gap-2 py-3 border-t border-white/5">
+                   <ShieldCheck className="w-4 h-4 text-shopee-gold/80" />
+                   <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Akses Admin Terhad</span>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
 
-              <Button
-                type="submit"
-                className="w-full h-11 bg-[#EE4D2D] hover:bg-[#D73211] text-white font-medium shadow-lg shadow-[#EE4D2D]/20 hover:shadow-[#EE4D2D]/30 transition-all"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
+        {/* Support Section */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-10 text-center space-y-4"
+        >
+          <div className="flex items-center justify-center gap-4">
+             <div className="h-px bg-white/5 flex-1" />
+             <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">Bantuan Teknikal</span>
+             <div className="h-px bg-white/5 flex-1" />
+          </div>
+          <p className="text-xs text-muted-foreground/60">
+            Lupa kata laluan? Hubungi <span className="text-shopee-gold hover:underline cursor-pointer">Support Team</span>
+          </p>
+        </motion.div>
+      </motion.div>
 
-              {/* OAuth Divider */}
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-
-              {/* OAuth Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11"
-                  onClick={() => signIn('google', { callbackUrl: '/' })}
-                >
-                  <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
-                  Google
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="h-11"
-                  onClick={() => signIn('facebook', { callbackUrl: '/' })}
-                >
-                  <svg className="w-4 h-4 mr-2" fill="#1877F2" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                  </svg>
-                  Facebook
-                </Button>
-              </div>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-xs text-muted-foreground">
-                Protected admin dashboard. Unauthorized access is prohibited.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-muted-foreground mt-6">
-          &copy; {new Date().getFullYear()} TheViralFinds &mdash; Shopee Affiliate Manager Pro
+      {/* Footer Branding */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 0.3 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-6 left-0 right-0 text-center"
+      >
+        <p className="text-[10px] text-white font-bold tracking-[0.3em] uppercase opacity-50">
+          TheViralFinds &copy; {new Date().getFullYear()} PRO EDITION
         </p>
-      </div>
+      </motion.div>
     </div>
   )
 }

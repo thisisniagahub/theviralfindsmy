@@ -34,6 +34,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import { Menu } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 
 const navItems = [
   { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -66,7 +67,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const unreadCount = notifData?.unreadCount || 0
 
   return (
-    <div className="flex flex-col h-full sidebar-gradient">
+    <div className="flex flex-col h-full glass-sidebar">
       {/* Logo */}
       <div className="flex items-center justify-center border-b border-border h-[80px] relative pointer-events-none">
         {sidebarOpen ? (
@@ -78,39 +79,53 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-        {navItems.map((item) => {
+        {navItems.map((item, index) => {
           const Icon = item.icon
           const isActive = item.path === '/'
             ? pathname === '/'
             : pathname === item.path || pathname.startsWith(item.path + '/')
           return (
-            <Link
+            <motion.div
               key={item.id}
-              href={item.path}
-              onClick={() => onNavigate?.()}
-              className={cn(
-                'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 nav-item-slide relative',
-                isActive
-                  ? 'bg-shopee/10 text-shopee dark:bg-shopee/20 nav-glow'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              )}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.03 }}
             >
-              <Icon className={cn('w-5 h-5 flex-shrink-0', isActive && 'text-shopee')} />
-              {sidebarOpen && <span>{item.label}</span>}
-              {sidebarOpen && item.badge && (
-                <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee/10 text-shopee border-0">
-                  {item.badge}
-                </Badge>
-              )}
-              {sidebarOpen && item.isNotification && unreadCount > 0 && (
-                <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee text-white border-0 badge-pulse">
-                  {unreadCount}
-                </Badge>
-              )}
-              {!sidebarOpen && item.isNotification && unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-shopee badge-pulse" />
-              )}
-            </Link>
+              <Link
+                href={item.path}
+                onClick={() => onNavigate?.()}
+                className={cn(
+                  'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 nav-item-slide relative group',
+                  isActive
+                    ? 'bg-shopee/10 text-shopee dark:bg-shopee/20 nav-glow'
+                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                )}
+              >
+                <Icon className={cn('w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110', isActive && 'text-shopee')} />
+                {sidebarOpen && <span className="truncate">{item.label}</span>}
+                {sidebarOpen && item.badge && (
+                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee/10 text-shopee border-0">
+                    {item.badge}
+                  </Badge>
+                )}
+                {sidebarOpen && item.isNotification && unreadCount > 0 && (
+                  <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee text-white border-0 badge-pulse">
+                    {unreadCount}
+                  </Badge>
+                )}
+                {!sidebarOpen && item.isNotification && unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-shopee badge-pulse" />
+                )}
+                {isActive && (
+                  <motion.div
+                    layoutId="active-nav-glow"
+                    className="absolute left-0 w-1 h-6 bg-shopee rounded-r-full shadow-[0_0_8px_rgba(238,77,45,0.5)]"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  />
+                )}
+              </Link>
+            </motion.div>
           )
         })}
       </nav>
@@ -155,8 +170,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </div>
           {sidebarOpen && (
             <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-sm font-medium truncate">Ahmad Ali</span>
-              <span className="text-[10px] text-shopee font-medium">RM 2,847.50 earned</span>
+              <span className="text-sm font-semibold truncate text-foreground/90">Ahmad Ali</span>
+              <span className="text-[10px] text-shopee font-bold tracking-tight">THE VIRAL FINDS PRO</span>
             </div>
           )}
           {sidebarOpen && (

@@ -141,11 +141,83 @@
   border: 1px solid oklch(0.91 0.005 90 / 0.45);
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px oklch(0 0 0 / 0.04);
+  position: relative;
+  overflow: hidden;
 }
 .dark .glass-card {
   background: oklch(0.2 0.005 25 / 0.55);
   border-color: oklch(0.35 0.005 25 / 0.4);
   box-shadow: 0 4px 16px oklch(0 0 0 / 0.18);
+}
+
+.glass-panel {
+  background: oklch(1 0 0 / 0.85);
+  backdrop-filter: blur(24px) saturate(1.6);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid oklch(1 0 0 / 0.6);
+  box-shadow: 0 20px 40px oklch(0 0 0 / 0.05);
+}
+.dark .glass-panel {
+  background: oklch(0.18 0.005 25 / 0.75);
+  border-color: oklch(1 0 0 / 0.1);
+  box-shadow: 0 20px 40px oklch(0 0 0 / 0.25);
+}
+
+/* ========== 2. Premium Shine & Glows ========== */
+
+.card-shine::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 55%
+  );
+  transform: rotate(45deg);
+  animation: shine 6s infinite;
+  pointer-events: none;
+}
+.dark .card-shine::after {
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 55%
+  );
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  20%, 100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.premium-border {
+  position: relative;
+}
+.premium-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, oklch(0.637 0.237 25.331), transparent, oklch(0.795 0.184 86.047));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glow-shopee-sm {
+  box-shadow: 0 0 8px oklch(0.637 0.237 25.331 / 0.2);
+}
+.glow-shopee-md {
+  box-shadow: 0 0 16px oklch(0.637 0.237 25.331 / 0.3);
 }
 
 .glass-sidebar {
