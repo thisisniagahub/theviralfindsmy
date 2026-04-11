@@ -128,17 +128,17 @@ export async function POST(request: NextRequest) {
       const mode = body.mode || 'sequential' // 'sequential' or 'parallel'
       const { runChainedPipeline, runParallelPipeline } = await getOpenClawLib()
 
-      console.log(`[A2A] Starting ${mode} pipeline for: "${userQuery.substring(0, 80)}..."`)
-      console.log(`[A2A] Gateway: ${getGatewayUrl()}`)
+      console.error(`[A2A] Starting ${mode} pipeline for: "${userQuery.substring(0, 80)}..."`)
+      console.error(`[A2A] Gateway: ${getGatewayUrl()}`)
 
       const result = mode === 'parallel'
         ? await runParallelPipeline(userQuery)
         : await runChainedPipeline(userQuery)
 
       // Log pipeline result
-      console.log(`[A2A] Pipeline ${result.status}. Duration: ${result.totalDurationMs}ms. Source: ${(result as any)._source}`)
+      console.error(`[A2A] Pipeline ${result.status}. Duration: ${result.totalDurationMs}ms. Source: ${(result as Record<string, string>)._source}`)
       for (const step of result.pipeline) {
-        console.log(`[A2A]   ${step.agent}: ${step.status} (${step.durationMs}ms)`)
+        console.error(`[A2A]   ${step.agent}: ${step.status} (${step.durationMs}ms)`)
       }
 
       return NextResponse.json({ ...result, mode })

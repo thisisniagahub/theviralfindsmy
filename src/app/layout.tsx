@@ -6,6 +6,7 @@ import { ThemeClientProvider } from '@/components/providers/theme-provider'
 import { SessionClientProvider } from '@/components/providers/session-provider'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { ServiceWorkerProvider } from '@/components/providers/sw-provider'
+import { AppShell } from '@/components/app-shell'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -48,7 +49,7 @@ export default function RootLayout({
           <SessionClientProvider>
             <QueryProvider>
               <ServiceWorkerProvider>
-                {children}
+                <AppShell>{children}</AppShell>
               </ServiceWorkerProvider>
               <Toaster />
             </QueryProvider>

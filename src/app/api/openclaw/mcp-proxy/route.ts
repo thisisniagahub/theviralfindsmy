@@ -79,27 +79,27 @@ export async function POST(request: NextRequest) {
 
     const toolMatch = path.match(/\/tools\/(.+)\/execute/)
     if (toolMatch) {
-      console.log(`[MCP] Executing tool "${toolMatch[1]}" via NiagaBot...`)
+      console.error(`[MCP] Executing tool "${toolMatch[1]}" via NiagaBot...`)
       const result = await executeMCPTool(toolMatch[1], body.params || body.arguments || {}, body.id)
-      console.log(`[MCP] Tool "${toolMatch[1]}" completed. Source: ${result._source}`)
+      console.error(`[MCP] Tool "${toolMatch[1]}" completed. Source: ${result._source}`)
       return NextResponse.json(result)
     }
 
     if (path === '/execute' || path === '/tools/execute') {
       const toolName = body.tool || body.name || body.method
       if (!toolName) return NextResponse.json({ error: 'Tool name required' }, { status: 400 })
-      console.log(`[MCP] Executing tool "${toolName}" via NiagaBot...`)
+      console.error(`[MCP] Executing tool "${toolName}" via NiagaBot...`)
       const result = await executeMCPTool(toolName, body.params || body.arguments || {}, body.id)
-      console.log(`[MCP] Tool "${toolName}" completed. Source: ${result._source}`)
+      console.error(`[MCP] Tool "${toolName}" completed. Source: ${result._source}`)
       return NextResponse.json(result)
     }
 
     if (path === '/tools/call') {
       const toolName = body.name || body.method
       if (!toolName) return NextResponse.json({ error: 'Tool name required' }, { status: 400 })
-      console.log(`[MCP] Executing tool "${toolName}" via NiagaBot...`)
+      console.error(`[MCP] Executing tool "${toolName}" via NiagaBot...`)
       const result = await executeMCPTool(toolName, body.params || body.arguments || {}, body.id)
-      console.log(`[MCP] Tool "${toolName}" completed. Source: ${result._source}`)
+      console.error(`[MCP] Tool "${toolName}" completed. Source: ${result._source}`)
       return NextResponse.json(result)
     }
 

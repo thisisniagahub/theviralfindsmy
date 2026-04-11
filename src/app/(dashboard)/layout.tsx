@@ -136,7 +136,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Header />
           <main className="flex-1 p-4 lg:p-6">
             <ErrorBoundary pageName={pathname}>
-              {children}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={pathname}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.15, ease: 'easeInOut' }}
+                >
+                  {children}
+                </motion.div>
+              </AnimatePresence>
             </ErrorBoundary>
           </main>
           {/* Footer */}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Activity, Filter, Volume2, VolumeX, ChevronDown } from 'lucide-react'
+import { Activity, Volume2, VolumeX, ChevronDown } from 'lucide-react'
 import type { Language } from './language-toggle'
 
 // ===== Types =====

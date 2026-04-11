@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Activity, Server, Wifi, WifiOff, RefreshCw, Database, Bot, Bell } from 'lucide-react'
+import { Activity, Server, RefreshCw, Database, Bot, Bell } from 'lucide-react'
 
 interface ServiceStatus {
   name: string
