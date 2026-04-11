@@ -8,8 +8,10 @@
 // to prevent the large SDK bundle from crashing the Next.js dev server on initial compile.
 
 // ─── Configuration ────────────────────────────────────────────────
-const OPENCLAW_GATEWAY = process.env.OPENCLAW_GATEWAY_URL || 'https://operator.gangniaga.my'
-const OPENCLAW_API_KEY = process.env.OPENCLAW_GATEWAY_TOKEN || process.env.OPENCLAW_API_KEY || ''
+import { env } from '@/lib/env'
+
+const OPENCLAW_GATEWAY = env.OPENCLAW_GATEWAY_URL
+const OPENCLAW_API_KEY = env.OPENCLAW_GATEWAY_TOKEN || ''
 const GATEWAY_TIMEOUT = 15_000 // 15s default timeout
 
 // ─── Types ────────────────────────────────────────────────────────

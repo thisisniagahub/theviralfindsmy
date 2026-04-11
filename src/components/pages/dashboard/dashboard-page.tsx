@@ -12,7 +12,7 @@ import { Eye, MousePointerClick, TrendingUp, DollarSign,
 } from 'lucide-react'
 import { RefreshCw } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useAppStore } from '@/store/app-store'
+import { useRouter } from 'next/navigation'
 
 import {
   type DashboardData, type ActivityApiResponse,
@@ -30,7 +30,29 @@ import { RecentActivity } from './recent-activity'
 import { ActivityFeed } from './activity-feed'
 
 export function DashboardPage() {
-  const { setActivePage } = useAppStore()
+  const router = useRouter()
+
+  const navigatePage = useCallback((page: string) => {
+    const pathMap: Record<string, string> = {
+      dashboard: '/',
+      products: '/products',
+      links: '/links',
+      analytics: '/analytics',
+      calculator: '/calculator',
+      campaigns: '/campaigns',
+      leaderboard: '/leaderboard',
+      achievements: '/achievements',
+      activity: '/activity',
+      earnings: '/earnings',
+      settings: '/settings',
+      notifications: '/notifications',
+      referral: '/referral',
+      'shopee-integration': '/shopee-integration',
+      'agent-office': '/agent-office',
+      openclaw: '/openclaw',
+    }
+    router.push(pathMap[page] || `/${page}`)
+  }, [router])
   const [period, setPeriod] = useState('30d')
   const [activityOpen, setActivityOpen] = useState(false)
   // "last updated" timer (kept for future use)
@@ -200,7 +222,7 @@ export function DashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <QuickActions onSetPage={setActivePage} onExportCSV={exportCSV} />
+      <QuickActions onNavigate={navigatePage} onExportCSV={exportCSV} />
 
       {/* Section divider */}
       <div className="section-divider" />
@@ -253,7 +275,7 @@ export function DashboardPage() {
               <Button
                 size="sm"
                 className="btn-shopee text-xs h-7"
-                onClick={() => setActivePage('earnings')}
+                onClick={() => navigatePage('earnings')}
               >
                 <Plus className="w-3 h-3 mr-1" /> Add Goal
               </Button>
@@ -334,7 +356,7 @@ export function DashboardPage() {
               variant="ghost"
               size="sm"
               className="w-full mt-3 text-shopee text-xs hover:text-shopee-dark"
-              onClick={() => setActivePage('earnings')}
+              onClick={() => navigatePage('earnings')}
             >
               View All Goals <ChevronRight className="w-3 h-3 ml-0.5" />
             </Button>
@@ -370,7 +392,7 @@ export function DashboardPage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2, delay: 0.8 + idx * 0.05 }}
                     className="flex items-center justify-between p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => setActivePage('links')}
+                    onClick={() => navigatePage('links')}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${link.isExpired ? 'bg-red-500/10' : 'bg-amber-500/10'}`}>
@@ -408,14 +430,14 @@ export function DashboardPage() {
 
         {/* Top Products + Activity Column */}
         <div className="space-y-4 lg:space-y-6">
-          <TopProducts topLinks={data?.topLinks || []} onSetPage={setActivePage} />
+          <TopProducts topLinks={data?.topLinks || []} onNavigate={navigatePage} />
           <ActivityFeed
             activityItems={activityItems}
             activityOpen={activityOpen}
             onActivityOpenChange={setActivityOpen}
             isActivityFetching={isActivityFetching}
             onRefetchActivity={() => refetchActivity()}
-            onSetPage={setActivePage}
+            onNavigate={navigatePage}
           />
         </div>
       </div>

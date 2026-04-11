@@ -8,7 +8,9 @@
  * API routes call this service via HTTP fetch instead of importing Prisma directly.
  */
 
-const DB_SERVICE_URL = process.env.DB_SERVICE_URL || ''
+import { env } from '@/lib/env'
+
+const DB_SERVICE_URL = env.DB_SERVICE_URL
 
 /** Check if demo mode is active */
 export function isDemoMode(): boolean {

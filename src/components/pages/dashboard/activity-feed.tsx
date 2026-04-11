@@ -16,10 +16,10 @@ interface ActivityFeedProps {
   onActivityOpenChange: (open: boolean) => void
   isActivityFetching: boolean
   onRefetchActivity: () => void
-  onSetPage: (page: string) => void
+  onNavigate: (page: string) => void
 }
 
-export function ActivityFeed({ activityItems, activityOpen, onActivityOpenChange, isActivityFetching, onRefetchActivity, onSetPage }: ActivityFeedProps) {
+export function ActivityFeed({ activityItems, activityOpen, onActivityOpenChange, isActivityFetching, onRefetchActivity, onNavigate }: ActivityFeedProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -94,7 +94,7 @@ export function ActivityFeed({ activityItems, activityOpen, onActivityOpenChange
                 variant="ghost"
                 size="sm"
                 className="w-full mt-2 text-shopee text-xs hover:text-shopee-dark"
-                onClick={() => onSetPage('notifications')}
+                onClick={() => onNavigate('notifications')}
               >
                 View All <ChevronRight className="w-3 h-3 ml-0.5" />
               </Button>

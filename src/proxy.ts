@@ -4,7 +4,9 @@ import { getToken } from 'next-auth/jwt'
 
 // Routes that don't require authentication
 const publicRoutes = ['/login']
-const publicApiRoutes = ['/api/auth', '/api/redirect', '/api/products/search', '/api/route']
+const publicApiRoutes = ['/api/auth', '/api/redirect', '/api/products/search', '/api/route', '/api/health']
+
+// TODO: Add rate limiting with Upstash
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -26,11 +28,6 @@ export default async function proxy(request: NextRequest) {
     pathname.startsWith('/images') ||
     pathname.includes('.')
   ) {
-    return NextResponse.next()
-  }
-
-  // Skip auth in development/demo mode
-  if (process.env.SKIP_AUTH === 'true') {
     return NextResponse.next()
   }
 

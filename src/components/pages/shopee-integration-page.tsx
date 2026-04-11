@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
-import { useAppStore } from '@/store/app-store'
+import { useRouter } from 'next/navigation'
 
 function AnimatedNumber({ value, prefix = '' }: { value: number; prefix?: string }) {
   return (
@@ -36,7 +36,7 @@ const SYNC_HISTORY = [
 const CATEGORIES = ['All', 'Electronics', 'Fashion', 'Beauty', 'Home', 'Health', 'Food']
 
 export function ShopeeIntegrationPage() {
-  const { setActivePage } = useAppStore()
+  const router = useRouter()
   const [importUrl, setImportUrl] = useState('')
   const [isImporting, setIsImporting] = useState(false)
   const [importedProduct, setImportedProduct] = useState<Record<string, unknown> | null>(null)
@@ -104,8 +104,8 @@ export function ShopeeIntegrationPage() {
   const handleGenerateLink = useCallback(() => {
     if (!importedProduct) return
     toast.success('Affiliate link created!', { description: `${(importedProduct as Record<string, string>).name} added to your links` })
-    setActivePage('links')
-  }, [importedProduct, setActivePage])
+    router.push('/links')
+  }, [importedProduct, router])
 
   const handleTestConnection = useCallback(() => {
     toast.success('Connection successful!', { description: 'Connected to Shopee Affiliate API' })
