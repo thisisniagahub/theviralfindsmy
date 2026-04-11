@@ -7,9 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Multi-merchant support
+enum Merchant {
+  SHOPEE
+  LAZADA
+  TIKTOK_SHOP
+  AMAZON
+}
+
 model AffiliateLink {
   id                String        @id @default(cuid())
   name              String
+  merchant          Merchant      @default(SHOPEE)
   productUrl        String
   affiliateUrl      String
   productId         String?

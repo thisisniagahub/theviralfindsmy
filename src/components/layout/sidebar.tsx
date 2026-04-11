@@ -68,15 +68,11 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex flex-col h-full sidebar-gradient">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-4 lg:py-5 border-b border-border">
-        <div className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg bg-shopee text-white font-bold text-sm">
-          S
-        </div>
-        {sidebarOpen && (
-          <div className="flex flex-col">
-            <span className="text-sm lg:text-base font-bold text-foreground">Shopee Affiliate</span>
-            <span className="text-[10px] lg:text-xs text-muted-foreground">Manager Pro</span>
-          </div>
+      <div className="flex items-center justify-center border-b border-border h-[80px] relative pointer-events-none">
+        {sidebarOpen ? (
+          <img src="/logo-full.png" alt="TheViralFinds" className="absolute h-[250px] w-auto object-contain drop-shadow-xl" />
+        ) : (
+          <img src="/logo-icon.png" alt="Icon" className="absolute h-[150px] w-auto object-contain drop-shadow-lg" />
         )}
       </div>
 
