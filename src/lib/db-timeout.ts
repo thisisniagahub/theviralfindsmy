@@ -35,7 +35,8 @@ export function withTimeout<T>(
  * Check if the DB microservice is responsive
  */
 export async function isDbServiceResponsive(): Promise<boolean> {
-  const DB_SERVICE_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+  const DB_SERVICE_URL = process.env.DB_SERVICE_URL
+  if (!DB_SERVICE_URL) return false
   try {
     const res = await fetch(`${DB_SERVICE_URL}/health`, {
       signal: AbortSignal.timeout(3000),

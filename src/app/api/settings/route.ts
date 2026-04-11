@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET() {
   if (process.env.DEMO_MODE === 'true') {
@@ -15,6 +15,9 @@ export async function GET() {
     })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const settings = await fetch(`${DB_URL}/settings`).then(r => r.json())
     return NextResponse.json(settings)
   } catch (error) {
@@ -28,6 +31,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const body = await request.json()
 
     await fetch(`${DB_URL}/settings`, {

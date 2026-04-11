@@ -6,7 +6,7 @@ export const serviceUrls = {
   shopeeApi: process.env.SHOPEE_API_URL || 'https://partner.shopeemobile.com',
   shopeeAffiliate: process.env.SHOPEE_AFFILIATE_URL || 'https://affiliate.shopee.com.my',
   openClawGateway: process.env.OPENCLAW_GATEWAY_URL || 'https://operator.gangniaga.my',
-  notificationService: process.env.NOTIFICATION_SERVICE_URL || 'http://127.0.0.1:3004',
+  notificationService: process.env.NOTIFICATION_SERVICE_URL || '',
 } as const
 
 export type ServiceKey = keyof typeof serviceUrls

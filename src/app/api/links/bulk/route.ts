@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 // PUT: Bulk activate, pause, or expire links
 export async function PUT(request: NextRequest) {
@@ -9,6 +9,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true, affected: body.ids?.length || 3 })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const body = await request.json()
 
     // Basic inline validation
@@ -41,6 +44,9 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true, affected: body.ids?.length || 2 })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const body = await request.json()
 
     // Basic inline validation
