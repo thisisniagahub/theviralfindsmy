@@ -2,9 +2,9 @@
 
 ## TheViralFinds: Shopee Affiliate Management System
 
-**Version:** 6.0
+**Version:** 7.0
 **Last Updated:** July 2025
-**Status:** VPS Migration Phase (SQLite → PostgreSQL, MCP & A2A Overhaul)
+**Status:** VPS Migration + Pixel-Agents Enhancement Phase
 **Author:** TheViralFinds Team
 **Repository:** [github.com/thisisniagahub/theviralfindsmy](https://github.com/thisisniagahub/theviralfindsmy)
 **VPS:** 76.13.176.142 | **OpenClaw Gateway:** https://operator.gangniaga.my
@@ -34,6 +34,7 @@
 - **🔴 CRITICAL MIGRATION IN PROGRESS**: SQLite → PostgreSQL on VPS 76.13.176.142
 - **🔴 MCP Proxy overhaul**: localhost:3005 → OpenClaw Gateway at operator.gangniaga.my
 - **🔴 A2A Agent Network overhaul**: localhost:3006 → Real chained agent pipeline via OpenClaw
+- **🟢 PIXEL-AGENTS ENHANCEMENT**: Isometric Office View, Enhanced Agent States, Real-time Activity Monitor, Agent Conversation Panel, Minimap, Themes, Performance Dashboard
 
 ---
 
@@ -82,7 +83,7 @@
 │                    Frontend (SPA)                        │
 │  Next.js 16 + React 19 + Tailwind CSS 4 + shadcn/ui    │
 │  16 Pages | 44+ UI Components | Framer Motion           │
-│  Phaser 3 Game Engine | Agent Grid | Agent Profile      │
+│  Phaser 3 Game Engine | Isometric CSS View | Agent Grid | Agent Profile  │
 ├─────────────────────────────────────────────────────────┤
 │                    API Layer (40+ Routes)                │
 │  REST API | Next.js App Router | Zod Validation         │
@@ -387,6 +388,105 @@
 | FR-18.11 | Speech Bubbles | Animated slide-in/out bubbles with Shopee brand accent |
 | FR-18.12 | Chat Bubbles | Text-based bubbles above workers |
 | FR-18.13 | Shopee Office API | Join, status, memo, agents, guest agents endpoints |
+
+### 4.6 Pixel-Agents Inspired Office Enhancement
+
+> **Inspired by:** [pixel-agents](https://github.com/pablodelucca/pixel-agents.git) — VS Code extension that visualizes AI agents as pixel-art characters in an isometric office. Key patterns adapted: isometric rendering, dual detection strategy, agent state machine, transcript parsing, sprite pipeline, game-react bridge.
+
+#### FR-19: Isometric Office View
+**Priority:** P1 | **Status:** 🆕 New (Inspired by pixel-agents isometric rendering)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-19.1 | CSS Isometric Floor | Transform-based isometric grid rendering with 30° rotation, no Canvas/Phaser needed |
+| FR-19.2 | Isometric Agent Avatars | Agent characters rendered as isometric sprites with directional facing (up/down/left/right) |
+| FR-19.3 | Isometric Furniture | Office furniture (desks, chairs, plants, server racks) rendered in isometric perspective |
+| FR-19.4 | Isometric Zones | Color-coded floor zones for each agent team (Research, Create, Optimize, Execute) |
+| FR-19.5 | Camera Pan & Zoom | Click-drag to pan, mouse wheel to zoom the isometric view |
+| FR-19.6 | Agent Walking Animation | CSS step animation for agents moving between desks and POIs |
+| FR-19.7 | View Toggle | Switch between Phaser Game View and Isometric CSS View via tab bar |
+| FR-19.8 | Responsive Isometric | Auto-scale isometric view for mobile screens with touch pan/zoom |
+
+#### FR-20: Enhanced Agent State Machine
+**Priority:** P1 | **Status:** 🆕 New (Inspired by pixel-agents agent state management)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-20.1 | Expanded Agent States | Add new states: 'thinking', 'collaborating', 'reporting', 'break' alongside existing idle/writing/researching/executing/syncing/error |
+| FR-20.2 | State Transition Rules | Define valid state transitions (e.g., idle→thinking→researching→writing→syncing→idle) |
+| FR-20.3 | Visual State Indicators | Each state has unique animation: thinking=pulsing brain, collaborating=two-agent link, reporting=document wave |
+| FR-20.4 | State Duration Tracking | Track how long each agent stays in each state for performance metrics |
+| FR-20.5 | State History Log | Rolling 24-hour state history per agent with timeline visualization |
+| FR-20.6 | Anomalous State Detection | Alert when agent stuck in same state >10 minutes or enters unexpected state sequence |
+| FR-20.7 | OpenClaw State Mapping | Map OpenClaw agent activities to office agent states (niagaresearch→researching, niagamarketing→writing, etc.) |
+
+#### FR-21: Real-time Activity Monitor
+**Priority:** P0 | **Status:** 🆕 New (Inspired by pixel-agents dual detection strategy)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-21.1 | WebSocket Push Events | Socket.IO push for instant agent state changes (replaces 3s polling) |
+| FR-21.2 | Polling Fallback | HTTP polling at 5s interval as fallback when WebSocket disconnects |
+| FR-21.3 | Activity Event Stream | Real-time scrolling log of all agent activities with timestamp and type |
+| FR-21.4 | Event Type Classification | Categorize events: status_change, task_start, task_complete, commission_earned, error, collaboration |
+| FR-21.5 | Activity Filtering | Filter activity stream by agent, event type, time range |
+| FR-21.6 | Event Sound Effects | Optional audio cues for key events (task complete, error, commission earned) |
+| FR-21.7 | Activity Heatmap | Visual heatmap showing which hours of the day have most agent activity |
+| FR-21.8 | OpenClaw Integration | OpenClaw agent responses trigger real state changes in the office (not random simulation) |
+
+#### FR-22: Agent Conversation Panel
+**Priority:** P1 | **Status:** 🆕 New (OpenClaw + pixel-agents transcript visualization)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-22.1 | Chat Interface | Chat-style panel for communicating with individual agents |
+| FR-22.2 | OpenClaw Chat Bridge | Send messages to OpenClaw agents via /v1/chat/completions with `openclaw/<agentId>` model |
+| FR-22.3 | Streaming Responses | Stream agent responses in real-time with typing indicator |
+| FR-22.4 | Conversation History | Persist recent conversations per agent (last 50 messages) |
+| FR-22.5 | Quick Commands | Pre-built command buttons: "Kaji Pasaran", "Buat Ayat Pemasaran", "Format JSON" |
+| FR-22.6 | Pipeline Trigger | Button to trigger full A2A pipeline (niagaresearch→niagamarketing→niagacomputer) from chat |
+| FR-22.7 | Multi-Agent Conversation | Start conversation with multiple agents; responses chain automatically |
+| FR-22.8 | Context Injection | Previous agent output automatically injected as context for next agent in pipeline |
+
+#### FR-23: Minimap Overlay
+**Priority:** P2 | **Status:** 🆕 New (Inspired by game engine minimap patterns)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-23.1 | Minimap Canvas | Small overlay canvas (180×100px) in bottom-right corner of game view |
+| FR-23.2 | Agent Dots | Color-coded dots for each agent on minimap with status color |
+| FR-23.3 | Player Indicator | Highlighted dot for the boss/player character |
+| FR-23.4 | Viewport Rectangle | Rectangle showing current camera viewport on the minimap |
+| FR-23.5 | Click Navigation | Click on minimap to move camera to that position |
+| FR-23.6 | Zone Labels | Labeled zones on minimap (Research, Create, Optimize, Execute) |
+| FR-23.7 | Toggle Visibility | Button or key (M) to show/hide minimap |
+
+#### FR-24: Office Theme System
+**Priority:** P2 | **Status:** 🆕 New (Inspired by pixel-agents theme switching)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-24.1 | Day Theme | Bright office with natural lighting, warm colors, daylight sky |
+| FR-24.2 | Night Theme | Dark office with monitor glow, blue ambient, city lights through windows |
+| FR-24.3 | Neon Theme | Cyberpunk neon-lit office with glowing edges, dark background, neon color accents |
+| FR-24.4 | Theme Selector | Dropdown in header bar to switch themes, persisted in localStorage |
+| FR-24.5 | CSS Variable System | All theme colors defined as CSS custom properties for instant switching |
+| FR-24.6 | Phaser Theme Sync | Phaser game background and sprite tinting synced with selected theme |
+| FR-24.7 | Auto Theme | Time-based automatic theme switching (Day 6AM-6PM, Night 6PM-6AM) |
+
+#### FR-25: Agent Performance Dashboard
+**Priority:** P1 | **Status:** 🆕 New (Inspired by pixel-agents agent metrics)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-25.1 | Per-Agent Metrics | Individual cards showing: tasks completed, avg response time, uptime % |
+| FR-25.2 | Productivity Score | 0-100 score per agent based on task completion rate and response time |
+| FR-25.3 | Team Metrics | Aggregate metrics by team (Research, Create, Optimize, Execute) |
+| FR-25.4 | Pipeline Throughput | Real-time measure of how many tasks flow through the A2A pipeline per hour |
+| FR-25.5 | Bottleneck Detection | Alert when any agent in pipeline takes >2x average time |
+| FR-25.6 | Performance Trend | 7-day trend chart per agent showing productivity changes |
+| FR-25.7 | Leaderboard | Agent performance ranking with weekly/monthly/all-time views |
+| FR-25.8 | Export Report | Download agent performance data as CSV or PDF |
 
 ---
 
@@ -718,6 +818,7 @@ Mini Services → Notification Service (separate host)
 | 9 | Agent Office | Phaser 3 game, agent characters, productivity stats, agent grid/profile |
 | 10 | Production Hardening | NextAuth, Zod validation, secure redirect, error boundaries, demo mode, utility extraction, ESLint fixes, component splitting |
 | 11 | VPS Migration (IN PROGRESS) | PostgreSQL on VPS, MCP proxy → OpenClaw Gateway, A2A → Chained agent pipeline |
+| 12 | Pixel-Agents Enhancement | Isometric Office View, Enhanced Agent States, Real-time Activity Monitor, Agent Conversation Panel, Minimap Overlay, Office Themes, Agent Performance Dashboard |
 
 ---
 
@@ -1511,3 +1612,89 @@ export async function executeA2APipeline(query: string) {
 | 4.0 | June 2025 | Added Phase 8-9 features (AI suite, MCP, A2A, Agent Office, Phaser game) |
 | 5.0 | July 2025 | **Comprehensive improvement roadmap** — 41 improvement items across 5 tiers; agent-town analysis; production hardening (Phase 10); updated database schema, API design, security requirements; implementation timeline |
 | 6.0 | April 2026 | **VPS Migration** — Section 12.5 Fasa Perlaksanaan added; SQLite → PostgreSQL migration plan; MCP proxy → OpenClaw Gateway overhaul; A2A → Chained agent pipeline; VPS Discovery Report (live scan 76.13.176.142); Open Questions & Prerequisites; New env vars (OPENCLAW_GATEWAY_URL, OPENCLAW_GATEWAY_TOKEN); IMP-02 status updated to IN PROGRESS; 4 new risks added; 2 new code patterns (Pattern 6, 7); Third-party services updated; Phase 11 added to Release History |
+
+| 7.0 | July 2025 | **Pixel-Agents Enhancement** — Section 12.6 added; FR-19 through FR-25 feature requirements; Isometric Office View (CSS-based); Enhanced Agent State Machine (9 states); Real-time Activity Monitor (dual detection); Agent Conversation Panel (OpenClaw chat bridge); Minimap Overlay; Office Theme System (Day/Night/Neon); Agent Performance Dashboard |
+
+---
+
+## 12.6 Fasa 12: Pixel-Agents Inspired Enhancement
+
+> **Technical Implementation Plan** — Peningkatan Shopee Office berdasarkan corak dan idea dari repositori pixel-agents (github.com/pablodelucca/pixel-agents). Fokus utama: visualisasi isometric, mesin keadaan agen yang lebih kaya, pemantauan aktiviti masa nyata, dan tema pejabat.
+
+### 12.6.1 Sumber Ilham: Pixel-Agents Review
+
+| Corak Pixel-Agents | Adaptasi TheViralFinds | Kesan |
+|---------------------|----------------------|-------|
+| Isometric Office Rendering | FR-19: CSS Isometric Office View | 🟢 Tinggi — Visual impact besar |
+| Agent State Machine (typing/reading/waiting) | FR-20: Enhanced Agent State Machine | 🟢 Tinggi — Agen lebih hidup |
+| Dual Detection (Hook + Fallback) | FR-21: WebSocket + Polling | 🟢 Tinggi — Real-time yang sebenar |
+| JSONL Transcript Parsing | FR-22: Agent Conversation Panel | 🟡 Sederhana — Berguna untuk OpenClaw |
+| Sprite Asset Pipeline | Enhanced Phaser Sprites | 🟡 Sederhana — Visual upgrade |
+| Game Loop → React Bridge | Bidirectional Event Flow | 🟡 Sederhana — Architectural |
+| Canvas 2D Renderer + Caching | Phaser Optimization | 🟢 Tinggi — Performance |
+
+### 12.6.2 Pelan Perlaksanaan
+
+#### Langkah 1: Isometric Office View (FR-19)
+**Status:** 🆕 Baru | **Priority:** P1
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| IsometricOffice | `shopee-office/isometric-office.tsx` | Full isometric office combining floor, agents, furniture |
+| Isometric CSS | `shopee-office/isometric.css` | Isometric-specific styles, transforms, animations |
+
+#### Langkah 2: Enhanced Agent States (FR-20)
+**Status:** 🆕 Baru | **Priority:** P1
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| State Machine | `shopee-office/agent-state-machine.ts` | State transition rules, valid transitions, duration tracking |
+
+#### Langkah 3: Real-time Activity Monitor (FR-21)
+**Status:** 🆕 Baru | **Priority:** P0
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| Activity Monitor | `shopee-office/activity-monitor.tsx` | Real-time scrolling event log with filtering |
+
+#### Langkah 4: Agent Conversation Panel (FR-22)
+**Status:** 🆕 Baru | **Priority:** P1
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| Chat Panel | `shopee-office/agent-chat-panel.tsx` | Full chat interface with OpenClaw bridge |
+| Chat API | `api/shopee-office/chat/route.ts` | Server-side OpenClaw chat bridge |
+
+#### Langkah 5: Minimap Overlay (FR-23)
+**Status:** 🆕 Baru | **Priority:** P2
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| Minimap | `shopee-office/minimap-overlay.tsx` | Canvas-based minimap with agent dots |
+
+#### Langkah 6: Office Theme System (FR-24)
+**Status:** 🆕 Baru | **Priority:** P2
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| Theme Selector | `shopee-office/theme-selector.tsx` | Theme dropdown with Day/Night/Neon/Auto |
+| Theme Store | `shopee-office/office-theme.ts` | Zustand store for theme state |
+
+#### Langkah 7: Agent Performance Dashboard (FR-25)
+**Status:** 🆕 Baru | **Priority:** P1
+
+| Komponen | Fail | Detail |
+|----------|------|--------|
+| Performance Dashboard | `shopee-office/agent-performance.tsx` | Per-agent metrics, productivity scores, trends |
+
+### 12.6.3 Keutamaan Perlaksanaan
+
+| Keutamaan | Langkah | Estimasi Masa |
+|-----------|---------|---------------|
+| 🔴 P0 | Langkah 3: Real-time Activity Monitor | 2 jam |
+| 🟠 P1 | Langkah 1: Isometric Office View | 3 jam |
+| 🟠 P1 | Langkah 2: Enhanced Agent States | 1.5 jam |
+| 🟠 P1 | Langkah 4: Agent Conversation Panel | 2.5 jam |
+| 🟠 P1 | Langkah 7: Agent Performance Dashboard | 2 jam |
+| 🟡 P2 | Langkah 5: Minimap Overlay | 1 jam |
+| 🟡 P2 | Langkah 6: Office Theme System | 1.5 jam |
