@@ -1,13 +1,7 @@
-/**
- * Service Worker for PWA
- * Caches static assets and API responses for offline support.
- */
-
 const CACHE_NAME = 'theviralfinds-v1'
 const STATIC_CACHE = 'theviralfinds-static-v1'
 const API_CACHE = 'theviralfinds-api-v1'
 
-// Static assets to cache on install
 const STATIC_ASSETS = [
   '/',
   '/offline',
@@ -16,26 +10,14 @@ const STATIC_ASSETS = [
   '/icons/icon-512.png',
 ]
 
-// API routes to cache (stale-while-revalidate)
-const API_CACHE_PATTERNS = [
-  '/api/dashboard',
-  '/api/links',
-  '/api/analytics',
-  '/api/goals',
-  '/api/leaderboard',
-  '/api/achievements',
-]
-
-// Install: cache static assets
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS))
   )
   self.skipWaiting()
 })
 
-// Activate: clean old caches
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
@@ -47,8 +29,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
   self.clients.claim()
 })
 
-// Fetch: network-first for API, cache-first for static
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
   // API routes: network first, fallback to cache
@@ -56,7 +37,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          if (response.ok) {
+          if (response && response.ok) {
             const clone = response.clone()
             caches.open(API_CACHE).then(cache => cache.put(event.request, clone))
           }
@@ -85,9 +66,8 @@ self.addEventListener('fetch', (event: FetchEvent) => {
   )
 })
 
-// Push notification handler
-self.addEventListener('push', (event: PushEvent) => {
-  const data = event.data?.json() || {}
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {}
   event.waitUntil(
     self.registration.showNotification(data.title || 'TheViralFinds', {
       body: data.message || 'You have a new notification',
@@ -99,12 +79,9 @@ self.addEventListener('push', (event: PushEvent) => {
   )
 })
 
-// Notification click: open the app
-self.addEventListener('notificationclick', (event: NotificationEvent) => {
+self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   event.waitUntil(
     self.clients.openWindow(event.notification.data || '/')
   )
 })
-
-export {}

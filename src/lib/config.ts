@@ -79,11 +79,6 @@ export function validateEnv(): { valid: boolean; errors: string[]; warnings: str
     warnings.push('[DEMO] DEMO_MODE is enabled — returning mock data for all API requests.')
   }
 
-  // Skip auth warning
-  if (process.env.SKIP_AUTH === 'true') {
-    warnings.push('[SECURITY] SKIP_AUTH is enabled — authentication is bypassed. DO NOT use in production!')
-  }
-
   return {
     valid: errors.length === 0,
     errors,

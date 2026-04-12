@@ -12,12 +12,23 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (process.env.SKIP_AUTH === 'true') {
-          return { id: '1', name: 'Ahmad Ali', email: 'admin@theviralfinds.my', image: null }
+        // Validate credentials against environment variables
+        const adminEmail = 'admin@theviralfinds.my'
+        const adminPassword = process.env.ADMIN_PASSWORD
+
+        if (!adminPassword) {
+          console.error('ADMIN_PASSWORD environment variable is not set')
+          return null
         }
-        if (credentials?.email === 'admin@theviralfinds.my' && credentials?.password === process.env.ADMIN_PASSWORD) {
-          return { id: '1', name: 'Ahmad Ali', email: 'admin@theviralfinds.my', image: null }
+
+        if (
+          credentials?.email === adminEmail &&
+          credentials?.password === adminPassword
+        ) {
+          return { id: '1', name: 'Ahmad Ali', email: adminEmail, image: null }
         }
+
+        // Return null for invalid credentials
         return null
       },
     }),

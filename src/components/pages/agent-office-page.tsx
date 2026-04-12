@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Badge } from '@/components/ui/badge'
 import { PhaserGame, type AgentData } from '@/components/shopee-office'
 import { ControlPanel } from '@/components/shopee-office/control-panel'
 import { AgentsPanel, type AgentInfo } from '@/components/shopee-office/agents-panel'

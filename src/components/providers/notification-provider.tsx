@@ -55,8 +55,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [])
 
   useEffect(() => {
-    // Connect to the notification mini-service through the Caddy gateway
-    const socket: Socket = io('/?XTransformPort=3004', {
+    // Connect to the notification mini-service
+    // In production (Vercel), connect to VPS via transform port
+    // In development, connect to local service
+    const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+    const socketUrl = isProd ? 'https://shopee.gangniaga.my/?XTransformPort=3004' : '/?XTransformPort=3004'
+    
+    const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       forceNew: true,
       reconnection: true,

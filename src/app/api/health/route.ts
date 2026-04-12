@@ -1,54 +1,93 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { env } from '@/lib/env'
+import pkg from '../../../package.json'
 
-/**
- * Health Check API — Returns status of all VPS services with latency measurements
- */
+export async function GET() {
+  const startTime = Date.now()
 
-export const maxDuration = 10
-export const dynamic = 'force-dynamic'
-
-async function checkWithLatency(url: string, timeoutMs = 3000): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy'; latencyMs?: number }> {
-  const start = Date.now()
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      signal: AbortSignal.timeout(timeoutMs),
-      cache: 'no-store',
+  // Demo mode: return all healthy
+  if (env.DEMO_MODE === 'true') {
+    return NextResponse.json({
+      status: 'healthy',
+      version: pkg.version,
+      timestamp: new Date().toISOString(),
+      uptime: Math.round(process.uptime()),
+      services: {
+        database: 'healthy',
+        openclaw: 'healthy',
+        notification: 'healthy',
+      },
+      responseTimeMs: Date.now() - startTime,
+      _demo: true,
     })
-    const latencyMs = Date.now() - start
-    if (res.ok) return { status: 'healthy', latencyMs }
-    return { status: 'degraded', latencyMs }
-  } catch {
-    return { status: 'unhealthy', latencyMs: Date.now() - start }
   }
-}
 
-export async function GET(_request: NextRequest) {
-  const gatewayUrl = process.env.OPENCLAW_GATEWAY_URL || 'https://operator.gangniaga.my'
-  const notifUrl = process.env.NOTIFICATION_SERVICE_URL || 'http://127.0.0.1:3004'
+  // Check services
+  const services = {
+    database: 'healthy',
+    openclaw: 'healthy',
+    notification: 'healthy',
+  }
+
+  // Check database
+  try {
+    await db.$queryRaw`SELECT 1`
+    services.database = 'healthy'
+  } catch {
+    services.database = 'unhealthy'
+  }
 
   // Check OpenClaw Gateway
-  const [openclawResult, dbResult, notifResult] = await Promise.all([
-    checkWithLatency(`${gatewayUrl}/health`, 5000),
-    // Check DB by hitting the dashboard API (which uses Prisma)
-    checkWithLatency(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/dashboard`, 5000),
-    checkWithLatency(notifUrl, 3000),
-  ])
-
-  const services = {
-    openclaw: openclawResult.status,
-    openclawLatencyMs: openclawResult.latencyMs,
-    openclawDetail: gatewayUrl,
-    database: dbResult.status,
-    databaseLatencyMs: dbResult.latencyMs,
-    notification: notifResult.status,
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    const res = await fetch(`${env.OPENCLAW_GATEWAY_URL}/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+    services.openclaw = res.ok ? 'healthy' : 'unhealthy'
+  } catch {
+    services.openclaw = 'unhealthy'
   }
 
-  const overallHealthy = Object.values(services).every(v => v === 'healthy' || typeof v === 'number' || v === undefined)
+  // Check Notification Service
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    const res = await fetch(`${env.NOTIFICATION_SERVICE_URL}/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+    services.notification = res.ok ? 'healthy' : 'unhealthy'
+  } catch {
+    services.notification = 'unhealthy'
+  }
 
-  return NextResponse.json({
-    status: overallHealthy ? 'healthy' : 'degraded',
+  // Determine overall status
+  const isDatabaseDown = services.database === 'unhealthy'
+  const allServicesUp = Object.values(services).every((s) => s === 'healthy')
+  const someServicesDown = Object.values(services).some((s) => s === 'unhealthy')
+
+  let status: 'healthy' | 'degraded' | 'unhealthy'
+  if (isDatabaseDown) {
+    status = 'unhealthy'
+  } else if (someServicesDown) {
+    status = 'degraded'
+  } else {
+    status = 'healthy'
+  }
+
+  const response = {
+    status,
+    version: pkg.version,
     timestamp: new Date().toISOString(),
+    uptime: Math.round(process.uptime()),
     services,
-  })
+    responseTimeMs: Date.now() - startTime,
+  }
+
+  return NextResponse.json(response)
 }

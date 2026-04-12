@@ -1,12 +1,12 @@
 'use client'
 
 import { useState, useEffect, type ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 import { KeyboardShortcutsPanel } from '@/components/keyboard-shortcuts-panel'
-import { useAppStore } from '@/store/app-store'
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
-  const { setActivePage } = useAppStore()
+  const router = useRouter()
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -30,15 +30,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         const handleNext = (e2: KeyboardEvent) => {
           const key = e2.key.toLowerCase()
           const routes: Record<string, string> = {
-            d: 'dashboard',
-            l: 'links',
-            a: 'analytics',
-            c: 'campaigns',
-            e: 'earnings',
+            d: '/',
+            l: '/links',
+            a: '/analytics',
+            c: '/campaigns',
+            e: '/earnings',
           }
           if (routes[key]) {
             e2.preventDefault()
-            setActivePage(routes[key])
+            router.push(routes[key])
           }
           window.removeEventListener('keydown', handleNext)
         }
@@ -57,7 +57,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setActivePage])
+  }, [router])
 
   return (
     <>

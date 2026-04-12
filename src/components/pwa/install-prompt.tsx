@@ -8,15 +8,12 @@ import { Button } from '@/components/ui/button'
 export function PWAInstallPrompt() {
   const [show, setShow] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
-  const [installed, setInstalled] = useState(false)
+  const [installed, setInstalled] = useState(() => {
+    // Check initial state during render, not in effect
+    return typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+  })
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setInstalled(true)
-      return
-    }
-
     // Check if dismissed before
     if (localStorage.getItem('pwa-install-dismissed')) return
 
