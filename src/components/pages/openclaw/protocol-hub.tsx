@@ -20,6 +20,12 @@ interface ProtocolHubProps {
 
 export function ProtocolHub({ status }: ProtocolHubProps) {
   const { mcpOnline, mcpStatus, a2aOnline, a2aStatus, mcpToolsCount, a2aAgentsCount } = status
+  const mcpTools = mcpStatus?.tools as Record<string, unknown> | undefined
+  const mcpPlugins = mcpStatus?.plugins as Record<string, unknown> | undefined
+  const mcpServer = mcpStatus?.server as Record<string, unknown> | undefined
+
+  const getNumber = (value: unknown, fallback = 0) => typeof value === 'number' ? value : fallback
+  const getText = (value: unknown, fallback = '---') => typeof value === 'string' || typeof value === 'number' ? String(value) : fallback
 
   return (
     <div className="space-y-4">
@@ -42,10 +48,10 @@ export function ProtocolHub({ status }: ProtocolHubProps) {
                 <>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: 'Tools', value: (mcpStatus.tools as Record<string, unknown>)?.total || 0 },
-                      { label: 'Active', value: (mcpStatus.tools as Record<string, unknown>)?.active || 0 },
-                      { label: 'Plugins', value: (mcpStatus.plugins as Record<string, unknown>)?.total || 0 },
-                      { label: 'Executions', value: (mcpStatus.tools as Record<string, unknown>)?.totalExecutions || 0 },
+                      { label: 'Tools', value: getNumber(mcpTools?.total) },
+                      { label: 'Active', value: getNumber(mcpTools?.active) },
+                      { label: 'Plugins', value: getNumber(mcpPlugins?.total) },
+                      { label: 'Executions', value: getNumber(mcpTools?.totalExecutions) },
                     ].map(s => (
                       <div key={s.label} className="p-2 rounded-lg bg-muted/20 text-center">
                         <p className="text-lg font-bold text-foreground">{String(s.value)}</p>
@@ -54,9 +60,9 @@ export function ProtocolHub({ status }: ProtocolHubProps) {
                     ))}
                   </div>
                   <div className="text-[10px] text-muted-foreground space-y-1">
-                    <p>Uptime: {(mcpStatus.server as Record<string, unknown>)?.uptimeFormatted || '---'}</p>
-                    <p>Memory: {(mcpStatus.server as Record<string, unknown>)?.memoryUsage || '---'}</p>
-                    <p>WS Clients: {(mcpStatus.server as Record<string, unknown>)?.currentClients || 0}</p>
+                    <p>Uptime: {getText(mcpServer?.uptimeFormatted)}</p>
+                    <p>Memory: {getText(mcpServer?.memoryUsage)}</p>
+                    <p>WS Clients: {getNumber(mcpServer?.currentClients)}</p>
                   </div>
                 </>
               ) : (
@@ -87,10 +93,10 @@ export function ProtocolHub({ status }: ProtocolHubProps) {
                 <>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { label: 'Agents', value: (a2aStatus as Record<string, unknown>)?.agentCount || 0 },
-                      { label: 'Online', value: (a2aStatus as Record<string, unknown>)?.onlineAgents || 0 },
-                      { label: 'Conversations', value: (a2aStatus as Record<string, unknown>)?.activeConversations || 0 },
-                      { label: 'Messages', value: (a2aStatus as Record<string, unknown>)?.totalMessagesProcessed || 0 },
+                      { label: 'Agents', value: getNumber(a2aStatus?.agentCount) },
+                      { label: 'Online', value: getNumber(a2aStatus?.onlineAgents) },
+                      { label: 'Conversations', value: getNumber(a2aStatus?.activeConversations) },
+                      { label: 'Messages', value: getNumber(a2aStatus?.totalMessagesProcessed) },
                     ].map(s => (
                       <div key={s.label} className="p-2 rounded-lg bg-muted/20 text-center">
                         <p className="text-lg font-bold text-foreground">{String(s.value)}</p>
@@ -99,8 +105,8 @@ export function ProtocolHub({ status }: ProtocolHubProps) {
                     ))}
                   </div>
                   <div className="text-[10px] text-muted-foreground space-y-1">
-                    <p>Uptime: {(a2aStatus as Record<string, unknown>)?.uptime || '---'}</p>
-                    <p>Protocol: {(a2aStatus as Record<string, unknown>)?.protocol || 'A2A/1.0'}</p>
+                    <p>Uptime: {getText(a2aStatus?.uptime)}</p>
+                    <p>Protocol: {getText(a2aStatus?.protocol, 'A2A/1.0')}</p>
                   </div>
                 </>
               ) : (
