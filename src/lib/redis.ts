@@ -52,7 +52,7 @@ class InMemoryFallback {
 let redisClient: Redis | null = null
 let memoryFallback: InMemoryFallback | null = null
 
-function getRedis(): Redis | null {
+export function getRedis(): Redis | null {
   if (redisClient) return redisClient
 
   const url = process.env.UPSTASH_REDIS_REST_URL
