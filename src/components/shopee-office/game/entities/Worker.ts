@@ -67,6 +67,7 @@ export interface WorkerCtx {
   taskVisualTimer: Phaser.Time.TimerEvent | null
   bubble: ChatBubble
   emoteSprite: Phaser.GameObjects.Sprite | null
+  playEmote: (emoteKey: string, duration?: number) => void
 }
 
 // ===== Main Worker Class =====
