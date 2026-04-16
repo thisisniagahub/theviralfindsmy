@@ -31,7 +31,7 @@ async function main() {
   await db.notification.deleteMany()
 
   // Create campaigns
-  const campaignData: Prisma.CampaignUncheckedCreateManyInput[] = [
+  const campaignData: Prisma.CampaignCreateManyInput[] = [
     {
       id: 'camp_01',
       userId,
@@ -439,7 +439,7 @@ async function main() {
   const devices = ['Mobile', 'Desktop', 'Tablet']
   const referers = ['google.com', 'facebook.com', 'instagram.com', 'tiktok.com', 'direct', 'twitter.com', 'shopee.com.my', 'whatsapp.com']
 
-  const clickRecords: Prisma.ClickRecordUncheckedCreateManyInput[] = []
+  const clickRecords: Prisma.ClickRecordCreateManyInput[] = []
   for (let i = 0; i < 60; i++) {
     const linkIdx = Math.floor(Math.random() * affiliateLinks.length)
     const link = affiliateLinks[linkIdx]
@@ -464,7 +464,7 @@ async function main() {
 
   // Create conversions
   const conversionStatuses = ['pending', 'confirmed', 'confirmed', 'confirmed', 'paid', 'rejected']
-  const conversions: Prisma.ConversionUncheckedCreateManyInput[] = []
+  const conversions: Prisma.ConversionCreateManyInput[] = []
   for (let i = 0; i < 25; i++) {
     const linkIdx = Math.floor(Math.random() * affiliateLinks.length)
     const link = affiliateLinks[linkIdx]
@@ -488,7 +488,7 @@ async function main() {
   console.log(`✅ Created ${conversions.length} conversions`)
 
   // Create payouts
-  const payouts: Prisma.PayoutUncheckedCreateManyInput[] = [
+  const payouts: Prisma.PayoutCreateManyInput[] = [
     {
       id: 'pay_01',
       userId,
@@ -571,7 +571,7 @@ async function main() {
   console.log(`✅ Created ${payouts.length} payouts`)
 
   // Create app settings
-  const settings: Prisma.AppSettingUncheckedCreateManyInput[] = [
+  const settings: Prisma.AppSettingCreateManyInput[] = [
     { userId, key: 'api_key', value: 'shopee_aff_abc123def456ghi789jkl' },
     { userId, key: 'shopee_username', value: 'ahmad_affiliate' },
     { userId, key: 'default_commission_rate', value: '10' },
