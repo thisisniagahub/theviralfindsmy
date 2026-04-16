@@ -67,6 +67,7 @@ export interface WorkerCtx {
   taskVisualTimer: Phaser.Time.TimerEvent | null
   bubble: ChatBubble
   emoteSprite: Phaser.GameObjects.Sprite | null
+  playEmote: (emoteKey: string, duration?: number) => void
 }
 
 // ===== Main Worker Class =====
@@ -392,6 +393,7 @@ export class Worker implements WorkerCtx {
       this.emoteSprite.setPosition(this.sprite.x, this.sprite.y - 48)
       this.emoteSprite.y += Math.sin(this.scene.time.now / 300) * 2
     }
+    
 
     // Update animation based on movement and state
     if (this.isMoving) {
