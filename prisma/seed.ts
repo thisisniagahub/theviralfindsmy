@@ -2,6 +2,7 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 
 const db = new PrismaClient()
+type SeedAffiliateLink = Prisma.AffiliateLinkUncheckedCreateInput & { id: string }
 
 async function main() {
   console.log('🌱 Seeding database...')
@@ -85,7 +86,7 @@ async function main() {
   console.log(`✅ Created ${campaigns.count} campaigns`)
 
   // Create affiliate links
-  const affiliateLinks: Prisma.AffiliateLinkUncheckedCreateInput[] = [
+  const affiliateLinks: SeedAffiliateLink[] = [
     {
       id: 'link_01',
       userId,
