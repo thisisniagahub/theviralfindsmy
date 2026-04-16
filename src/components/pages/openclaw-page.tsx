@@ -85,6 +85,16 @@ export function OpenClawPage() {
 
   const mcpOnline = !mcpStatus?.error
   const a2aOnline = !a2aStatus?.error
+  const mcpToolCount = (() => {
+    const tools = (mcpStatus as Record<string, unknown> | undefined)?.tools
+    if (!tools || typeof tools !== 'object') return 11
+
+    const total = (tools as { total?: unknown }).total
+    return typeof total === 'number' ? total : 11
+  })()
+  const a2aAgentCount = typeof (a2aStatus as Record<string, unknown> | undefined)?.onlineAgents === 'number'
+    ? (a2aStatus as Record<string, unknown>).onlineAgents as number
+    : 5
 
   // Tool execution
   const handleToolExecute = useCallback(async (toolName: string, inputs: Record<string, string>) => {
@@ -192,9 +202,9 @@ export function OpenClawPage() {
               </div>
               {/* Protocol Status Indicators */}
               <div className="grid grid-cols-3 gap-3 mt-4">
-                {[
-                  { name: 'MCP Server', port: 'Gateway', online: mcpOnline, icon: Server, color: mcpOnline ? 'text-emerald-400' : 'text-red-400', tools: (mcpStatus as Record<string, unknown>)?.tools ? ((mcpStatus as Record<string, unknown>).tools as Record<string, number>).total || 11 : 11 },
-                  { name: 'A2A Agents', port: 'Gateway', online: a2aOnline, icon: Network, color: a2aOnline ? 'text-blue-400' : 'text-red-400', tools: (a2aStatus as Record<string, unknown>)?.onlineAgents || 5 },
+                {[ 
+                  { name: 'MCP Server', port: 'Gateway', online: mcpOnline, icon: Server, color: mcpOnline ? 'text-emerald-400' : 'text-red-400', tools: mcpToolCount },
+                  { name: 'A2A Agents', port: 'Gateway', online: a2aOnline, icon: Network, color: a2aOnline ? 'text-blue-400' : 'text-red-400', tools: a2aAgentCount },
                   { name: 'ACP Client', port: 'Local', online: true, icon: Radio, color: 'text-purple-400', tools: 'Active' },
                 ].map(p => (
                   <div key={p.name} className="flex items-center gap-2.5 p-2.5 rounded-lg bg-white/5 border border-white/10">
