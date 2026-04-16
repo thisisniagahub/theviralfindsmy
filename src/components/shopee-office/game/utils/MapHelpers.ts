@@ -204,18 +204,19 @@ export function renderTileObjectLayer(
     }
 
     const localId = gid - tileset.firstgid
+    const frameKey = String(localId)
     const tileWidth = tileset.tileWidth
     const tileHeight = tileset.tileHeight
     const sourceX = (localId % tileset.columns) * tileWidth
     const sourceY = Math.floor(localId / tileset.columns) * tileHeight
 
     const texture = scene.textures.get(tileset.name)
-    if (!texture.has(localId)) {
-      texture.add(localId, 0, sourceX, sourceY, tileWidth, tileHeight)
+    if (!texture.has(frameKey)) {
+      texture.add(frameKey, 0, sourceX, sourceY, tileWidth, tileHeight)
     }
 
     scene.add
-      .image(obj.x, obj.y - tileHeight, tileset.name, localId)
+      .image(obj.x, obj.y - tileHeight, tileset.name, frameKey)
       .setOrigin(0, 0)
       .setDepth(obj.y + depthOffset)
   }
