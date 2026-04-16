@@ -53,8 +53,9 @@ export function VoiceSearch({ onSearch, placeholder = 'Search products...' }: Vo
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let transcript = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript
+      const results = event.results as SpeechRecognitionResultList
+      for (let i = event.resultIndex; i < results.length; i++) {
+        transcript += results[i][0].transcript
       }
       setQuery(transcript)
     }

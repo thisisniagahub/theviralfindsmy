@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { joinOffice, getJoinInfo } from '@/lib/shopee-office-store'
 import type { JoinRequest } from '@/lib/shopee-office-store'
 
@@ -25,6 +27,12 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+    const session = await getServerSession(authOptions) as { user?: { id?: string } } | null
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const body = (await request.json()) as JoinRequest
 
     if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 import { createCampaignSchema } from '@/lib/validations'
 import { z } from 'zod'
 
@@ -16,10 +17,15 @@ export async function GET() {
     return NextResponse.json(campaigns)
   }
   try {
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
+    const params = new URLSearchParams()
     if (!DB_URL) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
-    const data = await fetch(`${DB_URL}/campaigns`).then(r => r.json())
+    const path = `/campaigns${params.toString() ? `?${params.toString()}` : ''}`
+    const data = await authenticatedDbFetch(DB_URL, path, auth!).then(r => r.json())
     return NextResponse.json(data)
   } catch (error) {
     console.error('Campaigns GET error:', error)
@@ -28,8 +34,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.mutation)
   if (rateLimited) return rateLimited
+
+  const { auth, error } = await requireAuth()
+  if (error) return error
 
   let validated
   try {
@@ -62,11 +71,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
-    const campaign = await fetch(`${DB_URL}/campaigns`, {
+    const response = await authenticatedDbFetch(DB_URL, '/campaigns', auth!, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
+    const campaign = await response.json()
 
     return NextResponse.json(campaign, { status: 201 })
   } catch (error) {

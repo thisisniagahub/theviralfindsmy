@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api-auth'
 
 /**
  * Scheduled Reports API
@@ -79,6 +80,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   try {
     const body = await request.json()
     const { period = '30d', format = 'json', schedule } = body

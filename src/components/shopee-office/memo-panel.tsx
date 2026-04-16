@@ -1,149 +1,68 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import type { Language } from './language-toggle'
-
-interface MemoPanelProps {
-  memo: MemoData | null
-  isLoading: boolean
-  language: Language
-}
-
 export interface MemoData {
-  date: string
   title: string
-  content: string
+  date: string
   summary: {
-    totalTasks: number
     completedTasks: number
     errorCount: number
-    agentHighlights: { agent: string; tasks: number; status: string }[]
   }
+  content: string
 }
 
-const translations = {
-  en: {
-    title: "📝 Yesterday's Memo",
-    loading: 'Loading memo...',
-    noMemo: 'No memo available yet.',
-    totalTasks: 'Total Tasks',
-    completed: 'Completed',
-    errors: 'Errors',
-    highlights: 'Agent Highlights',
-    signed: '— Shopee Office System',
-  },
-  cn: {
-    title: '📝 昨日备忘录',
-    loading: '加载备忘录...',
-    noMemo: '暂无备忘录。',
-    totalTasks: '总任务',
-    completed: '已完成',
-    errors: '错误',
-    highlights: '代理亮点',
-    signed: '— Shopee 办公系统',
-  },
-  jp: {
-    title: '📝 昨日のメモ',
-    loading: 'メモを読み込み中...',
-    noMemo: 'メモはまだありません。',
-    totalTasks: '総タスク',
-    completed: '完了',
-    errors: 'エラー',
-    highlights: 'エージェントハイライト',
-    signed: '— Shopee オフィスシステム',
-  },
-}
-
-function formatMemoContent(content: string) {
-  return content.split('\n').map((line, i) => {
-    if (line.startsWith('## ')) {
-      return <h3 key={i} className="text-sm font-bold mt-3 mb-1 text-[#4a3d28]">{line.replace('## ', '')}</h3>
-    }
-    if (line.startsWith('- ')) {
-      return (
-        <li key={i} className="ml-3 text-xs text-[#5c4a2a] list-disc">
-          {line.replace('- ', '')}
-        </li>
-      )
-    }
-    if (line.trim() === '') {
-      return <div key={i} className="h-2" />
-    }
-    return <p key={i} className="text-xs text-[#5c4a2a]">{line}</p>
-  })
-}
-
-export function MemoPanel({ memo, isLoading, language }: MemoPanelProps) {
-  const t = translations[language]
+export function MemoPanel({ memo, isLoading }: { memo: MemoData | null, isLoading: boolean }) {
+  if (isLoading) return <div className="p-8 text-center text-zinc-500 animate-pulse font-mono text-xs tracking-widest">DECRYPTING MEMO...</div>
+  if (!memo) return <div className="p-8 text-center text-zinc-600 font-mono text-xs">NO OPERATIONAL DATA FOR THIS CYCLE.</div>
 
   return (
-    <motion.div
-      className="shopee-office-panel shopee-memo-panel shopee-panel-memo"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.2 }}
-    >
-      <div className="shopee-panel-title">{t.title}</div>
-
-      {isLoading && (
-        <div className="text-center py-8 text-sm text-gray-500 font-mono animate-pulse">
-          {t.loading}
+    <div className="flex flex-col h-full">
+      {/* Header Info */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="space-y-1">
+          <h3 className="text-xl font-black text-white tracking-tight">{memo.title.toUpperCase()}</h3>
+          <span className="text-[10px] font-mono text-zinc-500">{memo.date} // OPERATIONAL_CYCLE_04</span>
         </div>
-      )}
-
-      {!isLoading && !memo && (
-        <div className="text-center py-8 text-sm text-gray-500 font-mono italic">
-          {t.noMemo}
+        <div className="px-3 py-1 bg-[#EE4D2D]/10 rounded-full border border-[#EE4D2D]/20">
+           <span className="text-[9px] font-black text-[#EE4D2D] tracking-widest uppercase">Verified Report</span>
         </div>
-      )}
+      </div>
 
-      {!isLoading && memo && (
-        <div className="shopee-memo-content">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-2 mb-3 pb-3 border-b border-[#c4b48e]/50">
-            <div className="text-center">
-              <div className="text-lg font-bold text-[#3b3b32]">{memo.summary.totalTasks}</div>
-              <div className="text-[9px] text-[#8b7355]">{t.totalTasks}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-green-700">{memo.summary.completedTasks}</div>
-              <div className="text-[9px] text-[#8b7355]">{t.completed}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg font-bold text-red-700">{memo.summary.errorCount}</div>
-              <div className="text-[9px] text-[#8b7355]">{t.errors}</div>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="max-h-48 overflow-y-auto custom-scrollbar pr-1">
-            {formatMemoContent(memo.content)}
-          </div>
-
-          {/* Agent Highlights */}
-          {memo.summary.agentHighlights.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-[#c4b48e]/50">
-              <h4 className="text-[10px] font-bold text-[#4a3d28] mb-2">{t.highlights}</h4>
-              <div className="space-y-1">
-                {memo.summary.agentHighlights.map((h, i) => (
-                  <div key={i} className="flex items-center justify-between text-[10px]">
-                    <span className="text-[#5c4a2a]">{h.agent}</span>
-                    <span className="text-[#8b7355]">
-                      {h.tasks} {language === 'cn' ? '任务' : language === 'jp' ? 'タスク' : 'tasks'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Date / Signature */}
-          <div className="shopee-memo-date">
-            <div>{memo.date}</div>
-            <div className="italic mt-1">{t.signed}</div>
-          </div>
+      {/* Stats Summary */}
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="space-y-1">
+           <span className="text-[9px] font-black text-zinc-600 tracking-widest uppercase">Output</span>
+           <div className="text-xl font-bold text-white font-mono">{memo.summary.completedTasks}</div>
         </div>
-      )}
-    </motion.div>
+        <div className="space-y-1">
+           <span className="text-[9px] font-black text-zinc-600 tracking-widest uppercase">Incidents</span>
+           <div className="text-xl font-bold text-red-500 font-mono">{memo.summary.errorCount}</div>
+        </div>
+        <div className="space-y-1">
+           <span className="text-[9px] font-black text-zinc-600 tracking-widest uppercase">Success</span>
+           <div className="text-xl font-bold text-emerald-500 font-mono">98.4%</div>
+        </div>
+      </div>
+
+      {/* Main Content (Formatted for high density) */}
+      <div className="flex-1 overflow-y-auto pr-4 space-y-4 no-scrollbar">
+        {memo.content.split('\n').filter(l => l.trim()).map((line, i) => (
+          <div key={i} className="flex gap-4">
+             <div className="w-1 h-auto bg-white/5 rounded-full" />
+             <p className="text-zinc-400 text-xs leading-relaxed font-medium">
+               {line.replace(/^## |- /g, '')}
+             </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer / Signature */}
+      <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between opacity-50">
+         <span className="text-[9px] font-mono text-zinc-500 underline decoration-zinc-700 underline-offset-4 cursor-help">NIAGABOT_SYSTEM_V4.0.12</span>
+         <div className="flex items-center gap-2">
+            <div className="w-8 h-[1px] bg-zinc-700" />
+            <span className="text-[10px] font-black text-zinc-400 italic">SYSTEM_AUTH_READY</span>
+         </div>
+      </div>
+    </div>
   )
 }

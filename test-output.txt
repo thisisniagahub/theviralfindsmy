@@ -1,0 +1,27 @@
+$ vitest run
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.4 [39m[90mG:/PROJECT-6[39m
+
+ [32m✓[39m src/lib/get-user-id.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/lib/rate-limit.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/lib/cache.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m src/lib/service-urls.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+[90mstderr[2m | src/lib/redis.test.ts[2m > [22m[2mredis[2m > [22m[2mshould return null when not configured
+[22m[39m⚠️ Redis not configured - using in-memory fallback
+
+[90mstderr[2m | src/lib/redis.test.ts[2m > [22m[2mredis[2m > [22m[2mshould report unavailable when env vars missing
+[22m[39m⚠️ Redis not configured - using in-memory fallback
+⚠️ Redis not configured - using in-memory fallback
+
+[90mstdout[2m | src/lib/redis.test.ts[2m > [22m[2mredis[2m > [22m[2mshould attempt connection when configured
+[22m[39m✅ Redis connection established
+
+ [32m✓[39m src/lib/redis.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 70[2mms[22m[39m
+ [32m✓[39m src/lib/env.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m src/lib/validations.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m54 passed[39m[22m[90m (54)[39m
+[2m   Start at [22m 02:17:05
+[2m   Duration [22m 14.14s[2m (transform 1.97s, setup 14.30s, import 2.19s, tests 281ms, environment 65.30s)[22m
+

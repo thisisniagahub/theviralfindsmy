@@ -1,259 +1,120 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import type { Language } from './language-toggle'
+import { motion } from 'framer-motion'
 
-// ===== Types =====
-interface IsometricOfficeProps {
-  agents: Array<{
-    agentId: string
-    name: string
-    emoji: string
-    status: string
-    detail: string
-    tasksCompleted: number
-  }>
-  language: Language
-  onSelectAgent?: (agentId: string) => void
-}
-
-// ===== Zone Definitions =====
-const ZONES = [
-  { id: 'research', label: { en: 'Research', cn: '研究', jp: '調査' }, color: '#a855f7', bg: 'rgba(168,85,247,0.08)', agentIds: ['product-scout', 'analytics-agent'] },
-  { id: 'create', label: { en: 'Create', cn: '创建', jp: '作成' }, color: '#f97316', bg: 'rgba(249,115,22,0.08)', agentIds: ['content-writer', 'link-builder'] },
-  { id: 'optimize', label: { en: 'Optimize', cn: '优化', jp: '最適化' }, color: '#eab308', bg: 'rgba(234,179,8,0.08)', agentIds: ['seo-optimizer', 'campaign-master'] },
-  { id: 'execute', label: { en: 'Execute', cn: '执行', jp: '実行' }, color: '#22c55e', bg: 'rgba(34,197,94,0.08)', agentIds: ['review-monitor', 'payout-checker'] },
-]
-
-// ===== Furniture Definitions (isometric positions) =====
-const FURNITURE = [
-  // Research zone desks
-  { type: 'desk', zone: 'research', row: 0, col: 0, label: { en: 'Scout Desk', cn: '侦察桌', jp: 'スカウト机' } },
-  { type: 'desk', zone: 'research', row: 0, col: 1, label: { en: 'Analytics Desk', cn: '分析桌', jp: '分析机' } },
-  { type: 'plant', zone: 'research', row: 0, col: 2 },
-  // Create zone desks
-  { type: 'desk', zone: 'create', row: 1, col: 0, label: { en: 'Writer Desk', cn: '写作桌', jp: 'ライター机' } },
-  { type: 'desk', zone: 'create', row: 1, col: 1, label: { en: 'Builder Desk', cn: '构建桌', jp: 'ビルダー机' } },
-  { type: 'coffee', zone: 'create', row: 1, col: 2 },
-  // Optimize zone desks
-  { type: 'desk', zone: 'optimize', row: 2, col: 0, label: { en: 'SEO Desk', cn: 'SEO桌', jp: 'SEO机' } },
-  { type: 'desk', zone: 'optimize', row: 2, col: 1, label: { en: 'Campaign Desk', cn: '活动桌', jp: 'キャンペーン机' } },
-  { type: 'plant', zone: 'optimize', row: 2, col: 2 },
-  // Execute zone desks
-  { type: 'desk', zone: 'execute', row: 3, col: 0, label: { en: 'Review Desk', cn: '审核桌', jp: 'レビュー机' } },
-  { type: 'desk', zone: 'execute', row: 3, col: 1, label: { en: 'Payout Desk', cn: '支付桌', jp: '支払机' } },
-  { type: 'server', zone: 'execute', row: 3, col: 2 },
-]
-
-// ===== Status colors =====
-const STATUS_COLORS: Record<string, string> = {
-  idle: '#22c55e',
-  writing: '#f97316',
-  researching: '#a855f7',
-  executing: '#eab308',
-  syncing: '#3b82f6',
-  error: '#ef4444',
-  thinking: '#06b6d4',
-  collaborating: '#ec4899',
-  reporting: '#8b5cf6',
-  break: '#6b7280',
-}
-
-// ===== Isometric Cell Component =====
-function IsoCell({
-  type,
-  agent,
-  zone,
-  onClick,
-}: {
-  type: string
-  agent?: IsometricOfficeProps['agents'][0]
-  zone: typeof ZONES[0]
-  onClick?: () => void
-}) {
-  const statusColor = agent ? (STATUS_COLORS[agent.status] || '#888') : undefined
-
+export function IsometricOffice({ agents, onSelectAgent }: { agents: any[], onSelectAgent: (id: string) => void }) {
   return (
-    <motion.div
-      className="iso-cell"
-      style={{
-        background: type === 'desk' ? zone.bg : 'transparent',
-        borderColor: type === 'desk' ? `${zone.color}33` : 'transparent',
-      }}
-      onClick={onClick}
-      whileHover={agent ? { scale: 1.08, y: -4 } : undefined}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-    >
-      {agent ? (
-        <div className="iso-agent-wrapper">
-          <div
-            className="iso-agent-avatar"
-            style={{
-              borderColor: statusColor,
-              boxShadow: `0 0 12px ${statusColor}44, 0 4px 8px rgba(0,0,0,0.3)`,
-            }}
-          >
-            <span className="iso-agent-emoji">{agent.emoji}</span>
-            {/* Status indicator */}
-            <div
-              className="iso-status-dot"
-              style={{
-                background: statusColor,
-                animation: agent.status === 'error' ? 'dotPulse 1s ease-in-out infinite' : 'none',
-              }}
-            />
-          </div>
-          <div className="iso-agent-name" style={{ color: statusColor }}>
-            {agent.name}
-          </div>
-          <div className="iso-agent-status">{agent.status}</div>
-        </div>
-      ) : type === 'desk' ? (
-        <div className="iso-desk-icon">🖥️</div>
-      ) : type === 'plant' ? (
-        <div className="iso-plant-icon">🪴</div>
-      ) : type === 'coffee' ? (
-        <div className="iso-coffee-icon">☕</div>
-      ) : type === 'server' ? (
-        <div className="iso-server-icon">🗄️</div>
-      ) : null}
-    </motion.div>
-  )
-}
+    <div className="absolute inset-0 z-0 flex items-center justify-center p-12">
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-[#0d0e11]" 
+           style={{ backgroundImage: 'linear-gradient(rgba(238,77,45,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(238,77,45,0.02) 1px, transparent 1px)', backgroundSize: '64px 64px' }} 
+      />
 
-// ===== Zone Header =====
-function ZoneHeader({ zone, language }: { zone: typeof ZONES[0]; language: Language }) {
-  return (
-    <div className="iso-zone-header" style={{ borderColor: zone.color }}>
-      <div className="iso-zone-dot" style={{ background: zone.color, boxShadow: `0 0 8px ${zone.color}66` }} />
-      <span style={{ color: zone.color, fontFamily: 'monospace', fontSize: 11, fontWeight: 'bold', letterSpacing: 1 }}>
-        {zone.label[language as 'en' | 'cn' | 'jp']}
-      </span>
+      <svg viewBox="0 0 1000 700" className="w-full h-full drop-shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+         {/* Define Gradients & Filters */}
+         <defs>
+            <radialGradient id="dotGlow">
+               <stop offset="0%" stopColor="#EE4D2D" stopOpacity="0.4" />
+               <stop offset="100%" stopColor="#EE4D2D" stopOpacity="0" />
+            </radialGradient>
+            <filter id="neonBlur">
+               <feGaussianBlur stdDeviation="2" result="blur" />
+               <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+               </feMerge>
+            </filter>
+         </defs>
+
+         {/* 1. Floor Plan (Main Base) */}
+         <path d="M500 100 L950 350 L500 600 L50 350 Z" fill="#14151a" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+         
+         {/* 2. Room Dividers (Based on the Mega HQ Layout) */}
+         {/* Line separating Office from Hallway */}
+         <path d="M500 100 L500 600" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="4 4" />
+         {/* Line separating Meeting Room from Hallway */}
+         <path d="M725 225 L275 475" stroke="rgba(255,255,255,0.1)" strokeWidth="1" strokeDasharray="4 4" />
+
+         {/* 3. Zone Labels */}
+         <g className="opacity-30">
+            <text x="300" y="250" fill="white" fontSize="10" fontWeight="bold" className="uppercase tracking-[0.3em]">Office_Zone</text>
+            <text x="700" y="250" fill="white" fontSize="10" fontWeight="bold" className="uppercase tracking-[0.3em]">Meeting_Room</text>
+            <text x="450" y="550" fill="white" fontSize="10" fontWeight="bold" className="uppercase tracking-[0.3em]">Hallway_E2</text>
+         </g>
+
+         {/* 4. Agents / Operational Points (Matched to Image positions) */}
+         {agents.map((agent, i) => {
+            // Position agents in specific "Workstations" or "Rooms"
+            const positions = [
+               { x: 300, y: 300, room: 'Office' },
+               { x: 750, y: 350, room: 'Meeting Room' },
+               { x: 500, y: 450, room: 'Hallway' },
+               { x: 600, y: 250, room: 'Meeting Room' },
+            ]
+            const pos = positions[i % positions.length]
+            const isActive = agent.status !== 'idle'
+
+            return (
+               <g 
+                  key={agent.agentId} 
+                  className="cursor-pointer group/agent"
+                  onClick={() => onSelectAgent(agent.agentId)}
+               >
+                  {/* Glow under active agent */}
+                  {isActive && (
+                    <circle cx={pos.x} cy={pos.y} r="60" fill="url(#dotGlow)" className="animate-pulse" />
+                  )}
+
+                  {/* Marker Dot (The actual 'presence' point) */}
+                  <circle 
+                    cx={pos.x} 
+                    cy={pos.y} 
+                    r="4" 
+                    fill={isActive ? '#EE4D2D' : '#333'} 
+                    filter="url(#neonBlur)"
+                  />
+                  
+                  {/* Avatar & Tooltip HUD (Matched to Holo-Tooltip Strategy) */}
+                  <g className="translate-y-[-40px]">
+                     <rect 
+                        x={pos.x - 40} y={pos.y - 30} width="80" height="24" 
+                        rx="4" fill="rgba(27,28,30,0.8)" stroke="rgba(255,255,255,0.1)"
+                        className="group-hover/agent:fill-white group-hover/agent:stroke-[#EE4D2D] transition-colors"
+                     />
+                     <text 
+                        x={pos.x} y={pos.y - 14} textAnchor="middle" 
+                        fill="white" fontSize="8" fontWeight="black" 
+                        className="pointer-events-none group-hover/agent:fill-black font-mono transition-colors"
+                     >
+                        {agent.name.toUpperCase()}
+                     </text>
+                     <text 
+                        x={pos.x + 45} y={pos.y - 20} 
+                        fill="#EE4D2D" fontSize="16"
+                        className="animate-bounce"
+                     >
+                        {agent.emoji}
+                     </text>
+                  </g>
+
+                  {/* Operational Link Line (Simulating data path) */}
+                  {isActive && (
+                    <path 
+                       d={`M${pos.x} ${pos.y} L${pos.x + 40} ${pos.y - 80}`}
+                       stroke="rgba(238,77,45,0.2)" strokeWidth="0.5" strokeDasharray="2 2"
+                    />
+                  )}
+               </g>
+            )
+         })}
+      </svg>
+
+      {/* 5. Decorative Isometric Elements (Mocking Furniture/Servers) */}
+      <div className="absolute top-[20%] left-[15%] w-16 h-16 border border-white/5 rotate-[30deg] skew-x-[-30deg] bg-white/5" />
+      <div className="absolute top-[40%] right-[20%] w-24 h-12 border border-white/5 rotate-[30deg] skew-x-[-30deg] bg-white/5" />
+      <div className="absolute bottom-[20%] left-[40%] w-32 h-32 border border-white/5 rotate-[30deg] skew-x-[-30deg] bg-[#EE4D2D]/5 flex items-center justify-center">
+         <div className="w-16 h-16 border border-[#EE4D2D]/20 animate-spin-slow" />
+      </div>
     </div>
-  )
-}
-
-// ===== Main Component =====
-export function IsometricOffice({ agents, language, onSelectAgent }: IsometricOfficeProps) {
-  const [scale, setScale] = useState(1)
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 })
-
-  const handleWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault()
-    setScale((prev) => Math.max(0.5, Math.min(2, prev - e.deltaY * 0.001)))
-  }, [])
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    setIsDragging(true)
-    dragStart.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y }
-  }, [offset])
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging) return
-    setOffset({
-      x: dragStart.current.ox + (e.clientX - dragStart.current.x),
-      y: dragStart.current.oy + (e.clientY - dragStart.current.y),
-    })
-  }, [isDragging])
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-  }, [])
-
-  // Reset view
-  const resetView = useCallback(() => {
-    setScale(1)
-    setOffset({ x: 0, y: 0 })
-  }, [])
-
-  // Map agents to zones
-  const getAgentForDesk = useCallback((zoneId: string, col: number) => {
-    const zone = ZONES.find((z) => z.id === zoneId)
-    if (!zone) return undefined
-    const agentId = zone.agentIds[col]
-    return agents.find((a) => a.agentId === agentId)
-  }, [agents])
-
-  return (
-    <motion.div
-      className="shopee-office-panel"
-      style={{ flex: '1 1 100%', minWidth: 0 }}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="shopee-panel-title flex items-center justify-between">
-        <span className="flex items-center gap-2">
-          🏗️ Isometric Office
-          <span style={{ fontSize: 8, color: '#555', letterSpacing: 0.5, fontWeight: 'normal' }}>
-            CSS-Based View
-          </span>
-        </span>
-        <div className="flex items-center gap-2">
-          <button className="shopee-btn" onClick={resetView} style={{ fontSize: 9, padding: '2px 8px' }}>
-            Reset
-          </button>
-          <span style={{ fontSize: 9, color: '#888', fontFamily: 'monospace' }}>
-            {Math.round(scale * 100)}%
-          </span>
-        </div>
-      </div>
-
-      {/* Isometric Container */}
-      <div
-        className="iso-viewport"
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-      >
-        <div
-          className="iso-world"
-          style={{
-            transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
-            transformOrigin: 'center center',
-          }}
-        >
-          {/* Isometric grid with zones */}
-          <div className="iso-floor">
-            {ZONES.map((zone) => (
-              <div key={zone.id} className="iso-zone">
-                <ZoneHeader zone={zone} language={language} />
-                <div className="iso-zone-grid">
-                  {[0, 1, 2].map((col) => {
-                    const furniture = FURNITURE.find((f) => f.zone === zone.id && f.col === col)
-                    const agent = furniture?.type === 'desk' ? getAgentForDesk(zone.id, col) : undefined
-                    return (
-                      <IsoCell
-                        key={`${zone.id}-${col}`}
-                        type={furniture?.type || 'empty'}
-                        agent={agent}
-                        zone={zone}
-                        onClick={agent ? () => onSelectAgent?.(agent.agentId) : undefined}
-                      />
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="iso-legend">
-        {Object.entries(STATUS_COLORS).map(([status, color]) => (
-          <div key={status} className="iso-legend-item">
-            <div className="iso-legend-dot" style={{ background: color }} />
-            <span>{status}</span>
-          </div>
-        ))}
-      </div>
-    </motion.div>
   )
 }

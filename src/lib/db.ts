@@ -1,3 +1,13 @@
+/**
+ * DEPRECATED: Do not import PrismaClient directly in Next.js.
+ * Prisma's native query engine can hang in Next.js 16 + Turbopack API route handlers.
+ *
+ * Use dbFetch() from @/lib/db-safe.ts instead.
+ *
+ * This file is kept for backward compatibility only and will be removed in a future release.
+ */
+console.warn('⚠️ DEPRECATED: Do not import from @/lib/db. Use dbFetch() from @/lib/db-safe.ts instead.')
+
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {

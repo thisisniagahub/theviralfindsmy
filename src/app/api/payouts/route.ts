@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 import { createPayoutSchema } from '@/lib/validations'
 import { z } from 'zod'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -33,7 +36,10 @@ export async function GET() {
     if (!DB_URL) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
-    const data = await fetch(`${DB_URL}/payouts`).then(r => r.json())
+    const session = await getServerSession(authOptions)
+    const userId = (session as any)?.user?.id
+    const url = userId ? `${DB_URL}/payouts?userId=${encodeURIComponent(userId)}` : `${DB_URL}/payouts`
+    const data = await fetch(url).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {
@@ -43,8 +49,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.mutation)
   if (rateLimited) return rateLimited
+
+  const { auth, error } = await requireAuth()
+  if (error) return error
 
   let validated
   try {
@@ -77,11 +86,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
-    const payout = await fetch(`${DB_URL}/payouts`, {
+    const response = await authenticatedDbFetch(DB_URL, '/payouts', auth!, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
+    const payout = await response.json()
 
     return NextResponse.json(payout, { status: 201 })
   } catch (error) {

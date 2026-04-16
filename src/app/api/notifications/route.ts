@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
   if (process.env.DEMO_MODE === 'true') {
@@ -28,13 +29,18 @@ export async function GET(request: NextRequest) {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') || 'all'
 
-    const data = await fetch(`${DB_URL}/notifications?filter=${encodeURIComponent(filter)}`).then(r => r.json())
+    const params = new URLSearchParams({ filter })
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
+
+    const data = await authenticatedDbFetch(DB_URL, `/notifications?${params.toString()}`, auth!).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {
@@ -48,6 +54,9 @@ export async function GET(request: NextRequest) {
 
 // PUT: Mark all notifications as read (idempotent — no request body expected)
 export async function PUT(request: NextRequest) {
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   if (process.env.DEMO_MODE === 'true') {
     return NextResponse.json({ success: true, message: 'All notifications marked as read' })
   }
@@ -67,7 +76,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    await fetch(`${DB_URL}/notifications`, { method: 'PUT' })
+    await authenticatedDbFetch(DB_URL, '/notifications', auth!, { method: 'PUT' })
 
     return NextResponse.json({ success: true, message: 'All notifications marked as read' })
   } catch (error) {

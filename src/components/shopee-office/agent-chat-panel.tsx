@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Zap } from 'lucide-react'
 import type { Language } from './language-toggle'
+import type { AgentStatus } from './types'
 
 // ===== Types =====
 interface AgentChatPanelProps {
@@ -16,7 +17,8 @@ interface AgentChatPanelProps {
     tasksCompleted: number
   }>
   language: Language
-  onSetAgentStatus?: (agentId: string, status: string) => void
+  onSetAgentStatus?: (agentId: string, status: AgentStatus) => void
+  isMini?: boolean
 }
 
 interface ChatMessage {
@@ -72,8 +74,12 @@ const DEMO_RESPONSES: Record<string, string[]> = {
 }
 
 // ===== Component =====
-export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChatPanelProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+export function AgentChatPanel({ agents, language, onSetAgentStatus, isMini }: AgentChatPanelProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>(isMini ? [
+    { id: '1', role: 'agent', agentId: 'product-scout', agentName: 'NIAGARESEARCH', agentEmoji: '🔍', content: 'Taking a quick recharge break.', timestamp: Date.now() - 100000 },
+    { id: '2', role: 'agent', agentId: 'campaign-master', agentName: 'NIAGAMARKETING', agentEmoji: '🎯', content: 'Anyone for juice?', timestamp: Date.now() - 50000 },
+    { id: '3', role: 'agent', agentId: 'product-scout', agentName: 'NIAGARESEARCH', agentEmoji: '🔍', content: 'Synchronizing data with Shopee API...', timestamp: Date.now() }
+  ] : [])
   const [input, setInput] = useState('')
   const [selectedAgentId, setSelectedAgentId] = useState<string>(agents[0]?.agentId || '')
   const [isTyping, setIsTyping] = useState(false)
@@ -88,6 +94,25 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
   }, [messages])
 
   const selectedAgent = agents.find((a) => a.agentId === selectedAgentId)
+  const allowDemoFallback = process.env.NODE_ENV !== 'production'
+
+  const getFallbackResponse = useCallback((agentId: string, reason: 'offline' | 'network' | 'pipeline', error?: unknown) => {
+    if (!allowDemoFallback) {
+      if (reason === 'pipeline') {
+        return '⚠️ Pipeline is temporarily unavailable. Please try again when the OpenClaw gateway is healthy.'
+      }
+      return '⚠️ Agent is temporarily unavailable. Please try again when the gateway reconnects.'
+    }
+
+    const demoResponses = DEMO_RESPONSES[agentId] || ['⚠️ NiagaBot offline. Using cached response.']
+    if (reason === 'pipeline') {
+      return `⚠️ NiagaBot pipeline unavailable. Using demo mode.${error ? ` Error: ${String(error)}` : ''}`
+    }
+    if (reason === 'network') {
+      return `⚠️ [Offline] ${demoResponses[Math.floor(Math.random() * demoResponses.length)]}`
+    }
+    return `⚠️ [Offline Mode] ${demoResponses[Math.floor(Math.random() * demoResponses.length)]}`
+  }, [allowDemoFallback])
 
   // Send message
   const sendMessage = useCallback(async (text: string, agentId?: string) => {
@@ -136,14 +161,10 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
         const data = await res.json()
         responseText = data.response || data.output || 'NiagaBot response received.'
       } else {
-        // Fallback to demo response if NiagaBot is unavailable
-        const demoResponses = DEMO_RESPONSES[targetAgentId] || ['⚠️ NiagaBot offline. Using cached response.']
-        responseText = '⚠️ [Offline Mode] ' + demoResponses[Math.floor(Math.random() * demoResponses.length)]
+        responseText = getFallbackResponse(targetAgentId, 'offline')
       }
     } catch {
-      // Network error — use demo fallback
-      const demoResponses = DEMO_RESPONSES[targetAgentId] || ['⚠️ Connection error.']
-      responseText = '⚠️ [Offline] ' + demoResponses[Math.floor(Math.random() * demoResponses.length)]
+      responseText = getFallbackResponse(targetAgentId, 'network')
     }
 
     // Add agent response
@@ -161,7 +182,7 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
 
     // Return agent to idle
     onSetAgentStatus?.(targetAgentId, 'idle')
-  }, [selectedAgentId, agents, onSetAgentStatus])
+  }, [selectedAgentId, agents, getFallbackResponse, onSetAgentStatus])
 
   // Run pipeline
   const runPipeline = useCallback(async () => {
@@ -217,13 +238,18 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
         throw new Error('Pipeline request failed')
       }
     } catch (err) {
-      // Fallback to demo pipeline
       setMessages(prev => [...prev, {
         id: `msg-${Date.now()}-error`,
         role: 'system',
-        content: '⚠️ NiagaBot pipeline unavailable. Using demo mode. Error: ' + String(err),
+        content: getFallbackResponse('product-scout', 'pipeline', err),
         timestamp: Date.now(),
       }])
+
+      if (!allowDemoFallback) {
+        setIsTyping(false)
+        setIsPipelineRunning(false)
+        return
+      }
 
       const agents_demo = ['product-scout', 'content-writer', 'seo-optimizer']
       const labels = ['🔍 Research', '✍️ Content', '📊 Format']
@@ -264,7 +290,7 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
       content: '✅ Pipeline completed! All 3 agents finished their tasks.',
       timestamp: Date.now(),
     }])
-  }, [agents, onSetAgentStatus])
+  }, [agents, allowDemoFallback, getFallbackResponse, onSetAgentStatus])
 
   const handleSend = useCallback(() => {
     if (input.trim()) {
@@ -288,6 +314,46 @@ export function AgentChatPanel({ agents, language, onSetAgentStatus }: AgentChat
     jp: { title: 'エージェントチャット', placeholder: 'メッセージを入力...', send: '送信', pipeline: 'パイプライン実行', typing: '入力中...' },
   }
   const t = translations[language]
+
+  if (isMini) {
+    return (
+      <div className="flex flex-col h-full overflow-hidden text-[10px]">
+        {/* Chat Stream */}
+        <div ref={listRef} className="flex-1 overflow-y-auto space-y-3 pr-2 no-scrollbar">
+          {messages.map((msg) => (
+            <div key={msg.id} className="flex gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#EE4D2D]/20 flex items-center justify-center text-sm flex-shrink-0 border border-[#EE4D2D]/30 shadow-inner">
+                {msg.agentId === 'product-scout' ? '🔍' : msg.agentId === 'campaign-master' ? '🎯' : '🤖'}
+              </div>
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="font-black text-white uppercase tracking-wider">{msg.agentName}</span>
+                  <span className="text-[8px] text-zinc-500 font-mono">
+                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                <p className="text-zinc-300 leading-relaxed font-medium bg-white/5 p-2 rounded-r-xl rounded-bl-xl border border-white/5">
+                  {msg.content}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mini Input */}
+        <div className="mt-4 pt-4 border-t border-white/5 flex gap-2">
+          <input
+            type="text"
+            placeholder={`Chat with ${agents.find(a => a.agentId === selectedAgentId)?.name || 'Agent'}...`}
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] text-zinc-200 focus:outline-none focus:border-[#EE4D2D]/50 placeholder:text-zinc-600"
+          />
+          <button className="w-8 h-8 bg-[#EE4D2D] rounded-xl flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform">
+             <Send size={12} />
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <motion.div

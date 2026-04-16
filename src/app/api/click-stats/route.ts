@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -44,7 +46,10 @@ export async function GET() {
     if (!DB_URL) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
-    const data = await fetch(`${DB_URL}/click-stats`).then(r => r.json())
+    const session = await getServerSession(authOptions)
+    const userId = ((session as any)?.user as Record<string, string> | undefined)?.id
+    const url = userId ? `${DB_URL}/click-stats?userId=${encodeURIComponent(userId)}` : `${DB_URL}/click-stats`
+    const data = await fetch(url).then(r => r.json())
     return NextResponse.json(data)
   } catch (error) {
     console.error('Click stats error:', error)

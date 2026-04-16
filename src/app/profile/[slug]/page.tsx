@@ -1,10 +1,9 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Link2, MousePointerClick, TrendingUp, DollarSign, Twitter, Instagram, Youtube, Globe, Share2 } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Link2, MousePointerClick, TrendingUp, DollarSign, Twitter, Instagram, Youtube, Globe } from 'lucide-react'
+import { ShareProfileButton } from './share-button'
 
 interface ProfileData {
   displayName: string
@@ -140,12 +139,9 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           </CardContent>
         </Card>
 
-        {/* Share button */}
+        {/* Share button — client component to use navigator.clipboard / window */}
         <div className="flex justify-center mt-6">
-          <Button variant="outline" onClick={() => { navigator.clipboard.writeText(window.location.href) }}>
-            <Share2 className="w-4 h-4 mr-2" />
-            Share Profile
-          </Button>
+          <ShareProfileButton />
         </div>
 
         {/* Footer */}

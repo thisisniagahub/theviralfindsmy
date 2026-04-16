@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { executeMCPTool } from '@/lib/openclaw'
-
-async function getSDK() {
-  const ZAI = (await import('z-ai-web-dev-sdk')).default
-  return ZAI.create()
-}
+import { executeMCPTool, openClawCompletion, extractMessageContent } from '@/lib/openclaw'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
+  // 1. Check auth
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
+  // 2. Check rate limit (10 req/min for AI)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.ai)
+  if (rateLimited) return rateLimited
+
   try {
     const body = await request.json()
     const { competitorShop = '', metrics = 'all', source = 'auto' } = body
@@ -22,35 +27,24 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: true, ...parsed, competitor: competitorShop, source: mcpResult._source })
         }
       } catch {
-        // Gateway failed, fall through to SDK
+        // Gateway MCP failed, fall through to completion fallback
       }
     }
 
-    // SDK fallback
-    const zai = await getSDK()
-
-    const searchResults = await zai.functions.invoke('web_search', {
-      query: `Shopee Malaysia ${competitorShop} shop seller review ratings products`,
-      num: 5,
-    })
-
-    const contextText = searchResults
-      .map((r: { name?: string; snippet?: string }, i: number) => `${i + 1}. ${r.name}: ${r.snippet}`)
-      .join('\n')
-
-    const completion = await zai.chat.completions.create({
+    // Gateway completion fallback
+    const completion = await openClawCompletion({
       messages: [
-        { role: 'assistant', content: 'You are a Shopee competitor analysis expert. Analyze the competitor and return a JSON object: {competitor, analysis:{totalProducts, avgRating, avgPrice, estimatedSales, strengths:[], weaknesses:[], strategies:[], threatLevel:"Low"|"Medium"|"High"}}. Reply ONLY with valid JSON.' },
-        { role: 'user', content: `Analyze Shopee competitor shop "${competitorShop}". Focus on ${metrics} metrics.\n\nWeb search context:\n${contextText}\n\nProvide detailed competitor analysis as JSON.` },
+        { role: 'system', content: 'You are a Shopee competitor analysis expert. Analyze the competitor and return a JSON object: {competitor, analysis:{totalProducts, avgRating, avgPrice, estimatedSales, strengths:[], weaknesses:[], strategies:[], threatLevel:"Low"|"Medium"|"High"}}. Reply ONLY with valid JSON.' },
+        { role: 'user', content: `Analyze Shopee competitor shop "${competitorShop}". Focus on ${metrics} metrics. Provide detailed competitor analysis as JSON.` },
       ],
       thinking: { type: 'disabled' },
     })
 
-    const rawContent = completion.choices[0]?.message?.content || '{}'
+    const rawContent = extractMessageContent(completion)
     const jsonMatch = rawContent.match(/\{[\s\S]*\}/)
     const analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : {}
 
-    return NextResponse.json({ success: true, ...analysis, competitor: competitorShop, source: 'ai_web_search' })
+    return NextResponse.json({ success: true, ...analysis, competitor: competitorShop, source: 'gateway' })
   } catch (error) {
     console.error('AI competitor error:', error)
     return NextResponse.json({ success: false, error: 'Competitor analysis failed' }, { status: 500 })

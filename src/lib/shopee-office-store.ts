@@ -6,6 +6,8 @@
  * Includes auto-idle mechanism: if no update for 300 seconds, state resets to idle.
  */
 
+import { randomUUID } from 'crypto'
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type OfficeState =
@@ -74,7 +76,21 @@ export interface ApproveRequest {
 
 const AUTO_IDLE_MS = 300_000 // 300 seconds
 
-const DEFAULT_JOIN_KEY = process.env.OFFICE_JOIN_KEY || 'theviralfinds2024'
+function getJoinKey(): string {
+  const key = process.env.OFFICE_JOIN_KEY
+  if (!key) {
+    // During build time, return a placeholder to avoid blocking compilation
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return 'build-placeholder'
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      return 'dev-join-key'
+    }
+    throw new Error('OFFICE_JOIN_KEY environment variable is required in production')
+  }
+  return key
+}
+
 const MAX_CONCURRENT_GUESTS = 3
 
 // ─── Initial Data ────────────────────────────────────────────────────────────
@@ -275,7 +291,7 @@ export function joinOffice(req: JoinRequest): {
   checkAutoIdle()
 
   // Validate join key
-  if (req.joinKey !== DEFAULT_JOIN_KEY) {
+  if (req.joinKey !== getJoinKey()) {
     return { ok: false, error: 'Invalid join key' }
   }
 
@@ -295,7 +311,7 @@ export function joinOffice(req: JoinRequest): {
     return { ok: false, error: 'An agent with this name already exists' }
   }
 
-  const agentId = `guest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  const agentId = `guest-${Date.now()}-${randomUUID().slice(0, 6)}`
   const now = new Date().toISOString()
 
   const newAgent: OfficeAgent = {

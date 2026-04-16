@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -27,13 +28,18 @@ export async function GET(request: NextRequest) {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
     const { searchParams } = new URL(request.url)
     const limit = searchParams.get('limit') || '20'
 
-    const data = await fetch(`${DB_URL}/activity?limit=${encodeURIComponent(limit)}`).then(r => r.json())
+    const params = new URLSearchParams({ limit })
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
+
+    const data = await authenticatedDbFetch(DB_URL, `/activity?${params.toString()}`, auth!).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {

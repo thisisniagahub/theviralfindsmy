@@ -13,19 +13,19 @@ export interface MenuOption {
 }
 
 const MENU_WIDTH = 220
-const ITEM_HEIGHT = 34
-const FONT_SIZE = '13px'
-const PAD_X = 12
-const PAD_Y = 8
-const BG_COLOR = 0x1a1a2e
-const BG_ALPHA = 0.96
-const BORDER_COLOR = 0x4a4238
-const HIGHLIGHT_FILL = 0x4a4238
-const HIGHLIGHT_ALPHA = 0.9
-const HIGHLIGHT_BORDER = 0xc9a227
-const TEXT_COLOR = '#e8e2d8'
-const TEXT_HIGHLIGHT = '#f5e6b3'
-const DISABLED_COLOR = '#a09888'
+const ITEM_HEIGHT = 36
+const FONT_SIZE = '14px'
+const PAD_X = 14
+const PAD_Y = 10
+const BG_COLOR = 0x11111e
+const BG_ALPHA = 0.98
+const BORDER_COLOR = 0xee4d2d
+const HIGHLIGHT_FILL = 0xee4d2d
+const HIGHLIGHT_ALPHA = 0.15
+const HIGHLIGHT_BORDER = 0xee4d2d
+const TEXT_COLOR = '#ffffff'
+const TEXT_HIGHLIGHT = '#ee4d2d'
+const DISABLED_COLOR = '#666666'
 const DEPTH = 1100
 const ACCENT_COLOR = 0xee4d2d // Shopee brand
 

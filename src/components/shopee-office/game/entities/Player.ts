@@ -18,18 +18,17 @@ export class Player {
   private arrow: Phaser.GameObjects.Sprite | null = null
   private nameTag: Phaser.GameObjects.Text | null = null
 
-  constructor(scene: Phaser.Scene, x = BOSS_SPAWN_X, y = BOSS_SPAWN_Y, _initialFacing: Direction = 'up') {
+  constructor(scene: Phaser.Scene, x = BOSS_SPAWN_X, y = BOSS_SPAWN_Y, initialFacing: Direction = 'up') {
+    this.facing = initialFacing
 
-    // Boss sprite - a distinct character with a crown/boss indicator
-    const bossGraphics = scene.add.graphics()
-    // Draw boss character (simple pixel style)
-    this.drawBoss(bossGraphics)
-    bossGraphics.generateTexture('boss_char', 48, 48)
-    bossGraphics.destroy()
-
-    this.sprite = scene.physics.add.sprite(x, y, 'boss_char', 0)
+    // Create boss from a premium humanoid texture
+    this.sprite = scene.physics.add.sprite(x, y, 'worker_male_1', 0)
     this.sprite.setDepth(15)
     this.sprite.setCollideWorldBounds(true)
+    
+    // Add a visual crown indicator since it's the boss
+    const crown = scene.add.text(0, -20, '👑', { fontSize: '16px' }).setOrigin(0.5)
+    this.sprite.setData('crown', crown)
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(24, 10)
@@ -171,13 +170,26 @@ export class Player {
       this.arrow = null
     }
 
+    // Y-sorting
+    this.sprite.setDepth(this.sprite.y)
+    const uiDepth = this.sprite.y + 1
+    this.nameTag?.setDepth(uiDepth)
+    if (this.arrow) this.arrow.setDepth(uiDepth + 10)
+    
+    // Update indicator positions
+    const crown = this.sprite.getData('crown') as Phaser.GameObjects.Text | undefined
+    if (crown) {
+      crown.setPosition(this.sprite.x, this.sprite.y - 32)
+      crown.setDepth(uiDepth + 5)
+    }
+
     if (this.arrow) {
-      this.arrow.setPosition(this.sprite.x, this.sprite.y - 30)
+      this.arrow.setPosition(this.sprite.x, this.sprite.y - 45)
     }
 
     // Update name tag position
     if (this.nameTag) {
-      this.nameTag.setPosition(this.sprite.x, this.sprite.y + 30)
+      this.nameTag.setPosition(this.sprite.x, this.sprite.y + 34)
     }
 
     if (moving) {

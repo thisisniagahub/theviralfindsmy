@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Komprehensif AI - Projek TheViralFinds</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #0f172a; line-height: 1.6; }
+        .glass-card { background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); padding: 32px; margin-bottom: 32px; border: 1px solid #e2e8f0; }
+        
+        .table-container { overflow-x: auto; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; }
+        th { background-color: #1e293b; color: white; padding: 16px; font-weight: 600; text-align: left; font-size: 0.9rem; letter-spacing: 0.02em; border-right: 1px solid #334155; }
+        th:last-child { border-right: none; }
+        td { padding: 16px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; vertical-align: top; font-size: 0.95rem; }
+        td:last-child { border-right: none; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td:not(.col-header) { background-color: #f8fafc; }
+        
+        .col-header { font-weight: 600; background-color: #f8fafc; border-right: 2px solid #cbd5e1; width: 15%; color: #334155; }
+        
+        /* Model Themes */
+        .model-claude { background: linear-gradient(to bottom, #faf5ff, white); border-top: 4px solid #a855f7; }
+        .model-opus { background: linear-gradient(to bottom, #fff1f2, white); border-top: 4px solid #e11d48; }
+        .model-qwen { background: linear-gradient(to bottom, #f0fdf4, white); border-top: 4px solid #22c55e; }
+        .model-codex { background: linear-gradient(to bottom, #eff6ff, white); border-top: 4px solid #3b82f6; }
+        .model-gemini { background: linear-gradient(to bottom, #fffbeb, white); border-top: 4px solid #f59e0b; }
+        
+        .badge { padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px; letter-spacing: 0.05em; }
+        .badge-critical { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .badge-warning { background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+        .badge-success { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .badge-info { background-color: #e0f2fe; color: #1d4ed8; border: 1px solid #93c5fd; }
+        
+        .score-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.25rem; color: white; margin: 0 auto 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        
+        .section-title { position: relative; padding-bottom: 12px; margin-bottom: 24px; color: #0f172a; font-weight: 700; }
+        .section-title::after { content: ''; position: absolute; left: 0; bottom: 0; height: 4px; width: 60px; background: #3b82f6; border-radius: 2px; }
+        
+        .checklist-item { display: flex; align-items: flex-start; margin-bottom: 12px; }
+        .checklist-icon { flex-shrink: 0; margin-right: 12px; margin-top: 2px; font-size: 1.25rem; }
+    </style>
+</head>
+<body>
+
+    <div class="max-w-[1600px] mx-auto p-4 md:p-8">
+        
+        <!-- Header Section -->
+        <header class="text-center mb-12 py-8 bg-white rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-purple-500 via-blue-500 to-emerald-500"></div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-slate-900 tracking-tight">Audit Senibina & Kod AI Komprehensif</h1>
+            <p class="text-xl text-slate-600 font-medium">Projek: <span class="text-blue-600">TheViralFinds (v6.0/v7.0)</span></p>
+            <div class="mt-6 flex flex-wrap justify-center gap-3">
+                <span class="px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold border border-slate-200">🔍 5 Model AI Bebas</span>
+                <span class="px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold border border-slate-200">📁 >200 Fail Dianalisis</span>
+                <span class="px-4 py-2 bg-slate-100 text-slate-700 rounded-full text-sm font-semibold border border-slate-200">⏱️ Tarikh: 12 April 2026</span>
+            </div>
+        </header>
+
+        <!-- Executive Summary & Scorecard -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div class="lg:col-span-2 glass-card m-0">
+                <h2 class="section-title text-2xl">📋 Ringkasan Eksekutif (Konsensus AI)</h2>
+                <p class="text-slate-700 text-lg mb-4">
+                    Terdapat persetujuan majoriti yang sangat jelas di antara <strong>Claude, Opus, Qwen, dan Gemini</strong>: Projek TheViralFinds mempunyai nilai inovasi yang tinggi dengan sistem "OpenClaw Gateway" dan "Pejabat Ejen Phaser", tetapi <strong>sangat lemah dari segi asas keselamatan dan infrastruktur pengeluaran (production).</strong>
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div class="bg-red-50 p-5 rounded-xl border border-red-100">
+                        <h4 class="font-bold text-red-800 mb-2 flex items-center">🔴 Kelemahan Paling Kritikal</h4>
+                        <ul class="space-y-2 text-sm text-red-700 list-disc pl-4">
+                            <li><strong>Ketiadaan Model User:</strong> Projek kini adalah <em>Single-Tenant</em> (1-Admin). Mustahil untuk digunakan oleh pelanggan sebenar tanpa sistem log masuk berpusat.</li>
+                            <li><strong>Keselamatan DB Service:</strong> Tiada <em>Authentication</em> langsung. Sesiapa boleh menukar pangkalan data jika berjaya mengakses portnya.</li>
+                            <li><strong>Integriti Data:</strong> Penggunaan <code>Math.random()</code> untuk memalsukan klik di persekitaran Production merosakkan fungsi analitik projek.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-100">
+                        <h4 class="font-bold text-emerald-800 mb-2 flex items-center">🟢 Kekuatan Projek</h4>
+                        <ul class="space-y-2 text-sm text-emerald-700 list-disc pl-4">
+                            <li><strong>Senibina AI Gred-Produksi:</strong> Sistem <em>Circuit Breaker</em>, <em>Fallback SDK</em>, dan SSE Parsing dipuji oleh semua model (Opus/Claude).</li>
+                            <li><strong>Inovasi UI/UX:</strong> Komponen Pejabat Ejen (Phaser 3/4) memberikan identiti sangat unik (Gamifikasi Ejen AI) berbanding pesaing (Gemini).</li>
+                            <li><strong>Skema Pangkalan Data:</strong> Struktur Prisma direka dengan cekap dengan pengindeksan kritikal (<code>@@index</code>) yang baik (Qwen/Gemini).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card m-0 flex flex-col justify-center">
+                <h2 class="section-title text-xl text-center">🏆 Papan Skor Model</h2>
+                <div class="grid grid-cols-2 gap-4 text-center mt-4">
+                    <div>
+                        <div class="score-circle bg-purple-500">69</div>
+                        <p class="font-bold text-slate-700">Claude Code</p>
+                        <p class="text-xs text-slate-500">Gred: B-</p>
+                    </div>
+                    <div>
+                        <div class="score-circle bg-rose-500">69</div>
+                        <p class="font-bold text-slate-700">Opus</p>
+                        <p class="text-xs text-slate-500">Gred: B-</p>
+                    </div>
+                    <div>
+                        <div class="score-circle bg-emerald-500">61</div>
+                        <p class="font-bold text-slate-700">Qwen Code</p>
+                        <p class="text-xs text-slate-500">Gred: C+</p>
+                    </div>
+                    <div>
+                        <div class="score-circle bg-amber-500" style="font-size: 1rem;">LULUS</div>
+                        <p class="font-bold text-slate-700">Gemini CLI</p>
+                        <p class="text-xs text-slate-500">Pembaikan Terus</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matriks Perbandingan Terperinci -->
+        <div class="glass-card">
+            <h2 class="section-title text-3xl">🧩 Matriks Perbandingan Terperinci</h2>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="w-[12%]">Kategori</th>
+                            <th class="w-[22%]">🤖 Claude Code (Opus 4.6)</th>
+                            <th class="w-[22%]">🧠 Opus (Audit Bebas)</th>
+                            <th class="w-[22%]">🐉 Qwen Code</th>
+                            <th class="w-[22%]">✨ Gemini CLI & 📚 Codex</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Keselamatan -->
+                        <tr>
+                            <td class="col-header">Keselamatan & Data<br><span class="badge badge-critical mt-2">Kritikal</span></td>
+                            <td class="model-claude">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>DB Service (Port 3005) tiada sekuriti.</strong> Wajib tambah `Authorization: Bearer`.</li>
+                                    <li>Tiada validasi <strong>Zod</strong> sebelum data dihantar ke Prisma. Terdedah kepada serangan <em>Mass Assignment</em>.</li>
+                                    <li>Data analitik dipalsukan menggunakan <code>Math.random()</code> di DB Service walaupun `DEMO_MODE=false`.</li>
+                                </ul>
+                            </td>
+                            <td class="model-opus">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li>Fail <strong>.env</strong> mengandungi rahsia (`ADMIN_PASSWORD`, `OPENCLAW_TOKEN`) dikesan berpotensi bocor ke Git.</li>
+                                    <li>Ketiadaan <strong>Security Headers</strong> (CSP, CORS, X-Frame-Options, HSTS) di `next.config.ts`.</li>
+                                    <li><em>Rate Limiter</em> hanya menggunakan memori tempatan (`Map`). Tak sesuai untuk <i>Cluster / Serverless</i>.</li>
+                                </ul>
+                            </td>
+                            <td class="model-qwen">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li>Kredensial log masuk Admin di-<em>hardcode</em> di dalam kod UI (`app-layout.tsx`).</li>
+                                    <li>Risiko <strong>XSS (Cross-Site Scripting)</strong> pada parameter `shortCode` di laluan `/api/redirect`.</li>
+                                    <li>Sekuriti Bundle Klien bocor: Pembolehubah `OFFICE_JOIN_KEY` boleh dilihat melalui 'DevTools' pelayar.</li>
+                                </ul>
+                            </td>
+                            <td class="model-gemini">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Gemini:</strong> Membetulkan ralat rujukan `error.errors` pada validasi <i>Zod</i> (laluan `/api/shopee/*`) yang memecahkan kompilasi (`bun run build`).</li>
+                                    <li><strong>Codex:</strong> Beberapa dokumen Markdown berstatus sensitif. Rahsia seperti struktur pangkalan dan arkitektur bocor dalam storan `BRAIN`.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                        
+                        <!-- Senibina -->
+                        <tr>
+                            <td class="col-header">Senibina & Skalabiliti<br><span class="badge badge-warning mt-2">Tinggi</span></td>
+                            <td class="model-claude">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Ketiadaan Model User:</strong> Disuarakan 5 kali sebelum ini. Seluruh database diandaikan milik 1 Admin (Single-Tenant).</li>
+                                    <li>Laluan `health` mengimport Prisma secara terus yang menyebabkan isu aplikasi <em>hang</em> pada enjin Turbopack.</li>
+                                    <li>Skema `updateSettings` sangat longgar (`z.any()`), membenarkan apa jua parameter (kunci-nilai) masuk ke database.</li>
+                                </ul>
+                            </td>
+                            <td class="model-opus">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Pujian:</strong> Migrasi ke App Router `(dashboard)` dan Server Component Layout (di `layout.tsx`) dilaksanakan dengan amat kemas.</li>
+                                    <li>Tiada <strong>Role-Based Access Control (RBAC)</strong>. Hanya semakan JWT ringkas tanpa tahap pengesahan.</li>
+                                    <li>Sifar Ujian (`0 Test`) untuk keseluruhan 69 laluan API yang sedia ada.</li>
+                                </ul>
+                            </td>
+                            <td class="model-qwen">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>N+1 Query Problem:</strong> Fungsi <code>.map()</code> pada hasil Prisma di API melambatkan server. Patut gunakan agregat Prisma `_sum` & `_count`.</li>
+                                    <li>Penyelesaian <i>Caching</i> (seperti Redis) sangat diperlukan. API ketika ini melakukan ratusan panggilan bertindih.</li>
+                                    <li>Dua sistem Layout bertindih (Fail `app-layout.tsx` adalah 'Dead Code' yang patut dipadam).</li>
+                                </ul>
+                            </td>
+                            <td class="model-gemini">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Gemini:</strong> Isu Hidrasi React (Hydration Mismatch) diselesaikan. Sistem sebelum ini membaca <code>localStorage</code> di Server berbanding Klien.</li>
+                                    <li><strong>Codex:</strong> Ketiadaan struktur <em>Manifest / Index</em> untuk Direktori "BRAIN" (menyebabkan kehilangan/pertindihan ilmu). Perlu diformatkan semula.</li>
+                                </ul>
+                            </td>
+                        </tr>
+
+                        <!-- Prestasi & UI -->
+                        <tr>
+                            <td class="col-header">Prestasi & UI/UX<br><span class="badge badge-info mt-2">Sederhana</span></td>
+                            <td class="model-claude">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li>Fail `phaser-game.tsx` merupakan "Monolith" raksasa (lebih 1,500+ baris kod). Ia perlu dipecahkan kepada modul `Scene`, `Player`, dan `System`.</li>
+                                    <li>Dua sistem rendering bercanggah: Enjin <em>Phaser Canvas</em> tidak berkongsi <i>state</i> dengan visual grid CSS Isometrik yang baru.</li>
+                                </ul>
+                            </td>
+                            <td class="model-opus">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li>Aset Sprite Phaser bernilai <strong>13.2MB</strong> yang tidak dimampatkan (uncompressed). Ia melambatkan proses pelayaran klien secara mendadak.</li>
+                                    <li>Lambakan 14MB gambar AI sampah di direktori <em>root</em> projek mengganggu kekemasan `Git`.</li>
+                                </ul>
+                            </td>
+                            <td class="model-qwen">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li>Penggunaan fungsi <code>Buffer.from()</code> di fail `qrcode.ts` tidak akan berjalan di Pelayar Edge / Vercel Edge Runtime. Patut diubah ke <code>btoa()</code>.</li>
+                                    <li>Hanya <i>Component</i> berat (seperti Phaser) patut menggunakan fungsi `next/dynamic()`, manakala elemen UI ringan patut terus di-<i>import</i> secara biasa.</li>
+                                </ul>
+                            </td>
+                            <td class="model-gemini">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Gemini:</strong> Sistem pejabat ejen melaksanakan fungsi "Polling" (Refresh API) setiap 3 saat. Cara ini membunuh prestasi server. Patut ditukar ke <strong>WebSockets (Socket.IO/SSE)</strong>.</li>
+                                    <li><strong>Gemini:</strong> Mengemas kini visual (Kotak kosong `EMPTY` ditukar kepada butang `+ ADD AGENT` dan sempadan merah Phaser dipadam).</li>
+                                </ul>
+                            </td>
+                        </tr>
+
+                        <!-- AI & Bisnes -->
+                        <tr>
+                            <td class="col-header">AI & Pengembangan Fitur<br><span class="badge badge-success mt-2">Masa Depan</span></td>
+                            <td class="model-claude">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Prompt Injection Risk:</strong> Keadaan SDK Fallback menghantar `system prompt` secara salah sebagai `role: 'assistant'`. Boleh dikompromi.</li>
+                                    <li>Sistem <i>Agent Pipeline</i> tersilap langkah: Rantaian sentiasa melapor `status: 'success'` biarpun salah satu <i>branch</i> ejen (sub-ejen) mencetuskan <i>Error</i>.</li>
+                                </ul>
+                            </td>
+                            <td class="model-opus">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Pujian (A+):</strong> Keseluruhan sistem "OpenClaw Gateway" adalah sangat maju, berdaya tahan dan mencapai piawaian gred produksi (`circuit breaker`, `streaming`, dll).</li>
+                                    <li>Ejen di dalam permainan animasi (Phaser) masih menggunakan `dummy text`. Ia patut diselaraskan dengan respon API OpenClaw sebenar.</li>
+                                </ul>
+                            </td>
+                            <td class="model-qwen">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Monetization Terpadu:</strong> Platform ini perlu membina sistem "Paywall / Tiers" bersama <strong>Stripe</strong>. Fungsi AI tinggi harus di-akses oleh pengguna "Enterprise" sahaja.</li>
+                                    <li><strong>Analitik NLP Muka Hadapan:</strong> Menambah fitur <i>Natural Language Analytics</i> di mana pengguna boleh menaip "Papar Carta Keuntungan Saya," dan AI mengekstrak logik Carta secara langsung.</li>
+                                </ul>
+                            </td>
+                            <td class="model-gemini">
+                                <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                                    <li><strong>Gemini:</strong> Di dalam draf awal `implementation_plan.md`, terdapat dua Ejen bernama <strong>"NiagaAggregator"</strong> & <strong>"NiagaReporter"</strong>. Idea A2A berangkai (Chained Agents) patut dilengkapkan dan menggunakan kepakaran kedua ejen "tercicir" ini.</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Action Plan -->
+        <div class="mt-12 mb-16">
+            <h2 class="text-3xl font-extrabold mb-8 text-center text-slate-900">🗺️ Pelan Tindakan 3-Fasa Taktikal (Roadmap)</h2>
+            
+            <div class="space-y-6">
+                <!-- Fasa 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border-l-8 border-l-red-500 overflow-hidden">
+                    <div class="bg-red-50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-red-800">FASA 1: Operasi "Padam Api" & Keselamatan P0</h3>
+                        <span class="px-3 py-1 bg-red-100 text-red-700 font-bold rounded-md text-sm shadow-sm">Minggu 1 (Serta-merta)</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-slate-600 mb-4 font-medium">Isu-isu ini mesti dibaiki segera kerana ia mendedahkan kerentanan kritikal jika aplikasi berada di fasa "Live".</p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-red-500">🛡️</div>
+                                <div>
+                                    <strong class="text-slate-800">Padam Kredensial Hardcoded:</strong> Padamkan emel `admin@theviralfinds.my` di UI (`app-layout.tsx`) dan paksa penetapan kata laluan dinamik dari pengguna sebenar. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Qwen, Opus)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-red-500">🛡️</div>
+                                <div>
+                                    <strong class="text-slate-800">Kunci DB Microservice (Port 3005):</strong> Wajibkan penerimaan token keselamatan `Authorization: Bearer` untuk memastikan hanya perkhidmatan terpilih boleh berkomunikasi dengan DB. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Claude, Qwen)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-red-500">🛡️</div>
+                                <div>
+                                    <strong class="text-slate-800">Tamatkan Penjanaan Data Palsu:</strong> Buang fungsi `Math.random()` pada pangkalan data agar tidak mencemarkan statistik analitik ejen. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Claude)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-red-500">🛡️</div>
+                                <div>
+                                    <strong class="text-slate-800">Cegah Kebocoran Git (.env) & CSP Headers:</strong> Tambah <i>Security Headers</i> seperti CSP, X-Frame, HSTS di fail `next.config.ts`. Padam rahsia dari penjejakan `.gitignore`. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Opus)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item md:col-span-2">
+                                <div class="checklist-icon text-red-500">🛠️</div>
+                                <div>
+                                    <strong class="text-slate-800">Tampal API Teras & Halangan Kompilasi:</strong> Pastikan API Node.js seperti `Buffer.from` diganti dengan `btoa()`. Laksanakan format `.flatten().fieldErrors` Zod agar `bun run build` melepasi syarat Typescript sepenuhnya. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Qwen, Gemini)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fasa 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border-l-8 border-l-amber-500 overflow-hidden">
+                    <div class="bg-amber-50 px-6 py-4 border-b border-amber-100 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-amber-800">FASA 2: Penstrukturan Skala (Multi-Tenant) & Prestasi P1</h3>
+                        <span class="px-3 py-1 bg-amber-100 text-amber-700 font-bold rounded-md text-sm shadow-sm">Minggu 2-3</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-slate-600 mb-4 font-medium">Fasa membina asas senibina yang kukuh bagi memastikan pelayan tidak sesak (Lag) apabila pengguna (Users) sebenar mendaftar kelak.</p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-amber-500">⚠️</div>
+                                <div>
+                                    <strong class="text-slate-800">Senibina Prisma: Model User:</strong> Projek TheViralFinds wajib mempunyai fungsi "Multi-Tenant". Bina model `User` di Pangkalan Data dan sandarkan (Foreign Key) `userId` ke semua entiti seperti Pautan (Links) & Kempen. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Semua Model AI)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-amber-500">⚠️</div>
+                                <div>
+                                    <strong class="text-slate-800">Gantikan API Polling ke WebSockets:</strong> Pejabat Isometrik AI (UI) melakukan pemuatan API setiap 3 saat. Gunakan pelayan Socket.io (`mini-services/notification-service`) bagi menyelaraskan aktiviti Ejen. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Gemini)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-amber-500">⚠️</div>
+                                <div>
+                                    <strong class="text-slate-800">Selesaikan Isu Kelajuan N+1 (Prisma):</strong> Laksanakan kiraan terus melalui fungsi agregat Prisma (`_sum`, `_count`) berbanding menggunakan `map/reduce` yang memecahkan pangkalan. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Qwen)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-amber-500">⚠️</div>
+                                <div>
+                                    <strong class="text-slate-800">Pecahkan Monolith & Dead Code:</strong> Refactor fail gergasi `phaser-game.tsx` (52KB/1560 Baris) kepada modul kecil (`Scene/System/Player`). Padam laluan-laluan mati seperti `app-layout.tsx` (444 baris). <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Claude, Opus, Gemini)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fasa 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border-l-8 border-l-blue-500 overflow-hidden">
+                    <div class="bg-blue-50 px-6 py-4 border-b border-blue-100 flex justify-between items-center">
+                        <h3 class="text-xl font-bold text-blue-800">FASA 3: Pengwangan, AI Termaju, & Operasi (DevOps) P2</h3>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-md text-sm shadow-sm">Bulan 2+ ke atas</span>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-slate-600 mb-4 font-medium">Bawa projek ini ke tahap kebolehpasaran (Market-Ready) dengan infrastruktur stabil, integrasi AI lanjutan, dan fitur bisnes bernilai tinggi.</p>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-blue-500">🚀</div>
+                                <div>
+                                    <strong class="text-slate-800">Tiers & Langganan Stripe:</strong> Wujudkan mekanisma sekatan penggunaan <i>Paywall</i> agar fungsi Ejen OpenClaw dilimitkan berdasarkan pakej (Free/Pro/Enterprise) dengan sistem `Webhook` Stripe. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Qwen)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-blue-500">🚀</div>
+                                <div>
+                                    <strong class="text-slate-800">Lengkapkan Saluran AI A2A Berangkai:</strong> Tambah baik sistem OpenClaw dengan menggunakan sepenuhnya kebolehan komunikasi Ejen. Biarkan NiagaAggregator bersambung dengan NiagaReporter. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Gemini)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-blue-500">🚀</div>
+                                <div>
+                                    <strong class="text-slate-800">Ujian Automatik CI/CD:</strong> Bina persekitaran fail ujian (menggunakan `Vitest`/`Playwright`) agar sekurang-kurangnya >60% komponen penting diuji. Bina proses aliran saluran (Pipeline) GitHub Actions. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Opus, Claude)</span>
+                                </div>
+                            </div>
+                            <div class="checklist-item">
+                                <div class="checklist-icon text-blue-500">🚀</div>
+                                <div>
+                                    <strong class="text-slate-800">Infrastruktur Storan Redis:</strong> Gantikan komponen <i>Rate Limiter</i> dan mekanisme memori berpusat (Cache) Javascript tempatan kepada server memori seimbang seperti Redis / Upstash untuk kebolehskalaan Vercel/Docker. <span class="text-xs font-semibold text-slate-500 block mt-1">(Ditemui oleh: Claude, Opus, Qwen)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-slate-500 text-sm pb-8 border-t border-slate-200 pt-8">
+            <p>Sintesis fail laporan HTML dijana secara automatik oleh <strong>Ejen AI Gemini CLI</strong>.</p>
+            <p class="mt-1 font-semibold text-slate-600">&copy; 2026 TheViralFinds Engineering Audit</p>
+        </footer>
+    </div>
+
+</body>
+</html>

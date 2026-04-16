@@ -9,6 +9,9 @@ import { ServiceWorkerProvider } from '@/components/providers/sw-provider'
 import { AppShell } from '@/components/app-shell'
 import { PWAProvider } from '@/components/pwa/pwa-provider'
 
+// Production safeguards
+import '@/lib/demo-mode-guard'
+
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -45,6 +48,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        suppressHydrationWarning
       >
         <ThemeClientProvider>
           <SessionClientProvider>

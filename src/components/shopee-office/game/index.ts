@@ -3,9 +3,17 @@ export { gameEvents } from './events'
 export type { GameEventMap } from './events'
 
 export { Pathfinder, type PathPoint } from './utils/Pathfinder'
+export {
+  buildCollisionRects,
+  getTilesetBasename,
+  parseOfficePOIs,
+  parseOfficeSpawns,
+  renderTileObjectLayer,
+} from './utils/MapHelpers'
 
 export { Player } from './entities/Player'
-export { Worker, resetWanderClock, type WorkerStatus } from './entities/Worker'
+export { Worker, type WorkerStatus } from './entities/Worker'
+export { resetWanderClock } from './entities/worker/idle'
 export { ChatBubble } from './entities/ChatBubble'
 export { InteractionMenu, type MenuOption } from './entities/InteractionMenu'
 
@@ -16,6 +24,9 @@ export { InteractionManager } from './systems/InteractionManager'
 export {
   GAME_WIDTH,
   GAME_HEIGHT,
+  OFFICE_MAP_KEY,
+  OFFICE_MAP_PATH,
+  OFFICE_TILESET_BASE_PATH,
   OFFICE_COLLISIONS,
   OFFICE_POIS,
   AGENT_SEAT_DEFS,

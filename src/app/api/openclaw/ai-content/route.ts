@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { executeMCPTool } from '@/lib/openclaw'
-
-async function getSDK() {
-  const ZAI = (await import('z-ai-web-dev-sdk')).default
-  return ZAI.create()
-}
+import { executeMCPTool, openClawCompletion, extractMessageContent } from '@/lib/openclaw'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
+  // 1. Check auth
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
+  // 2. Check rate limit (10 req/min for AI)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.ai)
+  if (rateLimited) return rateLimited
+
   try {
     const body = await request.json()
     const { contentType = 'social-post', productName = '', tone = 'casual', platform = 'shopee', source = 'auto' } = body
@@ -22,12 +27,11 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: true, ...parsed, source: mcpResult._source })
         }
       } catch {
-        // Gateway failed, fall through to SDK
+        // Gateway MCP failed, fall through to completion fallback
       }
     }
 
-    // SDK fallback
-    const zai = await getSDK()
+    // Gateway completion fallback
     const systemPrompt = `You are an expert Shopee Malaysia affiliate marketer. Write in ${tone} tone for ${platform}. Reply with the generated content only, no explanations. Include relevant hashtags.`
 
     const contentPrompts: Record<string, string> = {
@@ -38,15 +42,15 @@ export async function POST(request: NextRequest) {
       'ad-copy': `Write 3 variations of ad copy for "${productName}" targeting Malaysian shoppers. Include headline, description, and CTA for each.`,
     }
 
-    const completion = await zai.chat.completions.create({
+    const completion = await openClawCompletion({
       messages: [
-        { role: 'assistant', content: systemPrompt },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: contentPrompts[contentType] || contentPrompts['social-post'] },
       ],
       thinking: { type: 'disabled' },
     })
 
-    const content = completion.choices[0]?.message?.content || 'Content generation failed.'
+    const content = extractMessageContent(completion)
     const wordCount = content.split(/\s+/).length
     const hashtags = content.match(/#\w+/g) || []
 

@@ -1,0 +1,26 @@
+{
+  "model": "gpt-5.4-mini",
+  "maxSteps": 8,
+  "screenshot": {
+    "activeWindow": true
+  },
+  "safety": {
+    "stopOnRiskyAction": true,
+    "blockedTerms": [
+      "delete",
+      "remove",
+      "purchase",
+      "buy",
+      "checkout",
+      "submit",
+      "send",
+      "confirm",
+      "install",
+      "password",
+      "otp",
+      "api key",
+      "token"
+    ]
+  }
+}
+

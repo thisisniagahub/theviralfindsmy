@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -65,7 +66,7 @@ function getDemoDashboard(period: string) {
 }
 
 export async function GET(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
   if (process.env.DEMO_MODE === 'true') {
@@ -74,19 +75,32 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(getDemoDashboard(period))
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'
 
-    const data = await fetch(`${DB_URL}/dashboard/stats?period=${encodeURIComponent(period)}`).then(r => r.json())
+    const params = new URLSearchParams({ period })
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
+
+    const data = await authenticatedDbFetch(DB_URL, `/dashboard/stats?${params.toString()}`, auth!).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {
     console.error('Dashboard API error:', error)
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || '30d'
-    return NextResponse.json(getDemoDashboard(period))
+    // Do NOT silently return fabricated demo data — that hides real outages
+    // behind random but believable business numbers, which is dangerous for
+    // decision-making.  Return a clear 503 so the frontend can show an error state.
+    return NextResponse.json(
+      {
+        error: 'Dashboard data temporarily unavailable',
+        _unavailable: true,
+        _hint: 'The database service may be down. Check DB_SERVICE_URL and the db-service process.',
+      },
+      { status: 503 }
+    )
   }
 }

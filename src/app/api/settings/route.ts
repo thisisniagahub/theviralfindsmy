@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 import { updateSettingsSchema } from '@/lib/validations'
 import { z } from 'zod'
 
@@ -21,7 +22,16 @@ export async function GET() {
     if (!DB_URL) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
-    const settings = await fetch(`${DB_URL}/settings`).then(r => r.json())
+
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
+    const response = await authenticatedDbFetch(DB_URL, '/settings', auth!)
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ error: 'Failed to load settings' }))
+      return NextResponse.json(errorBody, { status: response.status })
+    }
+    const settings = await response.json()
     return NextResponse.json(settings)
   } catch (error) {
     console.error('Settings GET error:', error)
@@ -30,8 +40,11 @@ export async function GET() {
 }
 
 export async function PUT(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.mutation)
   if (rateLimited) return rateLimited
+
+  const { auth, error } = await requireAuth()
+  if (error) return error
 
   if (process.env.DEMO_MODE === 'true') {
     return NextResponse.json({ success: true })
@@ -43,11 +56,14 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const validated = updateSettingsSchema.parse(body)
 
-    await fetch(`${DB_URL}/settings`, {
+    const response = await authenticatedDbFetch(DB_URL, '/settings', auth!, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
     })
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ error: 'Failed to update settings' }))
+      return NextResponse.json(errorBody, { status: response.status })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

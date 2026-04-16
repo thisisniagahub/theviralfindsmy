@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -45,7 +47,13 @@ export async function GET(
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
     const { id } = await params
-    const data = await fetch(`${DB_URL}/links/${encodeURIComponent(id)}/stats`).then(r => {
+    const session = await getServerSession(authOptions)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = ((session as any)?.user as Record<string, unknown> | undefined)?.id as string | undefined
+    const url = userId
+      ? `${DB_URL}/links/${encodeURIComponent(id)}/stats?userId=${encodeURIComponent(userId)}`
+      : `${DB_URL}/links/${encodeURIComponent(id)}/stats`
+    const data = await fetch(url).then(r => {
       if (!r.ok) throw new Error(`${r.status}`)
       return r.json()
     })

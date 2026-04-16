@@ -6,8 +6,6 @@ const STATIC_ASSETS = [
   '/',
   '/offline',
   '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
 ]
 
 self.addEventListener('install', (event) => {
@@ -30,7 +28,13 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return
+
   const url = new URL(event.request.url)
+
+  // Skip Chrome extension requests and other non-http(s) requests
+  if (!url.protocol.startsWith('http')) return
 
   // API routes: network first, fallback to cache
   if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/auth')) {
@@ -43,26 +47,36 @@ self.addEventListener('fetch', (event) => {
           }
           return response
         })
-        .catch(() => caches.match(event.request))
+        .catch(() => caches.match(event.request).then(r => r || fetch(event.request)))
     )
     return
   }
 
   // Static assets: cache first
-  if (event.request.destination === 'style' ||
-      event.request.destination === 'script' ||
-      event.request.destination === 'image' ||
-      event.request.destination === 'font') {
+  if (['style', 'script', 'image', 'font'].includes(event.request.destination)) {
     event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request))
+      caches.match(event.request).then(cached => {
+        if (cached) return cached
+        return fetch(event.request).then(response => {
+          if (response && response.ok) {
+            const clone = response.clone()
+            caches.open(STATIC_CACHE).then(cache => cache.put(event.request, clone))
+          }
+          return response
+        })
+      })
     )
     return
   }
 
-  // Pages: network first, fallback to offline page
+  // Pages: network first, fallback to cache then offline page
   event.respondWith(
     fetch(event.request)
-      .catch(() => caches.match('/offline'))
+      .catch(() =>
+        caches.match(event.request).then(cached =>
+          cached || caches.match('/offline').then(offline => offline || new Response('Offline', { status: 503 }))
+        )
+      )
   )
 })
 

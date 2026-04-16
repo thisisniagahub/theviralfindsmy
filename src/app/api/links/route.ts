@@ -1,9 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { createLinkSchema } from '@/lib/validations'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
+import { sanitizeValidationError } from '@/lib/error-sanitizer'
 import { z } from 'zod'
 
 const DB_URL = process.env.DB_SERVICE_URL
+const DEMO_PRODUCT_IMAGES = [
+  '/products/laneige-mask.png',
+  '/products/tws-earbuds.png',
+  '/products/running-shoes.png',
+  '/products/vitamin-c.png',
+  '/products/cetaphil.png',
+  '/products/airpods-pro.png',
+  '/products/innisfree-serum.png',
+  '/products/snack-box.png',
+  '/products/uniqlo-tshirt.png',
+  '/products/ensure-gold.png',
+]
 
 export async function GET(request: NextRequest) {
   if (process.env.DEMO_MODE === 'true') {
@@ -25,7 +39,7 @@ export async function GET(request: NextRequest) {
         id: `link-${i + 1}`,
         name: names[i],
         productName: names[i],
-        productImage: `/products/product-${i + 1}.png`,
+        productImage: DEMO_PRODUCT_IMAGES[i % DEMO_PRODUCT_IMAGES.length],
         productUrl: `https://shopee.com.my/product-${i + 1}`,
         affiliateUrl: `https://shopee.com.my/product-${i + 1}?aff_id=demo`,
         shortCode: shortCodes[i],
@@ -60,18 +74,21 @@ export async function GET(request: NextRequest) {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
     const { searchParams } = new URL(request.url)
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '10'
     const status = searchParams.get('status') || ''
     const campaignId = searchParams.get('campaignId') || ''
     const search = searchParams.get('search') || ''
-
     const params = new URLSearchParams({ page, limit, status, campaignId, search })
-    const data = await fetch(`${DB_URL}/links?${params.toString()}`).then(r => r.json())
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
+
+    const data = await authenticatedDbFetch(DB_URL, `/links?${params.toString()}`, auth!).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {
@@ -81,18 +98,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.mutation)
   if (rateLimited) return rateLimited
+
+  // Check authentication
+  const { auth, error } = await requireAuth()
+  if (error) return error
 
   let validated
   try {
     const body = await request.json()
     validated = createLinkSchema.parse(body)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 })
-    }
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    const sanitized = sanitizeValidationError(error, 'Invalid request body')
+    return NextResponse.json(sanitized, { status: 400 })
   }
 
   if (process.env.DEMO_MODE === 'true') {
@@ -101,7 +120,7 @@ export async function POST(request: NextRequest) {
       id: `link-demo-${Date.now()}`,
       name: validated.name || 'New Link',
       productName: validated.productName || 'Demo Product',
-      productImage: validated.productImage || '/products/demo.png',
+      productImage: validated.productImage || DEMO_PRODUCT_IMAGES[0],
       productUrl: validated.productUrl,
       affiliateUrl: validated.affiliateUrl || 'https://shopee.com.my/demo?aff_id=demo',
       shortCode: validated.shortCode || `demo${Date.now().toString(36)}`,
@@ -123,11 +142,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
-    const link = await fetch(`${DB_URL}/links`, {
+    const response = await authenticatedDbFetch(DB_URL, '/links', auth!, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
+    const link = await response.json()
 
     return NextResponse.json(link, { status: 201 })
   } catch (error) {

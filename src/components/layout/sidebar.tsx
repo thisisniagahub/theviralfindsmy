@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/app-store'
 import { useTheme } from 'next-themes'
@@ -30,7 +31,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetDescription, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Menu } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useQuery } from '@tanstack/react-query'
@@ -57,6 +58,7 @@ const navItems = [
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { sidebarOpen, setSidebarOpen } = useAppStore()
   const { setTheme, resolvedTheme, theme } = useTheme()
+  const { data: session } = useSession()
   const pathname = usePathname()
 
   const { data: notifData } = useQuery({
@@ -112,7 +114,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 </div>
 
                 {sidebarOpen && (
-                  <motion.span 
+                  <motion.span
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="truncate font-semibold tracking-tight"
@@ -120,7 +122,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                     {item.label}
                   </motion.span>
                 )}
-                
+
                 {sidebarOpen && item.badge && (
                   <Badge variant="secondary" className="ml-auto text-[10px] px-1.5 py-0 bg-shopee/10 text-shopee border-0 font-bold">
                     {item.badge}
@@ -134,7 +136,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 {!sidebarOpen && item.isNotification && unreadCount > 0 && (
                   <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-shopee badge-pulse" />
                 )}
-                
+
                 {isActive && (
                   <motion.div
                     layoutId="active-indicator"
@@ -189,7 +191,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </div>
           {sidebarOpen && (
             <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-sm font-semibold truncate text-foreground/90">Ahmad Ali</span>
+              <span className="text-sm font-semibold truncate text-foreground/90">
+                {session?.user?.name || session?.user?.email || 'User'}
+              </span>
               <span className="text-[10px] text-shopee font-bold tracking-tight">THE VIRAL FINDS PRO</span>
             </div>
           )}
@@ -229,7 +233,10 @@ export function Sidebar() {
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64">
             <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <SidebarContent onNavigate={() => {}} />
+            <SheetDescription className="sr-only">
+              Navigate between dashboard sections and account tools.
+            </SheetDescription>
+            <SidebarContent onNavigate={() => { }} />
           </SheetContent>
         </Sheet>
       </div>

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
   if (process.env.DEMO_MODE === 'true') {
@@ -77,7 +78,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'
 
-    const data = await fetch(`${DB_URL}/analytics?period=${encodeURIComponent(period)}`).then(r => r.json())
+    const { auth, error } = await requireAuth()
+    if (error) return error
+
+    const response = await authenticatedDbFetch(DB_URL, `/analytics?period=${encodeURIComponent(period)}`, auth!)
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ error: 'Failed to load analytics' }))
+      return NextResponse.json(errorBody, { status: response.status })
+    }
+    const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
     console.error('Analytics error:', error)

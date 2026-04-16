@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -40,7 +43,13 @@ export async function GET(
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
     const { id } = await params
-    const link = await fetch(`${DB_URL}/links/${encodeURIComponent(id)}`).then(r => {
+    const session = await getServerSession(authOptions)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = ((session as any)?.user as Record<string, unknown> | undefined)?.id as string | undefined
+    const url = userId
+      ? `${DB_URL}/links/${encodeURIComponent(id)}?userId=${encodeURIComponent(userId)}`
+      : `${DB_URL}/links/${encodeURIComponent(id)}`
+    const link = await fetch(url).then(r => {
       if (!r.ok) throw new Error(`${r.status}`)
       return r.json()
     })
@@ -59,6 +68,10 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Check authentication
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   if (process.env.DEMO_MODE === 'true') {
     const { id } = await params
     const body = await request.json()
@@ -79,11 +92,11 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
-    const link = await fetch(`${DB_URL}/links/${encodeURIComponent(id)}`, {
+    const response = await authenticatedDbFetch(DB_URL, `/links/${encodeURIComponent(id)}`, auth!, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).then(r => r.json())
+    })
+    const link = await response.json()
 
     return NextResponse.json(link)
   } catch (error) {
@@ -96,6 +109,10 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Check authentication
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   if (process.env.DEMO_MODE === 'true') {
     return NextResponse.json({ success: true })
   }
@@ -104,7 +121,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
     const { id } = await params
-    await fetch(`${DB_URL}/links/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    await authenticatedDbFetch(DB_URL, `/links/${encodeURIComponent(id)}`, auth!, { method: 'DELETE' })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Link DELETE error:', error)

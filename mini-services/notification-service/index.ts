@@ -1,5 +1,6 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import { randomUUID } from 'crypto'
 
 const httpServer = createServer()
 const io = new Server(httpServer, {
@@ -50,11 +51,12 @@ interface MockNotification {
 }
 
 function generateId(): string {
-  return `notif_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+  return `notif_${Date.now()}_${randomUUID().slice(0, 7)}`
 }
 
 function randomPick<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]
+  const index = Math.floor(Math.random() * arr.length)
+  return arr[index]
 }
 
 function randomBetween(min: number, max: number): number {
@@ -145,7 +147,10 @@ io.on('connection', (socket) => {
 // --- Periodic mock notification broadcast ---
 
 function scheduleNextNotification() {
-  const delay = Math.floor(Math.random() * 15000) + 15000 // 15-30 seconds
+  const randomBytes = new Uint8Array(4)
+  crypto.getRandomValues(randomBytes)
+  const randomValue = (randomBytes[0] << 24 | randomBytes[1] << 16 | randomBytes[2] << 8 | randomBytes[3]) >>> 0
+  const delay = (randomValue % 15000) + 15000 // 15-30 seconds
   setTimeout(() => {
     const notification = generateMockNotification()
     console.log(`[Notification] Broadcasting: [${notification.type}] ${notification.title}`)

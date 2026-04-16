@@ -6,6 +6,20 @@ const db = new PrismaClient()
 async function main() {
   console.log('🌱 Seeding database...')
 
+  // Create admin user first (required for all seed data)
+  const adminUser = await db.user.upsert({
+    where: { email: 'admin@theviralfinds.my' },
+    update: {},
+    create: {
+      email: 'admin@theviralfinds.my',
+      name: 'Ahmad Ali',
+      role: 'ADMIN',
+    },
+  })
+  console.log(`✅ Created admin user: ${adminUser.id}`)
+
+  const userId = adminUser.id
+
   // Clean existing data
   await db.clickRecord.deleteMany()
   await db.conversion.deleteMany()
@@ -21,6 +35,7 @@ async function main() {
     data: [
       {
         id: 'camp_01',
+        userId,
         name: 'Ramadan Sale 2025',
         description: 'Special affiliate campaign for Ramadan mega sale period',
         status: 'active',
@@ -31,6 +46,7 @@ async function main() {
       },
       {
         id: 'camp_02',
+        userId,
         name: 'Tech Gadgets Promo',
         description: 'Electronics and gadgets affiliate push',
         status: 'active',
@@ -41,6 +57,7 @@ async function main() {
       },
       {
         id: 'camp_03',
+        userId,
         name: 'Beauty & Skincare',
         description: 'Beauty product affiliate links for Q1 2025',
         status: 'paused',
@@ -51,6 +68,7 @@ async function main() {
       },
       {
         id: 'camp_04',
+        userId,
         name: 'Back to School',
         description: 'School supplies and electronics for students',
         status: 'completed',
@@ -68,6 +86,7 @@ async function main() {
   const affiliateLinks = [
     {
       id: 'link_01',
+      userId,
       name: 'Wireless Earbuds Pro',
       productUrl: 'https://shopee.com.my/wireless-earbuds-pro',
       affiliateUrl: 'https://shopee.com.my/wireless-earbuds-pro?aff_id=shopeeAff01',
@@ -87,6 +106,7 @@ async function main() {
     },
     {
       id: 'link_02',
+      userId,
       name: 'Korean Skincare Set',
       productUrl: 'https://shopee.com.my/korean-skincare',
       affiliateUrl: 'https://shopee.com.my/korean-skincare?aff_id=shopeeAff02',
@@ -106,6 +126,7 @@ async function main() {
     },
     {
       id: 'link_03',
+      userId,
       name: 'Smart Watch Ultra',
       productUrl: 'https://shopee.com.my/smart-watch',
       affiliateUrl: 'https://shopee.com.my/smart-watch?aff_id=shopeeAff03',
@@ -125,6 +146,7 @@ async function main() {
     },
     {
       id: 'link_04',
+      userId,
       name: 'Men Fashion Hoodie',
       productUrl: 'https://shopee.com.my/mens-hoodie',
       affiliateUrl: 'https://shopee.com.my/mens-hoodie?aff_id=shopeeAff04',
@@ -144,6 +166,7 @@ async function main() {
     },
     {
       id: 'link_05',
+      userId,
       name: 'LED Desk Lamp',
       productUrl: 'https://shopee.com.my/led-lamp',
       affiliateUrl: 'https://shopee.com.my/led-lamp?aff_id=shopeeAff05',
@@ -161,6 +184,7 @@ async function main() {
     },
     {
       id: 'link_06',
+      userId,
       name: 'Running Shoes Elite',
       productUrl: 'https://shopee.com.my/running-shoes',
       affiliateUrl: 'https://shopee.com.my/running-shoes?aff_id=shopeeAff06',
@@ -180,6 +204,7 @@ async function main() {
     },
     {
       id: 'link_07',
+      userId,
       name: 'Vitamin C Serum',
       productUrl: 'https://shopee.com.my/vitc-serum',
       affiliateUrl: 'https://shopee.com.my/vitc-serum?aff_id=shopeeAff07',
@@ -199,6 +224,7 @@ async function main() {
     },
     {
       id: 'link_08',
+      userId,
       name: 'Portable Blender',
       productUrl: 'https://shopee.com.my/portable-blender',
       affiliateUrl: 'https://shopee.com.my/portable-blender?aff_id=shopeeAff08',
@@ -216,6 +242,7 @@ async function main() {
     },
     {
       id: 'link_09',
+      userId,
       name: 'Wireless Mouse RGB',
       productUrl: 'https://shopee.com.my/wireless-mouse',
       affiliateUrl: 'https://shopee.com.my/wireless-mouse?aff_id=shopeeAff09',
@@ -234,6 +261,7 @@ async function main() {
     },
     {
       id: 'link_10',
+      userId,
       name: 'Yoga Mat Premium',
       productUrl: 'https://shopee.com.my/yoga-mat',
       affiliateUrl: 'https://shopee.com.my/yoga-mat?aff_id=shopeeAff10',
@@ -251,6 +279,7 @@ async function main() {
     },
     {
       id: 'link_11',
+      userId,
       name: 'Instant Noodle Bundle',
       productUrl: 'https://shopee.com.my/noodle-bundle',
       affiliateUrl: 'https://shopee.com.my/noodle-bundle?aff_id=shopeeAff11',
@@ -268,6 +297,7 @@ async function main() {
     },
     {
       id: 'link_12',
+      userId,
       name: 'Phone Case Designer',
       productUrl: 'https://shopee.com.my/phone-case',
       affiliateUrl: 'https://shopee.com.my/phone-case?aff_id=shopeeAff12',
@@ -285,6 +315,7 @@ async function main() {
     },
     {
       id: 'link_13',
+      userId,
       name: 'Aromatherapy Diffuser',
       productUrl: 'https://shopee.com.my/aroma-diffuser',
       affiliateUrl: 'https://shopee.com.my/aroma-diffuser?aff_id=shopeeAff13',
@@ -302,6 +333,7 @@ async function main() {
     },
     {
       id: 'link_14',
+      userId,
       name: 'Kids School Bag',
       productUrl: 'https://shopee.com.my/school-bag',
       affiliateUrl: 'https://shopee.com.my/school-bag?aff_id=shopeeAff14',
@@ -320,6 +352,7 @@ async function main() {
     },
     {
       id: 'link_15',
+      userId,
       name: 'Protein Powder',
       productUrl: 'https://shopee.com.my/protein',
       affiliateUrl: 'https://shopee.com.my/protein?aff_id=shopeeAff15',
@@ -337,6 +370,7 @@ async function main() {
     },
     {
       id: 'link_16',
+      userId,
       name: 'USB-C Hub Adapter',
       productUrl: 'https://shopee.com.my/usbc-hub',
       affiliateUrl: 'https://shopee.com.my/usbc-hub?aff_id=shopeeAff16',
@@ -355,6 +389,7 @@ async function main() {
     },
     {
       id: 'link_17',
+      userId,
       name: 'Matcha Powder Organic',
       productUrl: 'https://shopee.com.my/matcha',
       affiliateUrl: 'https://shopee.com.my/matcha?aff_id=shopeeAff17',
@@ -373,6 +408,7 @@ async function main() {
     },
     {
       id: 'link_18',
+      userId,
       name: 'Mechanical Keyboard',
       productUrl: 'https://shopee.com.my/mech-keyboard',
       affiliateUrl: 'https://shopee.com.my/mech-keyboard?aff_id=shopeeAff18',
@@ -453,6 +489,7 @@ async function main() {
   const payouts = [
     {
       id: 'pay_01',
+      userId,
       method: 'bank_transfer',
       amount: 500,
       status: 'completed',
@@ -465,6 +502,7 @@ async function main() {
     },
     {
       id: 'pay_02',
+      userId,
       method: 'bank_transfer',
       amount: 750,
       status: 'completed',
@@ -477,6 +515,7 @@ async function main() {
     },
     {
       id: 'pay_03',
+      userId,
       method: 'bank_transfer',
       amount: 1200,
       status: 'processing',
@@ -489,6 +528,7 @@ async function main() {
     },
     {
       id: 'pay_04',
+      userId,
       method: 'ewallet',
       amount: 300,
       status: 'pending',
@@ -500,6 +540,7 @@ async function main() {
     },
     {
       id: 'pay_05',
+      userId,
       method: 'bank_transfer',
       amount: 850,
       status: 'pending',
@@ -511,6 +552,7 @@ async function main() {
     },
     {
       id: 'pay_06',
+      userId,
       method: 'ewallet',
       amount: 200,
       status: 'failed',
@@ -528,14 +570,14 @@ async function main() {
 
   // Create app settings
   const settings = [
-    { key: 'api_key', value: 'shopee_aff_abc123def456ghi789jkl' },
-    { key: 'shopee_username', value: 'ahmad_affiliate' },
-    { key: 'default_commission_rate', value: '10' },
-    { key: 'notification_email', value: 'ahmad@example.com' },
-    { key: 'currency', value: 'MYR' },
-    { key: 'min_payout_amount', value: '100' },
-    { key: 'webhook_url', value: 'https://example.com/webhook/shopee' },
-    { key: 'email_notifications', value: 'true' },
+    { userId, key: 'api_key', value: 'shopee_aff_abc123def456ghi789jkl' },
+    { userId, key: 'shopee_username', value: 'ahmad_affiliate' },
+    { userId, key: 'default_commission_rate', value: '10' },
+    { userId, key: 'notification_email', value: 'ahmad@example.com' },
+    { userId, key: 'currency', value: 'MYR' },
+    { userId, key: 'min_payout_amount', value: '100' },
+    { userId, key: 'webhook_url', value: 'https://example.com/webhook/shopee' },
+    { userId, key: 'email_notifications', value: 'true' },
   ]
 
   await db.appSetting.createMany({ data: settings })
@@ -546,6 +588,7 @@ async function main() {
   const earningGoals = [
     {
       id: 'goal_01',
+      userId,
       name: 'Monthly Target',
       targetAmount: 3000,
       currentAmount: 2847.50,
@@ -556,6 +599,7 @@ async function main() {
     },
     {
       id: 'goal_02',
+      userId,
       name: 'Ramadan Sale Bonus',
       targetAmount: 5000,
       currentAmount: 4200,
@@ -566,6 +610,7 @@ async function main() {
     },
     {
       id: 'goal_03',
+      userId,
       name: 'Q2 Goal',
       targetAmount: 15000,
       currentAmount: 8750,
@@ -585,6 +630,7 @@ async function main() {
   const notifications = [
     {
       id: 'notif_01',
+      userId,
       type: 'conversion',
       title: 'New Conversion!',
       description: 'Running Shoes Elite earned RM 16.86 commission from a completed order.',
@@ -593,6 +639,7 @@ async function main() {
     },
     {
       id: 'notif_02',
+      userId,
       type: 'payout',
       title: 'Payout Processed',
       description: 'RM 1,200.00 has been transferred to your Maybank account ****4521.',
@@ -601,6 +648,7 @@ async function main() {
     },
     {
       id: 'notif_03',
+      userId,
       type: 'campaign',
       title: 'Campaign Ending Soon',
       description: 'Ramadan Sale 2025 campaign ends in 5 days. Boost your links now!',
@@ -609,6 +657,7 @@ async function main() {
     },
     {
       id: 'notif_04',
+      userId,
       type: 'conversion',
       title: 'Conversion on Korean Skincare Set',
       description: 'You earned RM 14.99 commission from a purchase via your affiliate link.',
@@ -617,6 +666,7 @@ async function main() {
     },
     {
       id: 'notif_05',
+      userId,
       type: 'system',
       title: 'New Feature: Analytics Dashboard',
       description: 'Check out the new analytics dashboard with detailed traffic insights.',
@@ -625,6 +675,7 @@ async function main() {
     },
     {
       id: 'notif_06',
+      userId,
       type: 'payout',
       title: 'Payout Request Received',
       description: 'Your payout request of RM 850.00 has been received and is being processed.',
@@ -633,6 +684,7 @@ async function main() {
     },
     {
       id: 'notif_07',
+      userId,
       type: 'alert',
       title: 'Link Performance Alert',
       description: 'Wireless Earbuds Pro link has a 40% drop in clicks this week.',
@@ -641,6 +693,7 @@ async function main() {
     },
     {
       id: 'notif_08',
+      userId,
       type: 'conversion',
       title: 'Conversion on Organic Face Serum',
       description: 'A new purchase generated RM 9.50 in commission.',
@@ -649,6 +702,7 @@ async function main() {
     },
     {
       id: 'notif_09',
+      userId,
       type: 'campaign',
       title: 'New Campaign Available',
       description: 'Join the "Tech Gadgets Mega Sale" campaign and earn 2x commission.',
@@ -657,6 +711,7 @@ async function main() {
     },
     {
       id: 'notif_10',
+      userId,
       type: 'system',
       title: 'Commission Rate Updated',
       description: 'Your commission rate has been increased to 12% for Electronics category.',
@@ -665,6 +720,7 @@ async function main() {
     },
     {
       id: 'notif_11',
+      userId,
       type: 'alert',
       title: 'Expired Link Detected',
       description: '2 of your affiliate links have expired. Update them to keep earning.',
@@ -673,6 +729,7 @@ async function main() {
     },
     {
       id: 'notif_12',
+      userId,
       type: 'conversion',
       title: 'Conversion on Laptop Stand Pro',
       description: 'New order confirmed! You earned RM 22.40 commission.',
@@ -681,6 +738,7 @@ async function main() {
     },
     {
       id: 'notif_13',
+      userId,
       type: 'system',
       title: 'Weekly Performance Report',
       description: 'Your weekly affiliate report is ready. Total clicks: 2,450, conversions: 87.',

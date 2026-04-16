@@ -3,11 +3,13 @@
  * Inspired by agent-town's GameEventBus pattern.
  */
 
+import type { AgentStatus } from '../types'
+
 export interface GameEventMap {
   // Agent lifecycle
   'agent-selected': [agentId: string]
   'agent-deselected': []
-  'agent-status-changed': [agentId: string, status: string]
+  'agent-status-changed': [agentId: string, status: AgentStatus]
 
   // Interaction
   'open-terminal': [agentId?: string]
@@ -28,6 +30,9 @@ export interface GameEventMap {
   // Boss / Player
   'boss-moved': [x: number, y: number]
   'boss-interact': [agentId: string]
+
+  // Earnings / Commissions
+  'commission-earned': [amount: number, source: string]
 }
 
 type Listener<T extends unknown[]> = (...args: T) => void

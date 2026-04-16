@@ -27,7 +27,7 @@ const NotificationContext = createContext<NotificationContextValue>({
   isConnected: false,
   latestNotification: null,
   notifications: [],
-  clearNotifications: () => {},
+  clearNotifications: () => { },
 })
 
 const MAX_NOTIFICATIONS = 100
@@ -55,17 +55,23 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [])
 
   useEffect(() => {
-    // Connect to the notification mini-service
-    // In production (Vercel), connect to VPS via transform port
-    // In development, connect to local service
-    const isProd = typeof window !== 'undefined' && window.location.hostname !== 'localhost'
-    const socketUrl = isProd ? 'https://shopee.gangniaga.my/?XTransformPort=3004' : '/?XTransformPort=3004'
-    
+    // Notification sockets are optional in local dev.
+    // Only auto-connect when a public URL is configured, otherwise keep the UI quiet.
+    const socketUrl = process.env.NEXT_PUBLIC_NOTIFICATION_URL?.trim()
+      || (process.env.NODE_ENV === 'production'
+        ? 'https://shopee.gangniaga.my/?XTransformPort=3004'
+        : '')
+
+    if (!socketUrl) {
+      setIsConnected(false)
+      return
+    }
+
     const socket: Socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
       forceNew: true,
       reconnection: true,
-      reconnectionAttempts: Infinity,
+      reconnectionAttempts: 10,
       reconnectionDelay: 2000,
       reconnectionDelayMax: 30000,
       timeout: 15000,

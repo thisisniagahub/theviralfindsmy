@@ -15,8 +15,58 @@ enum Merchant {
   AMAZON
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LinkStatus {
+  active
+  paused
+  expired
+}
+
+enum CampaignStatus {
+  active
+  paused
+  completed
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum GoalStatus {
+  active
+  completed
+  cancelled
+}
+
+model User {
+  id              String            @id @default(cuid())
+  email           String            @unique
+  name            String?
+  passwordHash    String?
+  image           String?
+  role            Role              @default(USER)
+  affiliateLinks  AffiliateLink[]
+  campaigns       Campaign[]
+  payouts         Payout[]
+  appSettings     AppSetting[]
+  earningGoals    EarningGoal[]
+  notifications   Notification[]
+  agentMemories   AgentMemory[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
 model AffiliateLink {
   id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   name              String
   merchant          Merchant      @default(SHOPEE)
   productUrl        String
@@ -24,14 +74,14 @@ model AffiliateLink {
   productId         String?
   productName       String?
   productImage      String?
-  productPrice      Float?
-  commission        Float?
+  productPrice      Decimal?        @db.Decimal(10, 2)
+  commission        Decimal?        @db.Decimal(10, 2)
   category          String?
   campaignId        String?
-  clicks            Int           @default(0)
-  conversions       Int           @default(0)
-  earnings          Float         @default(0)
-  status            String        @default("active") // active, paused, expired
+  clicks            Int             @default(0)
+  conversions       Int             @default(0)
+  earnings          Decimal         @default(0) @db.Decimal(10, 2)
+  status            LinkStatus      @default(active)
   shortCode         String        @unique
   expiresAt         DateTime?
   campaign          Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
@@ -40,24 +90,28 @@ model AffiliateLink {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  @@index([status])
+  @@index([userId, status])
+  @@index([userId, createdAt])
   @@index([campaignId])
   @@index([category])
-  @@index([createdAt])
 }
 
 model Campaign {
   id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  status      String          @default("active") // active, paused, completed
-  budget      Float?
-  spent       Float           @default(0)
+  status      CampaignStatus  @default(active)
+  budget      Decimal?        @db.Decimal(10, 2)
+  spent       Decimal         @default(0) @db.Decimal(10, 2)
   startDate   DateTime?
   endDate     DateTime?
   links       AffiliateLink[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  @@index([userId])
 }
 
 model ClickRecord {
@@ -71,8 +125,7 @@ model ClickRecord {
   converted     Boolean       @default(false)
   createdAt     DateTime      @default(now())
 
-  @@index([linkId])
-  @@index([createdAt])
+  @@index([linkId, createdAt])
   @@index([device])
 }
 
@@ -81,22 +134,22 @@ model Conversion {
   linkId        String
   affiliateLink AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
   orderId       String?
-  amount        Float
-  commission    Float
-  status        String        @default("pending") // pending, confirmed, rejected, paid
+  amount        Decimal         @db.Decimal(10, 2)
+  commission    Decimal         @db.Decimal(10, 2)
+  status        String          @default("pending") // pending, confirmed, rejected, paid
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  @@index([linkId])
-  @@index([status])
-  @@index([createdAt])
+  @@index([linkId, status, createdAt])
 }
 
 model Payout {
   id          String    @id @default(cuid())
-  method      String    @default("bank_transfer")
-  amount      Float
-  status      String    @default("pending") // pending, processing, completed, failed
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  method      String        @default("bank_transfer")
+  amount      Decimal       @db.Decimal(10, 2)
+  status      PayoutStatus  @default(pending)
   bankName    String?
   accountNo   String?
   accountName String?
@@ -106,54 +159,68 @@ model Payout {
 
   @@index([status])
   @@index([requestedAt])
+  @@index([userId])
 }
 
 model AppSetting {
   id        String   @id @default(cuid())
-  key       String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       String
   value     String
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, key])
+  @@index([userId])
 }
 
 model EarningGoal {
   id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   name          String
-  targetAmount  Float
-  currentAmount Float     @default(0)
+  targetAmount  Decimal     @db.Decimal(10, 2)
+  currentAmount Decimal     @default(0) @db.Decimal(10, 2)
   period        String
   startDate     DateTime  @default(now())
   endDate       DateTime?
-  status        String    @default("active")
+  status        GoalStatus  @default(active)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  @@index([status])
+  @@index([userId, status])
   @@index([period])
+  @@index([userId])
 }
 
 model Notification {
   id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type        String   @default("system")
   title       String
   description String
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  @@index([read])
+  @@index([userId, read])
   @@index([createdAt])
   @@index([type])
 }
 
 model AgentMemory {
   id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   agentId   String
   sessionId String?
   role      String // 'user' | 'assistant' | 'system'
-  content   String
+  content   String  @db.VarChar(10000)
   metadata  String? // JSON string for extra data
   createdAt DateTime @default(now())
 
   @@index([agentId])
   @@index([sessionId])
   @@index([createdAt])
+  @@index([userId])
 }

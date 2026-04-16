@@ -1,8 +1,12 @@
 /**
  * API Rate Limiting Middleware
  * Per-IP and per-user rate limits with 429 responses and retry-after headers.
- * Uses in-memory Map (for production, use Redis or similar).
+ * PRIMARY: Upstash Redis for production scalability
+ * FALLBACK: In-memory Map for local dev only
  */
+
+import { Redis } from '@upstash/redis'
+import { Ratelimit } from '@upstash/ratelimit'
 
 interface RateLimitEntry {
   count: number
@@ -14,7 +18,7 @@ export interface RateLimitConfig {
   maxRequests: number    // Max requests per window
 }
 
-// Rate limit stores
+// ─── In-memory fallback stores (DEV ONLY) ───
 const ipLimits = new Map<string, RateLimitEntry>()
 const userLimits = new Map<string, RateLimitEntry>()
 
@@ -37,6 +41,56 @@ function ensureCleanup() {
     }
   }, 5 * 60_000)
   if (cleanupInterval.unref) cleanupInterval.unref()
+}
+
+// ─── Redis ratelimit instances (PRIMARY) ───
+let ipRatelimit: Ratelimit | null = null
+let userRatelimit: Ratelimit | null = null
+
+function getRedisClient(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return null
+  try {
+    return new Redis({ url, token })
+  } catch (error) {
+    console.error('[RateLimit] Failed to initialize Redis:', error)
+    return null
+  }
+}
+
+function getIpRatelimit(): Ratelimit | null {
+  if (ipRatelimit) return ipRatelimit
+
+  const redis = getRedisClient()
+  if (!redis) {
+    // Log warning only once in production
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('⚠️ [RateLimit] Redis not configured - using in-memory fallback (will not scale across instances)')
+    }
+    return null
+  }
+
+  ipRatelimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(100, '60 s'),
+    prefix: '@tvf:ip',
+  })
+  return ipRatelimit
+}
+
+function getUserRatelimit(): Ratelimit | null {
+  if (userRatelimit) return userRatelimit
+
+  const redis = getRedisClient()
+  if (!redis) return null
+
+  userRatelimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(200, '60 s'),
+    prefix: '@tvf:user',
+  })
+  return userRatelimit
 }
 
 function checkLimit(
@@ -69,12 +123,36 @@ function checkLimit(
   }
 }
 
-export function rateLimitByIP(ip: string, config?: Partial<RateLimitConfig>) {
+export async function rateLimitByIP(ip: string, config?: Partial<RateLimitConfig>): Promise<{ allowed: boolean; remaining: number; retryAfter: number }> {
+  // Try Redis first
+  const rl = getIpRatelimit()
+  if (rl) {
+    const { success, remaining, reset } = await rl.limit(ip)
+    return {
+      allowed: success,
+      remaining,
+      retryAfter: success ? 0 : Math.ceil((reset - Date.now()) / 1000),
+    }
+  }
+
+  // Fall back to in-memory
   const cfg = { ...DEFAULT_IP_LIMIT, ...config }
   return checkLimit(ip, ipLimits, cfg)
 }
 
-export function rateLimitByUser(userId: string, config?: Partial<RateLimitConfig>) {
+export async function rateLimitByUser(userId: string, config?: Partial<RateLimitConfig>): Promise<{ allowed: boolean; remaining: number; retryAfter: number }> {
+  // Try Redis first
+  const rl = getUserRatelimit()
+  if (rl) {
+    const { success, remaining, reset } = await rl.limit(userId)
+    return {
+      allowed: success,
+      remaining,
+      retryAfter: success ? 0 : Math.ceil((reset - Date.now()) / 1000),
+    }
+  }
+
+  // Fall back to in-memory
   const cfg = { ...DEFAULT_USER_LIMIT, ...config }
   return checkLimit(userId, userLimits, cfg)
 }
@@ -83,6 +161,8 @@ export function rateLimitByUser(userId: string, config?: Partial<RateLimitConfig
 export function resetRateLimits() {
   ipLimits.clear()
   userLimits.clear()
+  ipRatelimit = null
+  userRatelimit = null
 }
 
 // Get current usage stats
@@ -100,11 +180,10 @@ export const RATE_LIMITS = {
   mutation: { windowMs: 60 * 1000, maxRequests: 30 },
 }
 
-export function rateLimit(ip: string, config: RateLimitConfig = RATE_LIMITS.api) {
-  const result = rateLimitByIP(ip, config)
+export async function rateLimit(ip: string, config: RateLimitConfig = RATE_LIMITS.api) {
+  const result = await rateLimitByIP(ip, config)
   return {
     success: result.allowed,
     resetIn: result.retryAfter * 1000,
   }
 }
-

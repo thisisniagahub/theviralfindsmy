@@ -1,8 +1,11 @@
 /**
  * API Response Caching
- * In-memory cache with TTL for frequently accessed data.
+ * Uses in-memory Map as primary store (fast local reads).
+ * Optionally syncs to Upstash Redis when configured (cross-instance sharing).
  * Supports dashboard stats, leaderboard, achievements, etc.
  */
+
+import * as redis from './redis'
 
 interface CacheEntry<T = unknown> {
   data: T
@@ -14,6 +17,24 @@ interface CacheEntry<T = unknown> {
 class ResponseCache {
   private store = new Map<string, CacheEntry>()
   private defaultTTL = 30_000 // 30 seconds default
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null
+
+  constructor() {
+    this.startCleanup()
+  }
+
+  private startCleanup() {
+    // Proactive cleanup of expired entries every minute
+    this.cleanupInterval = setInterval(() => {
+      const now = Date.now()
+      for (const [key, entry] of this.store) {
+        if (entry.expiresAt < now) {
+          this.store.delete(key)
+        }
+      }
+    }, 60_000)
+    if (this.cleanupInterval.unref) this.cleanupInterval.unref()
+  }
 
   set<T>(key: string, data: T, ttlMs?: number): void {
     this.store.set(key, {
@@ -22,6 +43,12 @@ class ResponseCache {
       createdAt: Date.now(),
       hits: 0,
     })
+
+    // Sync to Redis asynchronously when available
+    if (redis.isRedisAvailable()) {
+      const ttlSec = ttlMs ? Math.ceil(ttlMs / 1000) : Math.ceil(this.defaultTTL / 1000)
+      void redis.set(key, JSON.stringify({ data, expiresAt: Date.now() + ttlSec * 1000 }), ttlSec)
+    }
   }
 
   get<T>(key: string): T | null {
@@ -40,11 +67,19 @@ class ResponseCache {
 
   invalidate(key: string): void {
     this.store.delete(key)
+    if (redis.isRedisAvailable()) {
+      void redis.del(key)
+    }
   }
 
   invalidatePattern(pattern: string): void {
     for (const [key] of this.store) {
-      if (key.includes(pattern)) this.store.delete(key)
+      if (key.includes(pattern)) {
+        this.store.delete(key)
+        if (redis.isRedisAvailable()) {
+          void redis.del(key)
+        }
+      }
     }
   }
 
@@ -58,13 +93,19 @@ class ResponseCache {
     let totalHits = 0
     let expiredEntries = 0
 
-    for (const [key, entry] of this.store) {
+    for (const [, entry] of this.store) {
       totalEntries++
       totalHits += entry.hits
       if (entry.expiresAt < now) expiredEntries++
     }
 
-    return { totalEntries, totalHits, expiredEntries, hitRate: totalEntries > 0 ? totalHits / totalEntries : 0 }
+    return {
+      totalEntries,
+      totalHits,
+      expiredEntries,
+      hitRate: totalEntries > 0 ? totalHits / totalEntries : 0,
+      redisAvailable: redis.isRedisAvailable(),
+    }
   }
 }
 

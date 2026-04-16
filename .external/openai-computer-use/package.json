@@ -1,0 +1,11 @@
+{
+  "name": "@theviralfinds/openai-computer-use-poc",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "doctor": "pwsh -ExecutionPolicy Bypass -File ./run.ps1 --doctor",
+    "help": "pwsh -ExecutionPolicy Bypass -File ./run.ps1 --help",
+    "run": "pwsh -ExecutionPolicy Bypass -File ./run.ps1",
+    "screenshot": "pwsh -ExecutionPolicy Bypass -File ./powershell/capture-screen.ps1 -Mode temp"
+  }
+}

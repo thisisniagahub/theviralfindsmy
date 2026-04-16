@@ -108,27 +108,8 @@ export function AppLayout() {
   const PageComponent = pages[activePage] || DashboardPage
   const [showTour, setShowTour] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [autoSigningIn, setAutoSigningIn] = useState(true)
 
-  // Auto sign-in for demo mode (SKIP_AUTH=true)
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      signIn('credentials', {
-        email: 'admin@theviralfinds.my',
-        password: 'admin123',
-        redirect: false,
-      }).then(() => {
-        setAutoSigningIn(false)
-      }).catch(() => {
-        setAutoSigningIn(false)
-      })
-    } else if (status !== 'loading') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setAutoSigningIn(false)
-    }
-  }, [status])
-
-  // All hooks must be called before any conditional returns
+  // Auth guard: show login prompt when not authenticated (AFTER all hooks)
   useEffect(() => {
     const seen = localStorage.getItem('shopee_affiliate_tour_seen')
     if (!seen) {
@@ -161,7 +142,7 @@ export function AppLayout() {
   const StepIcon = step.icon
 
   // Auth guard: show login prompt when not authenticated (AFTER all hooks)
-  if (status === 'loading' || autoSigningIn) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -193,9 +174,6 @@ export function AppLayout() {
               <LogIn className="w-4 h-4 mr-2" />
               Sign In to Dashboard
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Default: admin@theviralfinds.my / admin123
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -204,241 +182,240 @@ export function AppLayout() {
 
   return (
     <NotificationProvider>
-    <CommandPalette />
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header />
-        <main className="flex-1 p-4 lg:p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activePage}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ErrorBoundary pageName={activePage}>
-                <PageComponent />
-              </ErrorBoundary>
-            </motion.div>
-          </AnimatePresence>
-        </main>
-        {/* Add padding-bottom on mobile for the bottom tab bar */}
-        <footer className="border-t border-border bg-gradient-to-b from-muted/30 to-background mt-auto pb-16 lg:pb-0">
-          {/* 3-Column Layout */}
-          <div className="px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
-            {/* Column 1: Branding */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-shopee flex items-center justify-center">
-                  <BarChart3 className="w-4 h-4 text-white" />
+      <CommandPalette />
+      <div className="flex min-h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header />
+          <main className="flex-1 p-4 lg:p-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activePage}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ErrorBoundary pageName={activePage}>
+                  <PageComponent />
+                </ErrorBoundary>
+              </motion.div>
+            </AnimatePresence>
+          </main>
+          {/* Add padding-bottom on mobile for the bottom tab bar */}
+          <footer className="border-t border-border bg-gradient-to-b from-muted/30 to-background mt-auto pb-16 lg:pb-0">
+            {/* 3-Column Layout */}
+            <div className="px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-8">
+              {/* Column 1: Branding */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-lg bg-shopee flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="font-bold text-foreground text-sm uppercase tracking-wider">TheViralFinds Pro</span>
                 </div>
-                <span className="font-bold text-foreground text-sm uppercase tracking-wider">TheViralFinds Pro</span>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Empowering Malaysian affiliates with powerful analytics and link management tools
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Empowering Malaysian affiliates with powerful analytics and link management tools
+
+              {/* Column 2: Quick Links */}
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-3">Quick Links</h4>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                  {[
+                    { label: 'Dashboard', page: 'dashboard', icon: LayoutDashboard },
+                    { label: 'Products', page: 'products', icon: ShoppingBag },
+                    { label: 'Links', page: 'links', icon: Link2 },
+                    { label: 'Analytics', page: 'analytics', icon: BarChart3 },
+                    { label: 'Calculator', page: 'calculator', icon: Calculator },
+                    { label: 'Earnings', page: 'earnings', icon: DollarSign },
+                    { label: 'Shopee Integration', page: 'shopee-integration', icon: Plug },
+                  ].map((item) => (
+                    <button
+                      key={item.page}
+                      onClick={() => setActivePage(item.page)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-shopee transition-colors text-left"
+                    >
+                      <item.icon className="w-3 h-3 flex-shrink-0" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Column 3: Support */}
+              <div>
+                <h4 className="font-semibold text-sm text-foreground mb-3">Support</h4>
+                <div className="space-y-2">
+                  {[
+                    { label: 'Help Center', icon: HelpCircle },
+                    { label: 'API Docs', icon: FileText },
+                    { label: 'Terms of Service', icon: Shield },
+                    { label: 'Privacy Policy', icon: Lock },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      onClick={() => toast.info('Coming soon', { description: `${item.label} page is under development.` })}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-shopee transition-colors"
+                    >
+                      <item.icon className="w-3 h-3 flex-shrink-0" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="border-t border-border px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <p className="text-xs text-muted-foreground">
+                &copy; {new Date().getFullYear()} TheViralFinds Pro — Empowering Smart Affiliates
               </p>
+              <Badge variant="secondary" className="text-[10px] font-mono bg-shopee/10 text-shopee border-shopee/20">
+                v6.0-VPS
+              </Badge>
             </div>
+          </footer>
 
-            {/* Column 2: Quick Links */}
-            <div>
-              <h4 className="font-semibold text-sm text-foreground mb-3">Quick Links</h4>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                {[
-                  { label: 'Dashboard', page: 'dashboard', icon: LayoutDashboard },
-                  { label: 'Products', page: 'products', icon: ShoppingBag },
-                  { label: 'Links', page: 'links', icon: Link2 },
-                  { label: 'Analytics', page: 'analytics', icon: BarChart3 },
-                  { label: 'Calculator', page: 'calculator', icon: Calculator },
-                  { label: 'Earnings', page: 'earnings', icon: DollarSign },
-                  { label: 'Shopee Integration', page: 'shopee-integration', icon: Plug },
-                ].map((item) => (
+          {/* Floating Action Button - Mobile Only */}
+          <motion.button
+            className="fixed bottom-20 right-4 z-30 lg:hidden w-14 h-14 rounded-full bg-shopee text-white shadow-lg shadow-shopee flex items-center justify-center"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { setActivePage('links') }}
+          >
+            <Plus className="w-6 h-6" />
+          </motion.button>
+
+          {/* Mobile Bottom Tab Bar - replaces sidebar on mobile */}
+          <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border glass-header safe-area-inset-bottom">
+            <div className="flex items-center justify-around h-16 px-2">
+              {mobileNavItems.map((item) => {
+                const Icon = item.icon
+                const isActive = activePage === item.id
+                return (
                   <button
-                    key={item.page}
-                    onClick={() => setActivePage(item.page)}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-shopee transition-colors text-left"
+                    key={item.id}
+                    onClick={() => setActivePage(item.id)}
+                    className={cn(
+                      'flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-lg transition-colors min-w-[56px]',
+                      isActive ? 'text-shopee' : 'text-muted-foreground'
+                    )}
                   >
-                    <item.icon className="w-3 h-3 flex-shrink-0" />
-                    {item.label}
+                    <Icon className="w-5 h-5" />
+                    <span className="text-[10px] font-medium">{item.label}</span>
                   </button>
-                ))}
-              </div>
+                )
+              })}
             </div>
-
-            {/* Column 3: Support */}
-            <div>
-              <h4 className="font-semibold text-sm text-foreground mb-3">Support</h4>
-              <div className="space-y-2">
-                {[
-                  { label: 'Help Center', icon: HelpCircle },
-                  { label: 'API Docs', icon: FileText },
-                  { label: 'Terms of Service', icon: Shield },
-                  { label: 'Privacy Policy', icon: Lock },
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => toast.info('Coming soon', { description: `${item.label} page is under development.` })}
-                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-shopee transition-colors"
-                  >
-                    <item.icon className="w-3 h-3 flex-shrink-0" />
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Bar */}
-          <div className="border-t border-border px-6 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} TheViralFinds Pro — Empowering Smart Affiliates
-            </p>
-            <Badge variant="secondary" className="text-[10px] font-mono bg-shopee/10 text-shopee border-shopee/20">
-              v6.0-VPS
-            </Badge>
-          </div>
-        </footer>
-
-        {/* Floating Action Button - Mobile Only */}
-        <motion.button
-          className="fixed bottom-20 right-4 z-30 lg:hidden w-14 h-14 rounded-full bg-shopee text-white shadow-lg shadow-shopee flex items-center justify-center"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => { setActivePage('links') }}
-        >
-          <Plus className="w-6 h-6" />
-        </motion.button>
-
-        {/* Mobile Bottom Tab Bar - replaces sidebar on mobile */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border glass-header safe-area-inset-bottom">
-          <div className="flex items-center justify-around h-16 px-2">
-            {mobileNavItems.map((item) => {
-              const Icon = item.icon
-              const isActive = activePage === item.id
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActivePage(item.id)}
-                  className={cn(
-                    'flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-lg transition-colors min-w-[56px]',
-                    isActive ? 'text-shopee' : 'text-muted-foreground'
-                  )}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-[10px] font-medium">{item.label}</span>
-                </button>
-              )
-            })}
           </div>
         </div>
-      </div>
 
-      {/* Onboarding Tour Overlay */}
-      <AnimatePresence>
-        {showTour && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px]"
-              onClick={completeTour}
-            />
+        {/* Onboarding Tour Overlay */}
+        <AnimatePresence>
+          {showTour && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px]"
+                onClick={completeTour}
+              />
 
-            {/* Tour Card */}
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed z-[101] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md"
-            >
-              <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 relative">
-                {/* Close button */}
-                <button
-                  onClick={completeTour}
-                  className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+              {/* Tour Card */}
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -20 }}
+                transition={{ duration: 0.3, type: 'spring', stiffness: 300, damping: 30 }}
+                className="fixed z-[101] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-md"
+              >
+                <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 relative">
+                  {/* Close button */}
+                  <button
+                    onClick={completeTour}
+                    className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
 
-                {/* Icon + Title */}
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="p-3 rounded-xl bg-shopee/10 text-shopee flex-shrink-0">
-                    <StepIcon className="w-6 h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="w-4 h-4 text-shopee" />
-                      <span className="text-[11px] font-semibold text-shopee uppercase tracking-wider">
-                        Step {currentStep + 1} of {TOUR_STEPS.length}
-                      </span>
+                  {/* Icon + Title */}
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="p-3 rounded-xl bg-shopee/10 text-shopee flex-shrink-0">
+                      <StepIcon className="w-6 h-6" />
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{step.title}</h3>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Sparkles className="w-4 h-4 text-shopee" />
+                        <span className="text-[11px] font-semibold text-shopee uppercase tracking-wider">
+                          Step {currentStep + 1} of {TOUR_STEPS.length}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">{step.title}</h3>
+                    </div>
                   </div>
-                </div>
 
-                {/* Description */}
-                <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                  {step.description}
-                </p>
+                  {/* Description */}
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6">
+                    {step.description}
+                  </p>
 
-                {/* Progress dots */}
-                <div className="flex items-center gap-2 mb-6">
-                  {TOUR_STEPS.map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        idx === currentStep
+                  {/* Progress dots */}
+                  <div className="flex items-center gap-2 mb-6">
+                    {TOUR_STEPS.map((_, idx) => (
+                      <div
+                        key={idx}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentStep
                           ? 'bg-shopee w-8'
                           : idx < currentStep
                             ? 'bg-shopee/40 w-4'
                             : 'bg-muted w-4'
-                      }`}
-                    />
-                  ))}
-                </div>
+                          }`}
+                      />
+                    ))}
+                  </div>
 
-                {/* Navigation */}
-                <div className="flex items-center justify-between gap-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={completeTour}
-                    className="text-muted-foreground"
-                  >
-                    Skip Tour
-                  </Button>
-                  <div className="flex items-center gap-2">
+                  {/* Navigation */}
+                  <div className="flex items-center justify-between gap-3">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      onClick={handlePrev}
-                      disabled={currentStep === 0}
-                      className="gap-1"
+                      onClick={completeTour}
+                      className="text-muted-foreground"
                     >
-                      <ChevronLeft className="w-3 h-3" /> Back
+                      Skip Tour
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleNext}
-                      className="bg-shopee hover:bg-shopee-dark text-white gap-1"
-                    >
-                      {currentStep === TOUR_STEPS.length - 1 ? 'Get Started' : 'Next'}
-                      <ChevronRight className="w-3 h-3" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePrev}
+                        disabled={currentStep === 0}
+                        className="gap-1"
+                      >
+                        <ChevronLeft className="w-3 h-3" /> Back
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleNext}
+                        className="bg-shopee hover:bg-shopee-dark text-white gap-1"
+                      >
+                        {currentStep === TOUR_STEPS.length - 1 ? 'Get Started' : 'Next'}
+                        <ChevronRight className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </NotificationProvider>
   )
 }

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 import { createGoalSchema } from '@/lib/validations'
 import { z } from 'zod'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -29,7 +32,10 @@ export async function GET() {
     if (!DB_URL) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
-    const data = await fetch(`${DB_URL}/goals`).then(r => r.json())
+    const session = await getServerSession(authOptions)
+    const userId = (session as any)?.user?.id
+    const url = userId ? `${DB_URL}/goals?userId=${encodeURIComponent(userId)}` : `${DB_URL}/goals`
+    const data = await fetch(url).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {
@@ -49,8 +55,11 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.mutation)
   if (rateLimited) return rateLimited
+
+  const { auth, error } = await requireAuth()
+  if (error) return error
 
   let validated
   try {
@@ -83,11 +92,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
-    const goal = await fetch(`${DB_URL}/goals`, {
+    const response = await authenticatedDbFetch(DB_URL, '/goals', auth!, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
+    const goal = await response.json()
 
     return NextResponse.json(goal, { status: 201 })
   } catch (error) {

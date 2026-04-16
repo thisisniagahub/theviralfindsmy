@@ -88,6 +88,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const step = TOUR_STEPS[currentStep]
   const StepIcon = step.icon
 
+  // Agent Office has its own full-screen layout — bypass dashboard shell
+  if (pathname === '/agent-office') {
+    return <>{children}</>
+  }
+
   // Auth guard
   if (status === 'loading') {
     return (

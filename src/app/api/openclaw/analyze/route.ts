@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
+  // 1. Check auth
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
+  // 2. Check rate limit (10 req/min for AI)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.ai)
+  if (rateLimited) return rateLimited
+
   try {
     const body = await request.json()
     const tool = body.tool || 'general'

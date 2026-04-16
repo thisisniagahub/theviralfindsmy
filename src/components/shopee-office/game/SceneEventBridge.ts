@@ -1,6 +1,6 @@
 import { gameEvents } from './events'
-import type { Worker } from './entities/Worker'
 import type { WorkerManager } from './systems/WorkerManager'
+import type { AgentStatus } from '../types'
 
 /**
  * SceneEventBridge
@@ -9,13 +9,12 @@ import type { WorkerManager } from './systems/WorkerManager'
 export function initSceneEventBridge(
   workerManager: WorkerManager,
   onAgentSelected?: (agentId: string) => void,
-  onAgentStatusChanged?: (agentId: string, status: string) => void,
+  onStatusUpdate?: (agentId: string, status: AgentStatus) => void,
 ): () => void {
   const unsubs: Array<() => void> = []
 
   // React → Phaser: Task assigned from UI
   unsubs.push(gameEvents.on('task-assigned', (taskId, message, agentId) => {
-    console.log(`[Bridge] Task assigned to ${agentId || 'idle agent'}: ${message}`)
     const worker = workerManager.findBySeatId(agentId) || workerManager.findIdle()
     if (worker) {
       worker.currentTaskMessage = message
@@ -27,7 +26,6 @@ export function initSceneEventBridge(
 
   // React → Phaser: Task completed from external API/SDK
   unsubs.push(gameEvents.on('task-completed', (runId) => {
-    console.log(`[Bridge] Task completed: ${runId}`)
     const worker = workerManager.workers.find(w => w.assignedRunId === runId)
     if (worker) {
       worker.assignedRunId = null
@@ -37,12 +35,16 @@ export function initSceneEventBridge(
     }
   }))
   
-  // React → Phaser: Generic status update (e.g. from A2A pipeline steps)
+  // React → Phaser & Phaser → React: Status update sync
   unsubs.push(gameEvents.on('agent-status-changed', (agentId, status) => {
+    // 1. If triggered from React, update Phaser worker state
     const worker = workerManager.findBySeatId(agentId)
-    if (worker) {
-      worker.setStatus(status as any)
+    if (worker && worker.status !== status) {
+      worker.setStatus(status)
     }
+
+    // 2. Notify React UI if status changed in Phaser
+    onStatusUpdate?.(agentId, status)
   }))
 
   // Phaser → React: Agent selected in game world
@@ -50,16 +52,7 @@ export function initSceneEventBridge(
     onAgentSelected?.(agentId)
   }))
 
-  // Phaser → React: Real-time status sync to UI
-  // Note: We avoid infinite loops by checking if the UI already has the state
-  const interval = setInterval(() => {
-    workerManager.workers.forEach(w => {
-      onAgentStatusChanged?.(w.seatId, w.status)
-    })
-  }, 1000)
-
   return () => {
     for (const u of unsubs) u()
-    clearInterval(interval)
   }
 }

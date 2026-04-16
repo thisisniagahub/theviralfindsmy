@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { executeMCPTool } from '@/lib/openclaw'
-
-async function getSDK() {
-  const ZAI = (await import('z-ai-web-dev-sdk')).default
-  return ZAI.create()
-}
+import { executeMCPTool, openClawCompletion, extractMessageContent } from '@/lib/openclaw'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
+  // 1. Check auth
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
+  // 2. Check rate limit (10 req/min for AI)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.ai)
+  if (rateLimited) return rateLimited
+
   try {
     const body = await request.json()
     const { url = '', extractType = 'summary', source = 'auto' } = body
@@ -22,45 +27,35 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ success: true, url, extractType, ...parsed, source: mcpResult._source })
         }
       } catch {
-        // Gateway failed, fall through to SDK
+        // Gateway MCP failed, fall through to completion fallback
       }
     }
 
-    // SDK fallback
-    const zai = await getSDK()
-
-    // Use web reader to extract content
-    const webContent = await zai.functions.invoke('page_reader', { url })
-
-    let analysis = ''
-    const contentText = typeof webContent === 'string' ? webContent : JSON.stringify(webContent)
-    const truncatedContent = contentText.substring(0, 3000)
-
+    // Gateway completion fallback
     const extractPrompts: Record<string, string> = {
-      summary: `Summarize this webpage content in 3-5 bullet points. Focus on key information.`,
-      keywords: `Extract the most important keywords and topics from this content. Return as a comma-separated list.`,
-      products: `Extract all product information mentioned: names, prices, features, ratings. Format as structured data.`,
-      sentiment: `Analyze the sentiment of this content. Rate overall sentiment (positive/negative/neutral) with confidence score.`,
-      affiliate: `Analyze this content for affiliate marketing potential. Identify: target audience, monetization opportunities, recommended platforms, and content strategy.`,
+      summary: `Summarize the webpage at ${url} in 3-5 bullet points. Focus on key information.`,
+      keywords: `Extract the most important keywords and topics from ${url}. Return as a comma-separated list.`,
+      products: `Extract all product information from ${url}: names, prices, features, ratings. Format as structured data.`,
+      sentiment: `Analyze the sentiment of content at ${url}. Rate overall sentiment (positive/negative/neutral) with confidence score.`,
+      affiliate: `Analyze ${url} for affiliate marketing potential. Identify: target audience, monetization opportunities, recommended platforms, and content strategy.`,
     }
 
-    const completion = await zai.chat.completions.create({
+    const completion = await openClawCompletion({
       messages: [
-        { role: 'assistant', content: 'You are a web content analyst. Provide clear, actionable analysis based on the content provided.' },
-        { role: 'user', content: `URL: ${url}\nExtract type: ${extractType}\n\nContent:\n${truncatedContent}\n\n${extractPrompts[extractType] || extractPrompts['summary']}` },
+        { role: 'system', content: 'You are a web content analyst. Provide clear, actionable analysis based on the URL provided.' },
+        { role: 'user', content: extractPrompts[extractType] || extractPrompts['summary'] },
       ],
       thinking: { type: 'disabled' },
     })
 
-    analysis = completion.choices[0]?.message?.content || 'Analysis failed.'
+    const analysis = extractMessageContent(completion)
 
     return NextResponse.json({
       success: true,
       url,
       extractType,
       analysis,
-      contentLength: contentText.length,
-      source: 'ai_web_reader',
+      source: 'gateway',
     })
   } catch (error) {
     console.error('Web reader error:', error)

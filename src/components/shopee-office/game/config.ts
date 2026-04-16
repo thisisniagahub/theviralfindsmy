@@ -7,9 +7,19 @@
 export const GAME_WIDTH = 1280
 export const GAME_HEIGHT = 720
 
+// Agent Town-inspired office map
+export const OFFICE_MAP_KEY = 'shopee-office-map'
+export const OFFICE_MAP_PATH = '/shopee-office/maps/office2.json'
+export const OFFICE_TILESET_BASE_PATH = '/shopee-office/tilesets'
+export const OFFICE_BASE_LAYERS = ['floor', 'walls', 'ground', 'furniture', 'objects'] as const
+export const OFFICE_PROPS_LAYER = 'props'
+export const OFFICE_PROPS_OVER_LAYER = 'props-over'
+export const OFFICE_OVERHEAD_LAYER = 'overhead'
+
 // Boss spawn position (near the door)
-export const BOSS_SPAWN_X = 640
-export const BOSS_SPAWN_Y = 650
+export const BOSS_SPAWN_X = 685
+export const BOSS_SPAWN_Y = 754
+export const BOSS_SPAWN_FACING: 'up' | 'down' | 'left' | 'right' = 'left'
 export const BOSS_INTERACT_DISTANCE = 60
 
 // Agent interaction
@@ -44,6 +54,18 @@ export const STAGGER_EXTRA_MAX = 1200
 export const EMOTE_Y_OFFSET = 0.55
 export const BUBBLE_Y_OFFSET = 0.45
 export const PROMPT_Y_OFFSET = 0.5
+
+// Agent positions on minimap (agentId -> {x, y} in game coordinates)
+export const AGENT_POSITIONS: Record<string, { x: number; y: number }> = {
+  main: { x: 640, y: 360 },
+  niagamarketing: { x: 400, y: 300 },
+  niagaresearch: { x: 500, y: 280 },
+  niagaops: { x: 700, y: 320 },
+  niagastrategist: { x: 600, y: 400 },
+  niagacomputer: { x: 750, y: 380 },
+  niagareporter: { x: 450, y: 420 },
+  niagaaggregator: { x: 550, y: 350 },
+}
 
 // Task timing
 export const TASK_BUBBLE_MS = 4000
@@ -196,12 +218,24 @@ export const SEAT_ACTIVITIES: SeatActivityDef[] = [
   },
 ]
 
+export const SHOPEE_AGENT_SEAT_ORDER = [
+  'product-scout',
+  'link-builder',
+  'campaign-master',
+  'analytics-agent',
+  'content-writer',
+  'payout-checker',
+  'seo-optimizer',
+  'review-monitor',
+] as const
+
 // Agent desk spawn positions (where agents sit when working)
 export interface SeatDef {
   seatId: string
   x: number
   y: number
   facing: 'up' | 'down' | 'left' | 'right'
+  index?: number
 }
 
 export const AGENT_SEAT_DEFS: SeatDef[] = [

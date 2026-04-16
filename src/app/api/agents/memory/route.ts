@@ -11,10 +11,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const history = await getAgentHistory(agentId, limit)
+    const history = await getAgentHistory(agentId, limit) as Array<Record<string, unknown>>
     return NextResponse.json({ agentId, history, total: history.length })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to get agent history', details: String(error) }, { status: 500 })
+    console.error('Failed to get agent history:', error)
+    return NextResponse.json({ error: 'Failed to get agent history' }, { status: 500 })
   }
 }
 
@@ -30,6 +31,7 @@ export async function DELETE(request: NextRequest) {
     await clearAgentMemory(agentId)
     return NextResponse.json({ success: true, agentId, message: 'Agent memory cleared' })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to clear agent memory', details: String(error) }, { status: 500 })
+    console.error('Failed to clear agent memory:', error)
+    return NextResponse.json({ error: 'Failed to clear agent memory' }, { status: 500 })
   }
 }

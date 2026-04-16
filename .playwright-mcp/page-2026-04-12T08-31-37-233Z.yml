@@ -1,0 +1,698 @@
+- generic [ref=e2]:
+  - region
+  - generic [ref=e3]:
+    - link "Skip to content" [ref=e4] [cursor=pointer]:
+      - /url: "#start-of-content"
+    - banner [ref=e6]:
+      - heading "Navigation Menu" [level=2] [ref=e7]
+      - generic [ref=e8]:
+        - link "Homepage" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img [ref=e11]
+        - generic [ref=e13]:
+          - navigation "Global" [ref=e16]:
+            - list [ref=e17]:
+              - listitem [ref=e18]:
+                - button "Platform" [ref=e20] [cursor=pointer]:
+                  - text: Platform
+                  - img [ref=e21]
+              - listitem [ref=e23]:
+                - button "Solutions" [ref=e25] [cursor=pointer]:
+                  - text: Solutions
+                  - img [ref=e26]
+              - listitem [ref=e28]:
+                - button "Resources" [ref=e30] [cursor=pointer]:
+                  - text: Resources
+                  - img [ref=e31]
+              - listitem [ref=e33]:
+                - button "Open Source" [ref=e35] [cursor=pointer]:
+                  - text: Open Source
+                  - img [ref=e36]
+              - listitem [ref=e38]:
+                - button "Enterprise" [ref=e40] [cursor=pointer]:
+                  - text: Enterprise
+                  - img [ref=e41]
+              - listitem [ref=e43]:
+                - link "Pricing" [ref=e44] [cursor=pointer]:
+                  - /url: https://github.com/pricing
+                  - generic [ref=e45]: Pricing
+          - generic [ref=e46]:
+            - button "Search or jump to…" [ref=e49] [cursor=pointer]:
+              - img [ref=e51]
+            - link "Sign in" [ref=e54] [cursor=pointer]:
+              - /url: /login?return_to=https%3A%2F%2Fgithub.com%2Fthisisniagahub%2Ftheviralfindsmy
+            - link "Sign up" [ref=e55] [cursor=pointer]:
+              - /url: /signup?ref_cta=Sign+up&ref_loc=header+logged+out&ref_page=%2F%3Cuser-name%3E%2F%3Crepo-name%3E&source=header-repo&source_repo=thisisniagahub%2Ftheviralfindsmy
+            - button "Appearance settings" [ref=e58] [cursor=pointer]:
+              - img
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - link "thisisniagahub" [ref=e70] [cursor=pointer]:
+            - /url: /thisisniagahub
+          - generic [ref=e71]: /
+          - strong [ref=e72]:
+            - link "theviralfindsmy" [ref=e73] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy
+          - generic [ref=e74]: Public
+        - generic [ref=e75]:
+          - list:
+            - listitem [ref=e76]:
+              - link "You must be signed in to change notification settings" [ref=e77] [cursor=pointer]:
+                - /url: /login?return_to=%2Fthisisniagahub%2Ftheviralfindsmy
+                - img [ref=e78]
+                - text: Notifications
+            - listitem [ref=e80]:
+              - link "Fork 0" [ref=e81] [cursor=pointer]:
+                - /url: /login?return_to=%2Fthisisniagahub%2Ftheviralfindsmy
+                - img [ref=e82]
+                - text: Fork
+                - generic "0" [ref=e84]
+            - listitem [ref=e85]:
+              - link "You must be signed in to star a repository" [ref=e87] [cursor=pointer]:
+                - /url: /login?return_to=%2Fthisisniagahub%2Ftheviralfindsmy
+                - img [ref=e88]
+                - text: Star
+                - generic "0 users starred this repository" [ref=e90]: "0"
+      - navigation "Repository" [ref=e91]:
+        - list [ref=e92]:
+          - listitem [ref=e93]:
+            - link "Code" [ref=e94] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy
+              - img [ref=e95]
+              - generic [ref=e97]: Code
+          - listitem [ref=e98]:
+            - link "Issues" [ref=e99] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/issues
+              - img [ref=e100]
+              - generic [ref=e103]: Issues
+          - listitem [ref=e104]:
+            - link "Pull requests" [ref=e105] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/pulls
+              - img [ref=e106]
+              - generic [ref=e108]: Pull requests
+          - listitem [ref=e109]:
+            - link "Actions" [ref=e110] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/actions
+              - img [ref=e111]
+              - generic [ref=e113]: Actions
+          - listitem [ref=e114]:
+            - link "Projects" [ref=e115] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/projects
+              - img [ref=e116]
+              - generic [ref=e118]: Projects
+          - listitem [ref=e119]:
+            - link "Security and quality" [ref=e120] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/security
+              - img [ref=e121]
+              - generic [ref=e123]: Security and quality
+          - listitem [ref=e124]:
+            - link "Insights" [ref=e125] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/pulse
+              - img [ref=e126]
+              - generic [ref=e128]: Insights
+    - generic [ref=e141]:
+      - heading "thisisniagahub/theviralfindsmy" [level=1] [ref=e143]
+      - generic [ref=e144]:
+        - generic [ref=e147]:
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - button "main branch" [ref=e151] [cursor=pointer]:
+                - generic [ref=e152]:
+                  - generic [ref=e154]:
+                    - img [ref=e156]
+                    - generic [ref=e159]: main
+                  - generic:
+                    - img
+              - generic [ref=e160]:
+                - link "Go to Branches page" [ref=e161] [cursor=pointer]:
+                  - /url: /thisisniagahub/theviralfindsmy/branches
+                  - img [ref=e162]
+                - link "Go to Tags page" [ref=e164] [cursor=pointer]:
+                  - /url: /thisisniagahub/theviralfindsmy/tags
+                  - img [ref=e165]
+            - generic [ref=e167]:
+              - generic [ref=e171]:
+                - img [ref=e173]
+                - combobox "Go to file" [ref=e175]
+              - button "Code" [ref=e176] [cursor=pointer]:
+                - generic [ref=e177]:
+                  - generic:
+                    - img
+                  - generic [ref=e178]: Code
+                  - generic:
+                    - img
+          - generic [ref=e180]:
+            - heading "Folders and files" [level=2] [ref=e181]
+            - table "Folders and files" [ref=e182]:
+              - rowgroup:
+                - row "Name Last commit message Last commit date":
+                  - columnheader "Name"
+                  - columnheader "Last commit message":
+                    - generic "Last commit message"
+                  - columnheader "Last commit date":
+                    - generic "Last commit date"
+              - rowgroup [ref=e183]:
+                - 'row "Latest commit author QoderAI feat: VPS OpenClaw Gateway integration — secure proxy via nginx success Commit a6be8de · Apr 11, 202619 hours ago History 25 Commits" [ref=e184]':
+                  - 'cell "Latest commit author QoderAI feat: VPS OpenClaw Gateway integration — secure proxy via nginx success Commit a6be8de · Apr 11, 202619 hours ago History 25 Commits" [ref=e185]':
+                    - generic [ref=e186]:
+                      - heading "Latest commit" [level=2] [ref=e187]
+                      - generic [ref=e188]:
+                        - generic [ref=e190]:
+                          - img "author" [ref=e191]
+                          - generic "QoderAI" [ref=e192]
+                        - generic [ref=e193]:
+                          - 'link "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e196] [cursor=pointer]':
+                            - /url: /thisisniagahub/theviralfindsmy/commit/a6be8de59b37c712890ebd5ce25eb734f7182cb6
+                          - button "success" [ref=e197] [cursor=pointer]:
+                            - img [ref=e198]
+                      - generic [ref=e200]:
+                        - generic [ref=e202]:
+                          - link "Commit a6be8de" [ref=e203] [cursor=pointer]:
+                            - /url: /thisisniagahub/theviralfindsmy/commit/a6be8de59b37c712890ebd5ce25eb734f7182cb6
+                            - text: a6be8de
+                          - text: ·
+                          - generic "Apr 11, 2026, 9:12 PM GMT+8" [ref=e204]: Apr 11, 202619 hours ago
+                        - generic [ref=e205]:
+                          - heading "History" [level=2] [ref=e206]
+                          - link "25 Commits" [ref=e207] [cursor=pointer]:
+                            - /url: /thisisniagahub/theviralfindsmy/commits/main/
+                            - generic [ref=e208]:
+                              - generic:
+                                - img
+                              - generic [ref=e209]: 25 Commits
+                - 'row ".vps, (Directory) feat: VPS OpenClaw Gateway integration — secure proxy via nginx Apr 11, 202619 hours ago" [ref=e210]':
+                  - cell ".vps, (Directory)" [ref=e211]:
+                    - generic [ref=e212]:
+                      - img [ref=e213]
+                      - link ".vps, (Directory)" [ref=e218] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/.vps
+                        - text: .vps
+                  - 'cell "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e219]':
+                    - 'link "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e222] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/a6be8de59b37c712890ebd5ce25eb734f7182cb6
+                  - cell "Apr 11, 202619 hours ago" [ref=e223]:
+                    - generic [ref=e224]: Apr 11, 202619 hours ago
+                - 'row ".zscripts, (Directory) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e225]':
+                  - cell ".zscripts, (Directory)" [ref=e226]:
+                    - generic [ref=e227]:
+                      - img [ref=e228]
+                      - link ".zscripts, (Directory)" [ref=e233] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/.zscripts
+                        - text: .zscripts
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e234]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e237] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e238]:
+                    - generic [ref=e239]: Apr 11, 2026yesterday
+                - 'row "chrome-extension, (Directory) feat: ALL remaining features — Voice Search, Team Management, Advance… Apr 11, 202620 hours ago" [ref=e240]':
+                  - cell "chrome-extension, (Directory)" [ref=e241]:
+                    - generic [ref=e242]:
+                      - img [ref=e243]
+                      - link "chrome-extension, (Directory)" [ref=e248] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/chrome-extension
+                        - text: chrome-extension
+                  - 'cell "feat: ALL remaining features — Voice Search, Team Management, Advance…" [ref=e249]':
+                    - 'link "feat: ALL remaining features — Voice Search, Team Management, Advance…" [ref=e252] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/89284f8307e1db7f2c47fbe903203fc7a379e037
+                  - cell "Apr 11, 202620 hours ago" [ref=e253]:
+                    - generic [ref=e254]: Apr 11, 202620 hours ago
+                - row "examples/websocket, (Directory) 3d6faf3c-ff13-42a2-a560-957722772eb5 Apr 11, 2026yesterday" [ref=e255]:
+                  - cell "examples/websocket, (Directory)" [ref=e256]:
+                    - generic [ref=e257]:
+                      - img [ref=e258]
+                      - link "examples/websocket, (Directory)" [ref=e263] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/examples/websocket
+                        - text: examples/websocket
+                  - cell "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e264]:
+                    - link "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e267] [cursor=pointer]:
+                      - /url: /thisisniagahub/theviralfindsmy/commit/fef19285fbb4a5583524d13f964aa30509e84c33
+                  - cell "Apr 11, 2026yesterday" [ref=e268]:
+                    - generic [ref=e269]: Apr 11, 2026yesterday
+                - 'row "mini-services, (Directory) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e270]':
+                  - cell "mini-services, (Directory)" [ref=e271]:
+                    - generic [ref=e272]:
+                      - img [ref=e273]
+                      - link "mini-services, (Directory)" [ref=e278] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/mini-services
+                        - text: mini-services
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e279]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e282] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e283]:
+                    - generic [ref=e284]: Apr 11, 2026yesterday
+                - 'row "prisma, (Directory) feat: Phase 13-16 implementation — OAuth, Profile, PWA, Forecast, Tie… Apr 11, 202620 hours ago" [ref=e285]':
+                  - cell "prisma, (Directory)" [ref=e286]:
+                    - generic [ref=e287]:
+                      - img [ref=e288]
+                      - link "prisma, (Directory)" [ref=e293] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/prisma
+                        - text: prisma
+                  - 'cell "feat: Phase 13-16 implementation — OAuth, Profile, PWA, Forecast, Tie…" [ref=e294]':
+                    - 'link "feat: Phase 13-16 implementation — OAuth, Profile, PWA, Forecast, Tie…" [ref=e297] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/c4a4c8206bbf58a414be47945b70831673e1590d
+                  - cell "Apr 11, 202620 hours ago" [ref=e298]:
+                    - generic [ref=e299]: Apr 11, 202620 hours ago
+                - 'row "public, (Directory) feat: remaining features — widget customizer, PWA, forecast chart, sc… Apr 11, 202620 hours ago" [ref=e300]':
+                  - cell "public, (Directory)" [ref=e301]:
+                    - generic [ref=e302]:
+                      - img [ref=e303]
+                      - link "public, (Directory)" [ref=e308] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/public
+                        - text: public
+                  - 'cell "feat: remaining features — widget customizer, PWA, forecast chart, sc…" [ref=e309]':
+                    - 'link "feat: remaining features — widget customizer, PWA, forecast chart, sc…" [ref=e312] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/1cd4eb74e6b553fa419ab0e158459599f6310ecb
+                  - cell "Apr 11, 202620 hours ago" [ref=e313]:
+                    - generic [ref=e314]: Apr 11, 202620 hours ago
+                - 'row "src, (Directory) feat: VPS OpenClaw Gateway integration — secure proxy via nginx Apr 11, 202619 hours ago" [ref=e315]':
+                  - cell "src, (Directory)" [ref=e316]:
+                    - generic [ref=e317]:
+                      - img [ref=e318]
+                      - link "src, (Directory)" [ref=e323] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/tree/main/src
+                        - text: src
+                  - 'cell "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e324]':
+                    - 'link "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e327] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/a6be8de59b37c712890ebd5ce25eb734f7182cb6
+                  - cell "Apr 11, 202619 hours ago" [ref=e328]:
+                    - generic [ref=e329]: Apr 11, 202619 hours ago
+                - 'row ".env.example, (File) feat: VPS OpenClaw Gateway integration — secure proxy via nginx Apr 11, 202619 hours ago" [ref=e330]':
+                  - cell ".env.example, (File)" [ref=e331]:
+                    - generic [ref=e332]:
+                      - img [ref=e333]
+                      - link ".env.example, (File)" [ref=e338] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/.env.example
+                        - text: .env.example
+                  - 'cell "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e339]':
+                    - 'link "feat: VPS OpenClaw Gateway integration — secure proxy via nginx" [ref=e342] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/a6be8de59b37c712890ebd5ce25eb734f7182cb6
+                  - cell "Apr 11, 202619 hours ago" [ref=e343]:
+                    - generic [ref=e344]: Apr 11, 202619 hours ago
+                - 'row ".gitignore, (File) fix: Vercel deployment readiness - remove secrets, fix config, clean … Apr 11, 2026yesterday" [ref=e345]':
+                  - cell ".gitignore, (File)" [ref=e346]:
+                    - generic [ref=e347]:
+                      - img [ref=e348]
+                      - link ".gitignore, (File)" [ref=e353] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/.gitignore
+                        - text: .gitignore
+                  - 'cell "fix: Vercel deployment readiness - remove secrets, fix config, clean …" [ref=e354]':
+                    - 'link "fix: Vercel deployment readiness - remove secrets, fix config, clean …" [ref=e357] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/7a2729aec5a898a0104592c5ef637d0c20f75091
+                  - cell "Apr 11, 2026yesterday" [ref=e358]:
+                    - generic [ref=e359]: Apr 11, 2026yesterday
+                - 'row "AGENTS.md, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e360]':
+                  - cell "AGENTS.md, (File)" [ref=e361]:
+                    - generic [ref=e362]:
+                      - img [ref=e363]
+                      - link "AGENTS.md, (File)" [ref=e368] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/AGENTS.md
+                        - text: AGENTS.md
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e369]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e372] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e373]:
+                    - generic [ref=e374]: Apr 11, 2026yesterday
+                - row "Caddyfile, (File) 3d6faf3c-ff13-42a2-a560-957722772eb5 Apr 11, 2026yesterday" [ref=e375]:
+                  - cell "Caddyfile, (File)" [ref=e376]:
+                    - generic [ref=e377]:
+                      - img [ref=e378]
+                      - link "Caddyfile, (File)" [ref=e383] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/Caddyfile
+                        - text: Caddyfile
+                  - cell "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e384]:
+                    - link "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e387] [cursor=pointer]:
+                      - /url: /thisisniagahub/theviralfindsmy/commit/fef19285fbb4a5583524d13f964aa30509e84c33
+                  - cell "Apr 11, 2026yesterday" [ref=e388]:
+                    - generic [ref=e389]: Apr 11, 2026yesterday
+                - 'row "GEMINI.md, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e390]':
+                  - cell "GEMINI.md, (File)" [ref=e391]:
+                    - generic [ref=e392]:
+                      - img [ref=e393]
+                      - link "GEMINI.md, (File)" [ref=e398] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/GEMINI.md
+                        - text: GEMINI.md
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e399]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e402] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e403]:
+                    - generic [ref=e404]: Apr 11, 2026yesterday
+                - 'row "Gemini_Generated_Image_d8gbgyd8gbgyd8gb (1).png, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e405]':
+                  - cell "Gemini_Generated_Image_d8gbgyd8gbgyd8gb (1).png, (File)" [ref=e406]:
+                    - generic [ref=e407]:
+                      - img [ref=e408]
+                      - link "Gemini_Generated_Image_d8gbgyd8gbgyd8gb (1).png, (File)" [ref=e413] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/Gemini_Generated_Image_d8gbgyd8gbgyd8gb%20(1).png
+                        - text: Gemini_Generated_Image_d8gbgyd8gbgyd8gb (1).png
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e414]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e417] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e418]:
+                    - generic [ref=e419]: Apr 11, 2026yesterday
+                - 'row "Gemini_Generated_Image_d8gbgyd8gbgyd8gb.png, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e420]':
+                  - cell "Gemini_Generated_Image_d8gbgyd8gbgyd8gb.png, (File)" [ref=e421]:
+                    - generic [ref=e422]:
+                      - img [ref=e423]
+                      - link "Gemini_Generated_Image_d8gbgyd8gbgyd8gb.png, (File)" [ref=e428] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/Gemini_Generated_Image_d8gbgyd8gbgyd8gb.png
+                        - text: Gemini_Generated_Image_d8gbgyd8gbgyd8gb.png
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e429]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e432] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e433]:
+                    - generic [ref=e434]: Apr 11, 2026yesterday
+                - 'row "Gemini_Generated_Image_rq7547rq7547rq75 (1).png, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e435]':
+                  - cell "Gemini_Generated_Image_rq7547rq7547rq75 (1).png, (File)" [ref=e436]:
+                    - generic [ref=e437]:
+                      - img [ref=e438]
+                      - link "Gemini_Generated_Image_rq7547rq7547rq75 (1).png, (File)" [ref=e443] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/Gemini_Generated_Image_rq7547rq7547rq75%20(1).png
+                        - text: Gemini_Generated_Image_rq7547rq7547rq75 (1).png
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e444]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e447] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e448]:
+                    - generic [ref=e449]: Apr 11, 2026yesterday
+                - 'row "Gemini_Generated_Image_rq7547rq7547rq75.png, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e450]':
+                  - cell "Gemini_Generated_Image_rq7547rq7547rq75.png, (File)" [ref=e451]:
+                    - generic [ref=e452]:
+                      - img [ref=e453]
+                      - link "Gemini_Generated_Image_rq7547rq7547rq75.png, (File)" [ref=e458] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/Gemini_Generated_Image_rq7547rq7547rq75.png
+                        - text: Gemini_Generated_Image_rq7547rq7547rq75.png
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e459]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e462] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e463]:
+                    - generic [ref=e464]: Apr 11, 2026yesterday
+                - 'row "IMPLEMENTATION_PLAN.md, (File) feat: Phase 13-16 implementation — OAuth, Profile, PWA, Forecast, Tie… Apr 11, 202620 hours ago" [ref=e465]':
+                  - cell "IMPLEMENTATION_PLAN.md, (File)" [ref=e466]:
+                    - generic [ref=e467]:
+                      - img [ref=e468]
+                      - link "IMPLEMENTATION_PLAN.md, (File)" [ref=e473] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/IMPLEMENTATION_PLAN.md
+                        - text: IMPLEMENTATION_PLAN.md
+                  - 'cell "feat: Phase 13-16 implementation — OAuth, Profile, PWA, Forecast, Tie…" [ref=e474]':
+                    - 'link "feat: Phase 13-16 implementation — OAuth, Profile, PWA, Forecast, Tie…" [ref=e477] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/c4a4c8206bbf58a414be47945b70831673e1590d
+                  - cell "Apr 11, 202620 hours ago" [ref=e478]:
+                    - generic [ref=e479]: Apr 11, 202620 hours ago
+                - 'row "PRD.md, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e480]':
+                  - cell "PRD.md, (File)" [ref=e481]:
+                    - generic [ref=e482]:
+                      - img [ref=e483]
+                      - link "PRD.md, (File)" [ref=e488] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/PRD.md
+                        - text: PRD.md
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e489]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e492] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e493]:
+                    - generic [ref=e494]: Apr 11, 2026yesterday
+                - 'row "QWEN.md, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e495]':
+                  - cell "QWEN.md, (File)" [ref=e496]:
+                    - generic [ref=e497]:
+                      - img [ref=e498]
+                      - link "QWEN.md, (File)" [ref=e503] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/QWEN.md
+                        - text: QWEN.md
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e504]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e507] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e508]:
+                    - generic [ref=e509]: Apr 11, 2026yesterday
+                - 'row "bun.lock, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e510]':
+                  - cell "bun.lock, (File)" [ref=e511]:
+                    - generic [ref=e512]:
+                      - img [ref=e513]
+                      - link "bun.lock, (File)" [ref=e518] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/bun.lock
+                        - text: bun.lock
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e519]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e522] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e523]:
+                    - generic [ref=e524]: Apr 11, 2026yesterday
+                - row "components.json, (File) 3d6faf3c-ff13-42a2-a560-957722772eb5 Apr 11, 2026yesterday" [ref=e525]:
+                  - cell "components.json, (File)" [ref=e526]:
+                    - generic [ref=e527]:
+                      - img [ref=e528]
+                      - link "components.json, (File)" [ref=e533] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/components.json
+                        - text: components.json
+                  - cell "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e534]:
+                    - link "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e537] [cursor=pointer]:
+                      - /url: /thisisniagahub/theviralfindsmy/commit/fef19285fbb4a5583524d13f964aa30509e84c33
+                  - cell "Apr 11, 2026yesterday" [ref=e538]:
+                    - generic [ref=e539]: Apr 11, 2026yesterday
+                - 'row "download.jpg, (File) feat: Office GEMPAK upgrade — Phase 1 complete Apr 11, 202619 hours ago" [ref=e540]':
+                  - cell "download.jpg, (File)" [ref=e541]:
+                    - generic [ref=e542]:
+                      - img [ref=e543]
+                      - link "download.jpg, (File)" [ref=e548] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/download.jpg
+                        - text: download.jpg
+                  - 'cell "feat: Office GEMPAK upgrade — Phase 1 complete" [ref=e549]':
+                    - 'link "feat: Office GEMPAK upgrade — Phase 1 complete" [ref=e552] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/d04cfddce286d90abc20c0001b2b9e3f65d7ebed
+                  - cell "Apr 11, 202619 hours ago" [ref=e553]:
+                    - generic [ref=e554]: Apr 11, 202619 hours ago
+                - 'row "eslint.config.mjs, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e555]':
+                  - cell "eslint.config.mjs, (File)" [ref=e556]:
+                    - generic [ref=e557]:
+                      - img [ref=e558]
+                      - link "eslint.config.mjs, (File)" [ref=e563] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/eslint.config.mjs
+                        - text: eslint.config.mjs
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e564]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e567] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e568]:
+                    - generic [ref=e569]: Apr 11, 2026yesterday
+                - 'row "next.config.ts, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e570]':
+                  - cell "next.config.ts, (File)" [ref=e571]:
+                    - generic [ref=e572]:
+                      - img [ref=e573]
+                      - link "next.config.ts, (File)" [ref=e578] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/next.config.ts
+                        - text: next.config.ts
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e579]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e582] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e583]:
+                    - generic [ref=e584]: Apr 11, 2026yesterday
+                - 'row "package.json, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e585]':
+                  - cell "package.json, (File)" [ref=e586]:
+                    - generic [ref=e587]:
+                      - img [ref=e588]
+                      - link "package.json, (File)" [ref=e593] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/package.json
+                        - text: package.json
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e594]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e597] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e598]:
+                    - generic [ref=e599]: Apr 11, 2026yesterday
+                - row "postcss.config.mjs, (File) 3d6faf3c-ff13-42a2-a560-957722772eb5 Apr 11, 2026yesterday" [ref=e600]:
+                  - cell "postcss.config.mjs, (File)" [ref=e601]:
+                    - generic [ref=e602]:
+                      - img [ref=e603]
+                      - link "postcss.config.mjs, (File)" [ref=e608] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/postcss.config.mjs
+                        - text: postcss.config.mjs
+                  - cell "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e609]:
+                    - link "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e612] [cursor=pointer]:
+                      - /url: /thisisniagahub/theviralfindsmy/commit/fef19285fbb4a5583524d13f964aa30509e84c33
+                  - cell "Apr 11, 2026yesterday" [ref=e613]:
+                    - generic [ref=e614]: Apr 11, 2026yesterday
+                - 'row "start-all.sh, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e615]':
+                  - cell "start-all.sh, (File)" [ref=e616]:
+                    - generic [ref=e617]:
+                      - img [ref=e618]
+                      - link "start-all.sh, (File)" [ref=e623] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/start-all.sh
+                        - text: start-all.sh
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e624]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e627] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e628]:
+                    - generic [ref=e629]: Apr 11, 2026yesterday
+                - 'row "start-dev.sh, (File) feat: complete Sprint 0 and Shopee Office hardening Apr 11, 2026yesterday" [ref=e630]':
+                  - cell "start-dev.sh, (File)" [ref=e631]:
+                    - generic [ref=e632]:
+                      - img [ref=e633]
+                      - link "start-dev.sh, (File)" [ref=e638] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/start-dev.sh
+                        - text: start-dev.sh
+                  - 'cell "feat: complete Sprint 0 and Shopee Office hardening" [ref=e639]':
+                    - 'link "feat: complete Sprint 0 and Shopee Office hardening" [ref=e642] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/5f748291b56fd43eaf85ab32afd6570d5a67a9bd
+                  - cell "Apr 11, 2026yesterday" [ref=e643]:
+                    - generic [ref=e644]: Apr 11, 2026yesterday
+                - row "tailwind.config.ts, (File) 3d6faf3c-ff13-42a2-a560-957722772eb5 Apr 11, 2026yesterday" [ref=e645]:
+                  - cell "tailwind.config.ts, (File)" [ref=e646]:
+                    - generic [ref=e647]:
+                      - img [ref=e648]
+                      - link "tailwind.config.ts, (File)" [ref=e653] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/tailwind.config.ts
+                        - text: tailwind.config.ts
+                  - cell "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e654]:
+                    - link "3d6faf3c-ff13-42a2-a560-957722772eb5" [ref=e657] [cursor=pointer]:
+                      - /url: /thisisniagahub/theviralfindsmy/commit/fef19285fbb4a5583524d13f964aa30509e84c33
+                  - cell "Apr 11, 2026yesterday" [ref=e658]:
+                    - generic [ref=e659]: Apr 11, 2026yesterday
+                - 'row "tsconfig.json, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e660]':
+                  - cell "tsconfig.json, (File)" [ref=e661]:
+                    - generic [ref=e662]:
+                      - img [ref=e663]
+                      - link "tsconfig.json, (File)" [ref=e668] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/tsconfig.json
+                        - text: tsconfig.json
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e669]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e672] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e673]:
+                    - generic [ref=e674]: Apr 11, 2026yesterday
+                - 'row "vitest.config.ts, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e675]':
+                  - cell "vitest.config.ts, (File)" [ref=e676]:
+                    - generic [ref=e677]:
+                      - img [ref=e678]
+                      - link "vitest.config.ts, (File)" [ref=e683] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/vitest.config.ts
+                        - text: vitest.config.ts
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e684]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e687] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e688]:
+                    - generic [ref=e689]: Apr 11, 2026yesterday
+                - 'row "worklog.md, (File) feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida… Apr 11, 2026yesterday" [ref=e690]':
+                  - cell "worklog.md, (File)" [ref=e691]:
+                    - generic [ref=e692]:
+                      - img [ref=e693]
+                      - link "worklog.md, (File)" [ref=e698] [cursor=pointer]:
+                        - /url: /thisisniagahub/theviralfindsmy/blob/main/worklog.md
+                        - text: worklog.md
+                  - 'cell "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e699]':
+                    - 'link "feat: Sprint 1-5 improvements — TypeScript strict, ESLint, Zod valida…" [ref=e702] [cursor=pointer]':
+                      - /url: /thisisniagahub/theviralfindsmy/commit/399f911c22184cefc703e62fdefd3d775161bd5d
+                  - cell "Apr 11, 2026yesterday" [ref=e703]:
+                    - generic [ref=e704]: Apr 11, 2026yesterday
+        - generic [ref=e708]:
+          - generic [ref=e711]:
+            - heading "About" [level=2] [ref=e712]
+            - generic [ref=e713]:
+              - img [ref=e714]
+              - link "shopee.gangniaga.my" [ref=e717] [cursor=pointer]:
+                - /url: https://shopee.gangniaga.my
+            - link "Activity" [ref=e719] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/activity
+              - img [ref=e720]
+              - text: Activity
+            - heading "Stars" [level=3] [ref=e722]
+            - link "0 stars" [ref=e724] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/stargazers
+              - img [ref=e725]
+              - strong [ref=e727]: "0"
+              - text: stars
+            - heading "Watchers" [level=3] [ref=e728]
+            - link "0 watching" [ref=e730] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/watchers
+              - img [ref=e731]
+              - strong [ref=e733]: "0"
+              - text: watching
+            - heading "Forks" [level=3] [ref=e734]
+            - link "0 forks" [ref=e736] [cursor=pointer]:
+              - /url: /thisisniagahub/theviralfindsmy/forks
+              - img [ref=e737]
+              - strong [ref=e739]: "0"
+              - text: forks
+            - link "Report repository" [ref=e741] [cursor=pointer]:
+              - /url: /contact/report-content?content_url=https%3A%2F%2Fgithub.com%2Fthisisniagahub%2Ftheviralfindsmy&report=thisisniagahub+%28user%29
+          - generic [ref=e743]:
+            - heading "Releases" [level=2] [ref=e744]:
+              - link "Releases" [ref=e745] [cursor=pointer]:
+                - /url: /thisisniagahub/theviralfindsmy/releases
+            - generic [ref=e746]: No releases published
+          - generic [ref=e748]:
+            - heading "Packages" [level=2] [ref=e749]:
+              - link "Packages" [ref=e750] [cursor=pointer]:
+                - /url: /users/thisisniagahub/packages?repo_name=theviralfindsmy
+            - generic [ref=e751]: No packages published
+          - generic [ref=e753]:
+            - heading "Contributors 1" [level=2] [ref=e754]:
+              - link "Contributors 1" [ref=e755] [cursor=pointer]:
+                - /url: /thisisniagahub/theviralfindsmy/graphs/contributors
+                - text: Contributors
+                - generic "1" [ref=e756]
+            - list [ref=e757]:
+              - listitem [ref=e758]:
+                - link "@thisisniagahub" [ref=e759] [cursor=pointer]:
+                  - /url: https://github.com/thisisniagahub
+                  - img "@thisisniagahub" [ref=e760]
+                - link "thisisniagahub" [ref=e762] [cursor=pointer]:
+                  - /url: https://github.com/thisisniagahub
+                  - strong [ref=e763]: thisisniagahub
+          - generic [ref=e765]:
+            - heading "Languages" [level=2] [ref=e766]
+            - list [ref=e773]:
+              - listitem [ref=e774]:
+                - link "TypeScript 90.2%" [ref=e775] [cursor=pointer]:
+                  - /url: /thisisniagahub/theviralfindsmy/search?l=typescript
+                  - img [ref=e776]
+                  - generic [ref=e778]: TypeScript
+                  - generic [ref=e779]: 90.2%
+              - listitem [ref=e780]:
+                - link "CSS 7.4%" [ref=e781] [cursor=pointer]:
+                  - /url: /thisisniagahub/theviralfindsmy/search?l=css
+                  - img [ref=e782]
+                  - generic [ref=e784]: CSS
+                  - generic [ref=e785]: 7.4%
+              - listitem [ref=e786]:
+                - link "Shell 1.3%" [ref=e787] [cursor=pointer]:
+                  - /url: /thisisniagahub/theviralfindsmy/search?l=shell
+                  - img [ref=e788]
+                  - generic [ref=e790]: Shell
+                  - generic [ref=e791]: 1.3%
+              - listitem [ref=e792]:
+                - generic [ref=e793]:
+                  - img [ref=e794]
+                  - generic [ref=e796]: Other
+                  - generic [ref=e797]: 1.1%
+  - contentinfo [ref=e799]:
+    - heading "Footer" [level=2] [ref=e800]
+    - generic [ref=e801]:
+      - generic [ref=e802]:
+        - link "GitHub Homepage" [ref=e803] [cursor=pointer]:
+          - /url: https://github.com
+          - img [ref=e804]
+        - generic [ref=e806]: © 2026 GitHub, Inc.
+      - navigation "Footer" [ref=e807]:
+        - heading "Footer navigation" [level=3] [ref=e808]
+        - list "Footer navigation" [ref=e809]:
+          - listitem [ref=e810]:
+            - link "Terms" [ref=e811] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/github-terms/github-terms-of-service
+          - listitem [ref=e812]:
+            - link "Privacy" [ref=e813] [cursor=pointer]:
+              - /url: https://docs.github.com/site-policy/privacy-policies/github-privacy-statement
+          - listitem [ref=e814]:
+            - link "Security" [ref=e815] [cursor=pointer]:
+              - /url: https://github.com/security
+          - listitem [ref=e816]:
+            - link "Status" [ref=e817] [cursor=pointer]:
+              - /url: https://www.githubstatus.com/
+          - listitem [ref=e818]:
+            - link "Community" [ref=e819] [cursor=pointer]:
+              - /url: https://github.community/
+          - listitem [ref=e820]:
+            - link "Docs" [ref=e821] [cursor=pointer]:
+              - /url: https://docs.github.com/
+          - listitem [ref=e822]:
+            - link "Contact" [ref=e823] [cursor=pointer]:
+              - /url: https://support.github.com?tags=dotcom-footer
+          - listitem [ref=e824]:
+            - button "Manage cookies" [ref=e826] [cursor=pointer]
+          - listitem [ref=e827]:
+            - button "Do not share my personal information" [ref=e829] [cursor=pointer]

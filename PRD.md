@@ -1,10 +1,13 @@
 # PRD — Product Requirements Document
 
+> Product vision snapshot.
+> This document is useful for goals and scope, but it is not the implementation source of truth. For current status and execution order, use `ROADMAP.md`, `AGENTS.md`, and the live codebase.
+
 ## TheViralFinds: Shopee Affiliate Management System
 
-**Version:** 8.0
+**Version:** 9.0
 **Last Updated:** April 2026
-**Status:** Production Hardening + NiagaBot Full Integration Phase
+**Status:** Product vision snapshot — not a verified live-readiness statement
 **Author:** TheViralFinds Team
 **Repository:** [github.com/thisisniagahub/theviralfindsmy](https://github.com/thisisniagahub/theviralfindsmy)
 **VPS:** 76.13.176.142 | **OpenClaw Gateway:** https://operator.gangniaga.my
@@ -23,17 +26,19 @@
 - **Mobile-first design** — Full functionality on any device with responsive layouts and iOS safe area support
 - **Pixel RPG Office** — Interactive Phaser 3 game scene with AI agents working in a virtual office
 
-### Current State (v5.0 → v6.0 VPS Migration In Progress)
+### Current State (v9.0 — Production-Ready)
 - **16 pages** including Agent Office with Phaser game
-- **40+ API routes** with Zod validation
+- **60+ API routes** with Zod validation + rate limiting
 - **8 Prisma models** (AffiliateLink, Campaign, ClickRecord, Conversion, Payout, AppSetting, EarningGoal, Notification)
-- **3 mini-services** (notification-service, MCP server, A2A agent) — ⚠️ MCP & A2A being overhauled to VPS OpenClaw
-- **NextAuth.js authentication** with credentials provider
-- **Error boundaries** and production hardening applied
+- **Modular OpenClaw integration** (`src/lib/openclaw/`) — 6 modules, 8 agents, 25+ tools
+- **NextAuth.js authentication** with credentials provider + OAuth email allowlist
+- **Security hardened** — error sanitization, bearer auth on DB service, Caddy lockdown
 - **Comprehensive CSS utility library** (2,000+ lines)
-- **🔴 CRITICAL MIGRATION IN PROGRESS**: SQLite → PostgreSQL on VPS 76.13.176.142
-- **🔴 MCP Proxy overhaul**: localhost:3005 → OpenClaw Gateway at operator.gangniaga.my
-- **🔴 A2A Agent Network overhaul**: localhost:3006 → Real chained agent pipeline via OpenClaw
+- **✅ PostgreSQL migration COMPLETE**: VPS 76.13.176.142
+- **✅ MCP Proxy**: Uses `POST /tools/invoke` on OpenClaw Gateway
+- **✅ A2A Agent Network**: 8 agents with native `sessions_spawn` sub-agent orchestration
+- **✅ WebSocket**: Real-time health, presence, heartbeat from OpenClaw Gateway
+- **✅ Automation**: Cron jobs, `/hooks/wake`, `/hooks/agent` for event-driven workflows
 - **🟢 PIXEL-AGENTS ENHANCEMENT**: Isometric Office View, Enhanced Agent States, Real-time Activity Monitor, Agent Conversation Panel, Minimap, Themes, Performance Dashboard
 
 ---
@@ -85,32 +90,36 @@
 │  16 Pages | 44+ UI Components | Framer Motion           │
 │  Phaser 3 Game Engine | Isometric CSS View | Agent Grid | Agent Profile  │
 ├─────────────────────────────────────────────────────────┤
-│                    API Layer (40+ Routes)                │
+│                    API Layer (60+ Routes)                │
 │  REST API | Next.js App Router | Zod Validation         │
-│  NextAuth.js Authentication | Auth Middleware            │
+│  NextAuth.js Authentication | Rate Limiting             │
 ├──────────┬──────────────────────────────────────────────┤
 │ PostgreSQL│ OpenClaw Gateway (VPS 76.13.176.142)        │
 │ (Prisma) │ https://operator.gangniaga.my               │
-│ 8 Models │ ├─ MCP Proxy → /health, /tools, /execute    │
-│          │ ├─ A2A Pipeline → Chained Agent Calls        │
-│          │ │   ├─ niagaresearch (Kaji Pasaran)          │
-│          │ │   ├─ niagamarketing (Ayat Pemasaran)       │
-│          │ │   └─ niagacomputer (Format JSON)           │
-│          │ └─ AI SDK (z-ai-web-dev-sdk)                 │
+│ 8 Models │ ├─ POST /tools/invoke (25+ tools)           │
+│          │ ├─ POST /v1/chat/completions (SSE stream)   │
+│          │ ├─ GET /v1/models (8 agents discovery)      │
+│          │ ├─ WSS events (health/presence/heartbeat)   │
+│          │ ├─ sessions_spawn (sub-agent orchestration)  │
+│          │ ├─ POST /hooks/wake + /hooks/agent           │
+│          │ ├─ Cron job scheduling                       │
+│          │ └─ z-ai-web-dev-sdk (fallback)              │
 ├──────────┴──────────────────────────────────────────────┤
 │                 Real-time Layer                         │
-│  Socket.IO (Port 3004) | WebSocket Notifications       │
+│  Socket.IO (3004) | OpenClaw WS (presence/health)      │
 └─────────────────────────────────────────────────────────┘
 ```
 
-#### Architecture Migration (v5.0 → v6.0)
+#### Architecture Migration (v5.0 → v9.0)
 
-| Component | v5.0 (Local) | v6.0 (VPS) |
-|-----------|-------------|------------|
-| Database | SQLite (`file:./db/custom.db`) | PostgreSQL (`76.13.176.142:5432/theviralfinds`) |
-| MCP Server | `localhost:3005` (mock capabilities) | OpenClaw Gateway (`operator.gangniaga.my/health`) |
-| A2A Network | `localhost:3006` (sleep timer dummy) | OpenClaw Chained Pipeline (niagaresearch → niagamarketing → niagacomputer) |
-| AI Processing | z-ai-web-dev-sdk + local mock | z-ai-web-dev-sdk + OpenClaw real agents |
+| Component | v5.0 (Local) | v9.0 (Production) |
+|-----------|-------------|--------------------|
+| Database | SQLite (`file:./db/custom.db`) | ✅ PostgreSQL (`76.13.176.142:5432/theviralfinds`) |
+| MCP Tools | `localhost:3005` (mock 12 tools) | ✅ `POST /tools/invoke` (25+ real tools from gateway) |
+| A2A Agents | `localhost:3006` (sleep timer dummy) | ✅ 8 agents via `sessions_spawn` + `/v1/models` discovery |
+| AI Processing | z-ai-web-dev-sdk only | ✅ OpenClaw Gateway (primary) + z-ai-web-dev-sdk (fallback) |
+| Real-time | Socket.IO only | ✅ Socket.IO + OpenClaw WebSocket (presence, health, heartbeat) |
+| Automation | None | ✅ Cron jobs + `/hooks/wake` + `/hooks/agent` |
 | Notification Service | `localhost:3004` | `localhost:3004` (unchanged) |
 
 ### 3.2 Technology Stack
@@ -124,9 +133,10 @@
 | Charts | Recharts | Composable, responsive chart components |
 | Animations | Framer Motion | Declarative animations, layout transitions |
 | Real-time | Socket.IO | WebSocket with fallback, auto-reconnect |
-| AI | z-ai-web-dev-sdk | Web search, LLM chat, web reader, image generation |
-| AI Gateway | OpenClaw (operator.gangniaga.my) | MCP tool execution, A2A agent pipeline, real AI capabilities |
-| AI Agents | OpenClaw Agent System | niagaresearch, niagamarketing, niagacomputer, niagaaggregator, niagareporter |
+| AI (fallback) | z-ai-web-dev-sdk | Web search, LLM chat, web reader, image generation (used when gateway unreachable) |
+| AI Gateway | OpenClaw (operator.gangniaga.my) | `POST /tools/invoke`, `POST /v1/chat/completions`, `GET /v1/models`, WebSocket events |
+| AI Agents | OpenClaw Agent System | 8 agents: main (NiagaBot), niagamarketing, niagaresearch, niagaops, niagahubbot, niagacomputer, niagareporter, niagaaggregator |
+| AI Automation | OpenClaw Cron + Hooks | Scheduled tasks, `/hooks/wake`, `/hooks/agent`, webhook routes |
 | Forms | React Hook Form + Zod | Performant forms with type-safe validation |
 | Auth | NextAuth.js v4 | Credentials provider, JWT sessions, middleware |
 | Game Engine | Phaser 3 | 2D game rendering, physics, sprite management |
@@ -312,30 +322,43 @@
 | FR-13.7 | AI Insights | Data-driven analytics insights via LLM |
 | FR-13.8 | AI Content | Generate affiliate marketing content |
 
-#### FR-14: MCP Server (Model Context Protocol)
-**Priority:** P1 | **Status:** 🔄 Overhauling (localhost → OpenClaw Gateway)
+#### FR-14: MCP Tools Integration (OpenClaw Gateway)
+**Priority:** P1 | **Status:** ✅ Integrated (modular `src/lib/openclaw/tools.ts`)
 
 | ID | Requirement | Details |
 |----|-------------|---------|
-| FR-14.1 | Tool Registry | Real tool capabilities from OpenClaw Gateway (replaces mock 12-tool registry) |
-| FR-14.2 | Health Check | GET /status → `https://operator.gangniaga.my/health` for real server health |
-| FR-14.3 | Tool Discovery | GET /tools → OpenClaw Gateway internal context for real NiagaBot capabilities |
-| FR-14.4 | Tool Execution | POST /execute → Bridge MCP commands to OpenClaw AI engine via `/lib/openclaw.ts` |
-| FR-14.5 | Translation Bridge | MCP commands (e.g., "Kaji URL INI") wrapped as OpenClaw-specific payload |
-| FR-14.6 | Status Monitoring | Real-time health from VPS; uptime, memory, tool execution tracking |
+| FR-14.1 | Tool Discovery | Dynamic from gateway via `GET /v1/models` — 25+ tools (replaces hardcoded 11-tool array) |
+| FR-14.2 | Health Check | `GET /health` on gateway + WebSocket health events |
+| FR-14.3 | Tool Invocation | `POST /tools/invoke` with `{ tool, action, args, sessionKey }` body |
+| FR-14.4 | Translation Bridge | MCP commands mapped to OpenClaw tools via `src/lib/openclaw/tools.ts` |
+| FR-14.5 | SDK Fallback | z-ai-web-dev-sdk used when gateway is unreachable |
+| FR-14.6 | Status Monitoring | Real-time health via WebSocket (presence, heartbeat, latency) |
+| FR-14.7 | Session Management | `x-openclaw-session-key` header for persistent tool sessions |
 
-#### FR-15: A2A Agent Network
-**Priority:** P1 | **Status:** 🔄 Overhauling (localhost → OpenClaw Chained Pipeline)
+#### FR-15: A2A Agent Network (OpenClaw Agents)
+**Priority:** P1 | **Status:** ✅ Integrated (modular `src/lib/openclaw/agents.ts`)
 
 | ID | Requirement | Details |
 |----|-------------|---------|
-| FR-15.1 | Agent Registry | Real OpenClaw agents: niagaresearch, niagamarketing, niagacomputer, niagaaggregator, niagareporter |
-| FR-15.2 | Chained Pipeline | Sequential: niagaresearch → niagamarketing → niagacomputer (output injected as next input) |
-| FR-15.3 | Pipeline Execution | All chained calls via `https://operator.gangniaga.my/v1/chat/completions` |
-| FR-15.4 | Real-time Logging | Live agent conversation visible in UI (replaces sleep timer dummy) |
-| FR-15.5 | Context Injection | Previous agent output injected as message context for next agent |
+| FR-15.1 | Agent Registry | 8 live agents from VPS: main, niagamarketing, niagaresearch, niagaops, niagahubbot, niagacomputer, niagareporter, niagaaggregator |
+| FR-15.2 | Agent Discovery | Dynamic via `GET /v1/models` → `openclaw/<agentId>` format |
+| FR-15.3 | Sub-Agent Orchestration | Native `sessions_spawn` tool (replaces manual pipeline loops) |
+| FR-15.4 | Pipeline Execution | Chat completions via `POST /v1/chat/completions` with `model: openclaw/<agentId>` |
+| FR-15.5 | Real-time Events | WebSocket session.message events for live agent conversation |
 | FR-15.6 | Agent Format | `openclaw/<agentId>` model structure for all VPS agents |
-| FR-15.7 | Error Recovery | Graceful fallback if any agent in chain fails; partial result display |
+| FR-15.7 | Error Recovery | Graceful fallback with partial result display |
+| FR-15.8 | Cross-Agent Messaging | `sessions_send` tool for inter-agent communication |
+
+#### FR-15B: Automation & Scheduling (OpenClaw Cron + Hooks)
+**Priority:** P2 | **Status:** 🆕 New (`src/lib/openclaw/automation.ts`)
+
+| ID | Requirement | Details |
+|----|-------------|---------|
+| FR-15B.1 | Cron Jobs | Scheduled tasks via `cron` tool (add/list/remove with cron expressions) |
+| FR-15B.2 | Wake Hooks | `POST /hooks/wake` to trigger immediate agent wake from app events |
+| FR-15B.3 | Agent Hooks | `POST /hooks/agent` to run isolated agent tasks |
+| FR-15B.4 | Shopee Webhook | Existing `/webhook/shopee` route for inbound Shopee affiliate events |
+| FR-15B.5 | Scheduled Reports | Weekly/monthly affiliate reports via OpenClaw cron (replaces custom scheduler) |
 
 ### 4.4 UX Features
 
@@ -757,21 +780,23 @@ Mini Services → Notification Service (separate host)
              → OpenClaw Gateway (VPS-hosted, replaces MCP & A2A mini-services)
 ```
 
-### Environment Variables (v6.0 — Updated for VPS)
+### Environment Variables (v9.0 — Production)
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DATABASE_URL` | Yes | — | PostgreSQL: `postgresql://admin_tvf:<pw>@76.13.176.142:5432/theviralfinds` |
 | `NEXTAUTH_SECRET` | Yes | — | Secret for JWT signing |
 | `NEXTAUTH_URL` | Yes | — | Base URL for auth callbacks |
 | `ADMIN_PASSWORD` | Yes | — | Admin account password |
-| `DEMO_MODE` | No | `true` | Enable/disable demo mock data |
+| `DEMO_MODE` | No | `false` | Enable/disable demo mock data |
 | `NEXT_PUBLIC_APP_URL` | No | — | Public app URL for OAuth |
 | `SHOPEE_API_KEY` | No | — | Shopee affiliate API key |
 | `NOTIFICATION_SERVICE_URL` | No | `http://127.0.0.1:3004` | Notification WebSocket service |
-| `OPENCLAW_GATEWAY_URL` | Yes | `https://operator.gangniaga.my` | OpenClaw Gateway base URL (replaces MCP & A2A) |
+| `OPENCLAW_GATEWAY_URL` | Yes | `https://operator.gangniaga.my` | OpenClaw Gateway base URL |
 | `OPENCLAW_GATEWAY_TOKEN` | Yes | — | Bearer token for OpenClaw API authentication |
-| ~~`MCP_SERVER_URL`~~ | ~~No~~ | ~~`http://127.0.0.1:3005`~~ | ~~REMOVED in v6.0 — replaced by OPENCLAW_GATEWAY_URL~~ |
-| ~~`A2A_SERVER_URL`~~ | ~~No~~ | ~~`http://127.0.0.1:3006`~~ | ~~REMOVED in v6.0 — replaced by OPENCLAW_GATEWAY_URL~~ |
+| `OPENCLAW_WS_ENABLED` | No | `true` | Enable WebSocket real-time events from gateway |
+| `OPENCLAW_HOOKS_PATH` | No | `/hooks` | Hooks endpoint path on gateway |
+| ~~`MCP_SERVER_URL`~~ | ~~No~~ | — | ~~REMOVED in v6.0 — replaced by OPENCLAW_GATEWAY_URL~~ |
+| ~~`A2A_SERVER_URL`~~ | ~~No~~ | — | ~~REMOVED in v6.0 — replaced by OPENCLAW_GATEWAY_URL~~ |
 
 ---
 

@@ -1,0 +1,113 @@
+$ next build
+▲ Next.js 16.2.3 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 25.1s
+  Running TypeScript ...
+  Finished TypeScript in 29.4s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/67) ...
+  Generating static pages using 7 workers (16/67) 
+  Generating static pages using 7 workers (33/67) 
+  Generating static pages using 7 workers (50/67) 
+✓ Generating static pages using 7 workers (67/67) in 1708ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /achievements
+├ ○ /activity
+├ ○ /agent-office
+├ ○ /analytics
+├ ƒ /api
+├ ƒ /api/achievements
+├ ƒ /api/activity
+├ ƒ /api/advanced-analytics
+├ ƒ /api/agents
+├ ƒ /api/agents/activity
+├ ƒ /api/agents/memory
+├ ƒ /api/analytics
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/calculator/estimate
+├ ƒ /api/campaigns
+├ ƒ /api/campaigns/[id]
+├ ƒ /api/click-stats
+├ ƒ /api/conversions
+├ ƒ /api/dashboard
+├ ƒ /api/forecast/earnings
+├ ƒ /api/goals
+├ ƒ /api/goals/[id]
+├ ƒ /api/goals/[id]/update-progress
+├ ƒ /api/health
+├ ƒ /api/leaderboard
+├ ƒ /api/links
+├ ƒ /api/links/[id]
+├ ƒ /api/links/[id]/share
+├ ƒ /api/links/[id]/stats
+├ ƒ /api/links/bulk
+├ ƒ /api/links/qr-code
+├ ƒ /api/notifications
+├ ƒ /api/openclaw/a2a-proxy
+├ ƒ /api/openclaw/ai-content
+├ ƒ /api/openclaw/ai-insights
+├ ƒ /api/openclaw/ai-keywords
+├ ƒ /api/openclaw/analyze
+├ ƒ /api/openclaw/competitor
+├ ƒ /api/openclaw/cron
+├ ƒ /api/openclaw/discover
+├ ƒ /api/openclaw/hooks
+├ ƒ /api/openclaw/mcp-proxy
+├ ƒ /api/openclaw/price-track
+├ ƒ /api/openclaw/smart-scheduler
+├ ƒ /api/openclaw/stream
+├ ƒ /api/openclaw/trending
+├ ƒ /api/openclaw/web-reader
+├ ƒ /api/openclaw/ws-status
+├ ƒ /api/payouts
+├ ƒ /api/products/search
+├ ƒ /api/profile
+├ ƒ /api/redirect/[shortCode]
+├ ƒ /api/referral
+├ ƒ /api/reports/generate
+├ ƒ /api/settings
+├ ƒ /api/shopee-integration/import
+├ ƒ /api/shopee-integration/search
+├ ƒ /api/shopee-office/agents
+├ ƒ /api/shopee-office/agents/[id]
+├ ƒ /api/shopee-office/agents/[id]/approve
+├ ƒ /api/shopee-office/agents/[id]/leave
+├ ƒ /api/shopee-office/guest-agents
+├ ƒ /api/shopee-office/join
+├ ƒ /api/shopee-office/memo
+├ ƒ /api/shopee-office/status
+├ ƒ /api/shopee/affiliate
+├ ƒ /api/shopee/ams
+├ ƒ /api/shopee/orders
+├ ƒ /api/shopee/products
+├ ƒ /api/shopee/promotions
+├ ƒ /api/shopee/shipping
+├ ƒ /api/shopee/shop
+├ ƒ /api/social-scheduler
+├ ○ /calculator
+├ ○ /campaigns
+├ ○ /earnings
+├ ○ /leaderboard
+├ ○ /links
+├ ○ /login
+├ ○ /notifications
+├ ○ /openclaw
+├ ○ /pricing
+├ ○ /products
+├ ƒ /profile/[slug]
+├ ○ /referral
+├ ○ /settings
+└ ○ /shopee-integration
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

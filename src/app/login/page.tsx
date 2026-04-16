@@ -9,7 +9,11 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Eye, EyeOff, Loader2, ShieldCheck, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
+
+const isLocalDemo = process.env.NODE_ENV !== 'production'
+const demoEmail = 'admin@theviralfinds.my'
+const demoPassword = 'admin123'
+const loginNoiseDataUri = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E")`
 
 export default function LoginPage() {
   const router = useRouter()
@@ -50,7 +54,10 @@ export default function LoginPage() {
       <div className="absolute inset-0 z-0">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-shopee/10 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-shopee-gold/5 rounded-full blur-[120px]" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none" />
+        <div
+          className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
+          style={{ backgroundImage: loginNoiseDataUri }}
+        />
       </div>
 
       <motion.div 
@@ -100,6 +107,22 @@ export default function LoginPage() {
             <Card className="glass-panel border-white/5 shadow-2xl overflow-visible">
               <CardContent className="pt-8 pb-8 px-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {isLocalDemo && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="rounded-xl border border-shopee/20 bg-shopee/10 px-4 py-3 text-xs text-left text-orange-50"
+                    >
+                      <p className="font-semibold tracking-wide text-shopee-gold">Demo login local</p>
+                      <p className="mt-1 text-orange-100/80">
+                        Emel: <span className="font-mono">{demoEmail}</span>
+                      </p>
+                      <p className="text-orange-100/80">
+                        Kata laluan: <span className="font-mono">{demoPassword}</span>
+                      </p>
+                    </motion.div>
+                  )}
+
                   {error && (
                     <motion.div 
                       initial={{ opacity: 0, height: 0 }}
@@ -118,7 +141,7 @@ export default function LoginPage() {
                       <Input
                         id="email"
                         type="email"
-                        placeholder="admin@theviralfinds.my"
+                        placeholder={demoEmail}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -138,7 +161,7 @@ export default function LoginPage() {
                       <Input
                         id="password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
+                        placeholder={isLocalDemo ? demoPassword : '••••••••'}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -195,7 +218,9 @@ export default function LoginPage() {
              <div className="h-px bg-white/5 flex-1" />
           </div>
           <p className="text-xs text-muted-foreground/60">
-            Lupa kata laluan? Hubungi <span className="text-shopee-gold hover:underline cursor-pointer">Support Team</span>
+            {isLocalDemo ? 'Gunakan demo login local di atas untuk preview pantas.' : (
+              <>Lupa kata laluan? Hubungi <span className="text-shopee-gold hover:underline cursor-pointer">Support Team</span></>
+            )}
           </p>
         </motion.div>
       </motion.div>

@@ -63,20 +63,33 @@ export function LinksPage() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => fetch(`/api/links/${id}`, { method: 'DELETE' }).then(r => r.json()),
+    mutationFn: async (id: string) => {
+      const r = await fetch(`/api/links/${id}`, { method: 'DELETE' })
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `Delete failed (${r.status})`)
+      return r.json()
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['links'] }); toast({ title: 'Link deleted' }) },
+    onError: (err: Error) => { toast({ title: 'Delete failed', description: err.message, variant: 'destructive' }) },
   })
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, string> }) =>
-      fetch(`/api/links/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json()),
+    mutationFn: async ({ id, data }: { id: string; data: Record<string, string> }) => {
+      const r = await fetch(`/api/links/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `Update failed (${r.status})`)
+      return r.json()
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['links'] }); toast({ title: 'Link updated' }); setEditingLink(null); setDetailLink(null) },
+    onError: (err: Error) => { toast({ title: 'Update failed', description: err.message, variant: 'destructive' }) },
   })
 
   const createMutation = useMutation({
-    mutationFn: (body: Record<string, string>) =>
-      fetch('/api/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.json()),
+    mutationFn: async (body: Record<string, string>) => {
+      const r = await fetch('/api/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `Create failed (${r.status})`)
+      return r.json()
+    },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['links'] }); toast({ title: 'Link created!' }); setShowCreate(false); resetForm() },
+    onError: (err: Error) => { toast({ title: 'Create failed', description: err.message, variant: 'destructive' }) },
   })
 
   const bulkActivateMutation = useMutation({

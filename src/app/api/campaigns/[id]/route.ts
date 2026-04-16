@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -6,6 +7,9 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   if (process.env.DEMO_MODE === 'true') {
     const { id } = await params
     const body = await request.json()
@@ -28,11 +32,11 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
-    const campaign = await fetch(`${DB_URL}/campaigns/${encodeURIComponent(id)}`, {
+    const response = await authenticatedDbFetch(DB_URL, `/campaigns/${encodeURIComponent(id)}`, auth!, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).then(r => r.json())
+    })
+    const campaign = await response.json()
 
     return NextResponse.json(campaign)
   } catch (error) {
@@ -45,6 +49,9 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   if (process.env.DEMO_MODE === 'true') {
     return NextResponse.json({ success: true })
   }
@@ -53,7 +60,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
     const { id } = await params
-    await fetch(`${DB_URL}/campaigns/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    await authenticatedDbFetch(DB_URL, `/campaigns/${encodeURIComponent(id)}`, auth!, { method: 'DELETE' })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Campaign DELETE error:', error)

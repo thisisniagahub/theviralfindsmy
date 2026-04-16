@@ -44,7 +44,8 @@ export class CameraController {
     // Mouse wheel zoom (zoom toward cursor)
     scene.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: unknown[], _dx: number, dy: number) => {
       const pointer = scene.input.activePointer
-      const worldPoint = this.camera.screenToWorld(new Phaser.Math.Vector2(pointer.x, pointer.y))
+      // Get world point from pointer using Phaser 3 API
+      const worldPoint = this.camera.getWorldPoint(pointer.x, pointer.y)
 
       const newZoom = Phaser.Math.Clamp(
         this.camera.zoom - dy * ZOOM_SENSITIVITY,
@@ -62,6 +63,7 @@ export class CameraController {
     // Drag-to-pan: mouse down
     scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       // Only drag with middle mouse button or left mouse + shift key
+      // @ts-expect-error - Phaser 4 Pointer API
       if (pointer.button === 1 || (pointer.button === 0 && pointer.shiftKey)) {
         this.isDragging = true
         this.dragStartX = pointer.x

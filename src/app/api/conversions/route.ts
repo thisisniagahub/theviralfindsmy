@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
   if (process.env.DEMO_MODE === 'true') {
@@ -41,8 +43,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '25'
+    const session = await getServerSession(authOptions)
+    const userId = (session as any)?.user?.id
 
-    const data = await fetch(`${DB_URL}/conversions?page=${encodeURIComponent(page)}&limit=${encodeURIComponent(limit)}`).then(r => r.json())
+    const params = new URLSearchParams({ page, limit })
+    if (userId) params.set('userId', userId)
+
+    const data = await fetch(`${DB_URL}/conversions?${params.toString()}`).then(r => r.json())
 
     return NextResponse.json(data)
   } catch (error) {

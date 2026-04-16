@@ -49,7 +49,14 @@ export const createGoalSchema = z.object({
   endDate: z.string().datetime().optional(),
 })
 
-export const updateSettingsSchema = z.record(z.string(), z.string().max(500))
+export const updateSettingsSchema = z.object({
+  updates: z.array(
+    z.object({
+      key: z.string().min(1).max(100),
+      value: z.string().max(500),
+    })
+  ),
+}).strict()
 
 export const bulkActionSchema = z.object({
   action: z.enum(['activate', 'pause', 'expire']),

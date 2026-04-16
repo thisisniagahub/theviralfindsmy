@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { useAppStore } from '@/store/app-store'
 import { Bell, Search, X, CheckCheck } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -48,6 +49,7 @@ const pageNames: Record<string, string> = {
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
   const { setSearchQuery: setGlobalSearchQuery } = useAppStore()
   const [searchOpen, setSearchOpen] = useState(false)
   const [localSearchQuery, setLocalSearchQuery] = useState('')
@@ -187,9 +189,13 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 gap-2 px-2">
                 <Avatar className="h-7 w-7">
-                  <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">AA</AvatarFallback>
+                  <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">
+                    {(session?.user?.name || session?.user?.email || 'U').charAt(0).toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline text-sm font-medium">Ahmad Ali</span>
+                <span className="hidden sm:inline text-sm font-medium">
+                  {session?.user?.name || session?.user?.email || 'User'}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">

@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TheViralFinds — 5-Way AI Review Comparison</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a28;
+      --border: #2a2a3a;
+      --text: #e0e0e8;
+      --text-dim: #8888a0;
+      --accent: #6c5ce7;
+      --accent2: #a29bfe;
+      --green: #00cec9;
+      --red: #ff6b6b;
+      --orange: #ffa502;
+      --yellow: #ffeaa7;
+      --blue: #74b9ff;
+      --pink: #fd79a8;
+      --qwen: #e17055;
+      --gemini: #00b894;
+      --codex: #0984e3;
+      --claude: #6c5ce7;
+      --opus: #fdcb6e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 60px 20px 40px;
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1035 50%, #0a0a0f 100%);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .hero h1 {
+      font-size: 2.8em;
+      background: linear-gradient(135deg, var(--accent), var(--pink), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .hero .subtitle { color: var(--text-dim); font-size: 1.1em; margin-bottom: 20px; }
+    .hero .meta { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; }
+    .hero .meta-item { font-size: 0.9em; color: var(--text-dim); }
+    .hero .meta-item strong { color: var(--text); }
+
+    /* Reviewer badges */
+    .reviewer-badges {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 30px 0 10px;
+    }
+    .badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+      border: 2px solid;
+    }
+    .badge-qwen { border-color: var(--qwen); color: var(--qwen); background: rgba(225,112,85,0.1); }
+    .badge-gemini { border-color: var(--gemini); color: var(--gemini); background: rgba(0,184,148,0.1); }
+    .badge-codex { border-color: var(--codex); color: var(--codex); background: rgba(9,132,227,0.1); }
+    .badge-claude { border-color: var(--claude); color: var(--claude); background: rgba(108,92,231,0.1); }
+    .badge-opus { border-color: var(--opus); color: var(--opus); background: rgba(253,203,110,0.1); }
+
+    /* Section */
+    .section {
+      margin-bottom: 50px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .section-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-header h2 { font-size: 1.3em; }
+    .section-header .icon { font-size: 1.5em; }
+    .section-body { padding: 24px; }
+
+    /* Score Cards Grid */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .score-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .score-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .score-card.qwen::before { background: var(--qwen); }
+    .score-card.gemini::before { background: var(--gemini); }
+    .score-card.codex::before { background: var(--codex); }
+    .score-card.claude::before { background: var(--claude); }
+    .score-card.opus::before { background: var(--opus); }
+
+    .score-card .reviewer-name {
+      font-weight: 700;
+      font-size: 1em;
+      margin-bottom: 4px;
+    }
+    .score-card .reviewer-model {
+      font-size: 0.75em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .score-card .big-score {
+      font-size: 2.8em;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .score-card .grade {
+      font-size: 1.1em;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .score-card .scope {
+      font-size: 0.8em;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+    .score-qwen { color: var(--qwen); }
+    .score-gemini { color: var(--gemini); }
+    .score-codex { color: var(--codex); }
+    .score-claude { color: var(--claude); }
+    .score-opus { color: var(--opus); }
+
+    /* Dimension comparison table */
+    .dim-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85em;
+    }
+    .dim-table th, .dim-table td {
+      padding: 10px 12px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .dim-table th {
+      background: var(--surface2);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    .dim-table th:first-child, .dim-table td:first-child {
+      text-align: left;
+      font-weight: 600;
+    }
+    .dim-table .dim-row:hover { background: rgba(108,92,231,0.05); }
+    .score-pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9em;
+    }
+    .pill-a { background: rgba(0,206,201,0.15); color: var(--green); }
+    .pill-b { background: rgba(116,185,255,0.15); color: var(--blue); }
+    .pill-c { background: rgba(255,165,2,0.15); color: var(--orange); }
+    .pill-d { background: rgba(255,107,107,0.15); color: var(--red); }
+    .pill-f { background: rgba(255,107,107,0.25); color: var(--red); }
+    .pill-na { background: rgba(136,136,160,0.1); color: var(--text-dim); }
+
+    /* Consensus / Unique */
+    .consensus-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 12px;
+    }
+    .consensus-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .consensus-item .issue-name {
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .consensus-item .issue-name .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-critical { background: var(--red); }
+    .dot-high { background: var(--orange); }
+    .dot-medium { background: var(--yellow); }
+    .dot-low { background: var(--green); }
+
+    .consensus-item .found-by {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .found-tag {
+      font-size: 0.7em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .ft-qwen { background: rgba(225,112,85,0.15); color: var(--qwen); }
+    .ft-gemini { background: rgba(0,184,148,0.15); color: var(--gemini); }
+    .ft-codex { background: rgba(9,132,227,0.15); color: var(--codex); }
+    .ft-claude { background: rgba(108,92,231,0.15); color: var(--claude); }
+    .ft-opus { background: rgba(253,203,110,0.15); color: var(--opus); }
+
+    .consensus-count {
+      font-size: 0.75em;
+      color: var(--text-dim);
+      margin-left: 4px;
+    }
+
+    /* Unique findings */
+    .unique-list { display: flex; flex-direction: column; gap: 10px; }
+    .unique-item {
+      background: var(--surface2);
+      border-left: 3px solid;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+    }
+    .unique-item.u-qwen { border-color: var(--qwen); }
+    .unique-item.u-gemini { border-color: var(--gemini); }
+    .unique-item.u-codex { border-color: var(--codex); }
+    .unique-item.u-claude { border-color: var(--claude); }
+    .unique-item.u-opus { border-color: var(--opus); }
+
+    .unique-item .u-title { font-weight: 700; margin-bottom: 4px; }
+    .unique-item .u-desc { font-size: 0.85em; color: var(--text-dim); }
+    .unique-item .u-reviewer {
+      font-size: 0.7em;
+      padding: 2px 8px;
+      border-radius: 10px;
+      display: inline-block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    /* Roadmap comparison */
+    .roadmap-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8em;
+    }
+    .roadmap-table th, .roadmap-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+    .roadmap-table th {
+      background: var(--surface2);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Conclusion */
+    .conclusion {
+      background: linear-gradient(135deg, #1a1035, #0a2018);
+      border: 1px solid var(--green);
+      border-radius: 12px;
+      padding: 30px;
+    }
+    .conclusion h3 {
+      color: var(--green);
+      margin-bottom: 16px;
+      font-size: 1.3em;
+    }
+    .conclusion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .conclusion-card {
+      background: rgba(0,206,201,0.05);
+      border: 1px solid rgba(0,206,201,0.2);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .conclusion-card .cc-phase {
+      color: var(--green);
+      font-weight: 700;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+    }
+    .conclusion-card ul {
+      list-style: none;
+      padding: 0;
+    }
+    .conclusion-card li {
+      padding: 4px 0;
+      font-size: 0.85em;
+      color: var(--text-dim);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .conclusion-card li::before {
+      content: '>';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Strengths */
+    .strengths-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    .strength-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .strength-card .s-name {
+      font-weight: 700;
+      font-size: 0.9em;
+      margin-bottom: 4px;
+    }
+    .strength-card .s-reviewers {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    /* Focus area chart */
+    .focus-bar-wrap { margin-bottom: 8px; }
+    .focus-label { font-size: 0.8em; font-weight: 600; margin-bottom: 4px; }
+    .focus-bar-bg {
+      height: 22px;
+      background: var(--surface2);
+      border-radius: 11px;
+      overflow: hidden;
+      display: flex;
+    }
+    .focus-segment {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65em;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      padding: 0 6px;
+      transition: width 0.3s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 1.8em; }
+      .dim-table { font-size: 0.75em; }
+      .dim-table th, .dim-table td { padding: 6px 8px; }
+      .score-grid { grid-template-columns: 1fr 1fr; }
+      .container { padding: 12px; }
+    }
+
+    /* Tabs */
+    .tab-nav {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 12px 20px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-dim);
+      font-weight: 600;
+      font-size: 0.9em;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Severity labels */
+    .sev-critical { color: var(--red); font-weight: 700; }
+    .sev-high { color: var(--orange); font-weight: 700; }
+    .sev-medium { color: var(--yellow); }
+    .sev-low { color: var(--green); }
+
+    /* Verdict row */
+    .verdict-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    .verdict-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .verdict-card .v-reviewer { font-weight: 700; font-size: 0.9em; margin-bottom: 8px; }
+    .verdict-card .v-quote { font-size: 0.82em; color: var(--text-dim); font-style: italic; line-height: 1.5; }
+
+    @media (max-width: 900px) {
+      .verdict-row { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* Progress tracker */
+    .progress-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .progress-item:last-child { border-bottom: none; }
+    .progress-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8em;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .icon-fixed { background: rgba(0,206,201,0.2); color: var(--green); }
+    .icon-partial { background: rgba(255,165,2,0.2); color: var(--orange); }
+    .icon-missing { background: rgba(255,107,107,0.2); color: var(--red); }
+    .progress-text { font-size: 0.88em; }
+    .progress-text .p-issue { font-weight: 600; }
+    .progress-text .p-detail { font-size: 0.8em; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>TheViralFinds — 5-Way AI Review Comparison</h1>
+  <p class="subtitle">Perbandingan Komprehensif 5 AI Reviewer: Qwen, Gemini, Codex, Claude Code & Opus</p>
+  <div class="meta">
+    <div class="meta-item"><strong>Projek:</strong> TheViralFinds (PROJECT-6)</div>
+    <div class="meta-item"><strong>Stack:</strong> Next.js 16 + React 19 + Prisma + OpenClaw + Phaser</div>
+    <div class="meta-item"><strong>Tarikh:</strong> 12 April 2026</div>
+    <div class="meta-item"><strong>Fail Reviewed:</strong> 295+ source files</div>
+  </div>
+  <div class="reviewer-badges">
+    <span class="badge badge-qwen">Qwen Code</span>
+    <span class="badge badge-gemini">Gemini CLI</span>
+    <span class="badge badge-codex">Codex CLI</span>
+    <span class="badge badge-claude">Claude Code</span>
+    <span class="badge badge-opus">Opus Review</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ===== 1. SKOR KESELURUHAN ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">📊</span>
+      <h2>1. Skor Keseluruhan (Overall Score)</h2>
+    </div>
+    <div class="section-body">
+      <div class="score-grid">
+        <div class="score-card qwen">
+          <div class="reviewer-name">Qwen Code</div>
+          <div class="reviewer-model">Deep Analysis</div>
+          <div class="big-score score-qwen">61<span class="grade">/100 C+</span></div>
+          <div class="scope">200+ files, 50,000+ lines. Focus: Security, Monetization, AI/ML features</div>
+        </div>
+        <div class="score-card gemini">
+          <div class="reviewer-name">Gemini CLI</div>
+          <div class="reviewer-model">Antigravity Agent</div>
+          <div class="big-score score-gemini">—<span class="grade" style="font-size:0.5em">N/A</span></div>
+          <div class="scope">Codebase + Brain mining. Focus: Brain insights, Socket.IO, A2A pipeline</div>
+        </div>
+        <div class="score-card codex">
+          <div class="reviewer-name">Codex CLI</div>
+          <div class="reviewer-model">Inventory Audit</div>
+          <div class="big-score score-codex">—<span class="grade" style="font-size:0.5em">N/A</span></div>
+          <div class="scope">Brain directory only (626 files, 74.6MB). Focus: Metadata, integrity, structure</div>
+        </div>
+        <div class="score-card claude">
+          <div class="reviewer-name">Claude Code</div>
+          <div class="reviewer-model">Opus 4.6</div>
+          <div class="big-score score-claude">69<span class="grade">/100 B-</span></div>
+          <div class="scope">295 files + Brain (7 sessions). Focus: Critical bugs, dead code, security</div>
+        </div>
+        <div class="score-card opus">
+          <div class="reviewer-name">Opus Review</div>
+          <div class="reviewer-model">Full Codebase Audit</div>
+          <div class="big-score score-opus">69<span class="grade">/100 B-</span></div>
+          <div class="scope">295 files, 69 routes, ESLint 0 errors. Focus: Architecture, progress tracking</div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; padding:16px; background:var(--surface2); border-radius:8px; border:1px solid var(--border);">
+        <strong style="color:var(--accent2);">Analisis:</strong>
+        <span style="font-size:0.9em; color:var(--text-dim);">
+          Qwen memberikan skor paling rendah (61) kerana memberi weight besar pada Monetization (20/100 F) dan Testing (15/100 F). Claude Code & Opus memberikan skor sama (69) tetapi dari perspektif berbeza — Claude Code lebih fokus pada bugs runtime, Opus lebih fokus pada audit file-by-file. Gemini & Codex tidak memberikan skor numerik kerana fokus mereka adalah analisis Brain directory, bukan codebase scoring.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 2. PERBANDINGAN DIMENSI ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">📏</span>
+      <h2>2. Perbandingan Dimensi (Dimension Comparison)</h2>
+    </div>
+    <div class="section-body" style="overflow-x:auto;">
+      <table class="dim-table">
+        <thead>
+          <tr>
+            <th>Dimensi</th>
+            <th style="color:var(--qwen)">Qwen</th>
+            <th style="color:var(--gemini)">Gemini</th>
+            <th style="color:var(--codex)">Codex</th>
+            <th style="color:var(--claude)">Claude Code</th>
+            <th style="color:var(--opus)">Opus</th>
+            <th>Purata</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="dim-row">
+            <td>Architecture</td>
+            <td><span class="score-pill pill-b">82 A-</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-c">60 C</span></td>
+            <td><span class="score-pill pill-a">84 A-</span></td>
+            <td><strong>75</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Security</td>
+            <td><span class="score-pill pill-c">71 C+</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-d">50 D</span></td>
+            <td><span class="score-pill pill-c">62 C</span></td>
+            <td><strong>61</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Performance</td>
+            <td><span class="score-pill pill-b">78 B+</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-c">60 C</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><strong>69</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Code Quality</td>
+            <td><span class="score-pill pill-c">68 C+</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-b">70 B</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><strong>69</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>AI Integration</td>
+            <td><span class="score-pill pill-a">88 A</span></td>
+            <td><span class="score-pill pill-a">90 A</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-a">80 A-</span></td>
+            <td><span class="score-pill pill-a">92 A+</span></td>
+            <td><strong>88</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Testing</td>
+            <td><span class="score-pill pill-f">15 F</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-f">20 F</span></td>
+            <td><span class="score-pill pill-f">15 F</span></td>
+            <td><strong>17</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Database</td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-c">70 B-</span></td>
+            <td><strong>70</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Game Engine</td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-b">75 B</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-c">55 D</span></td>
+            <td><span class="score-pill pill-a">85 A</span></td>
+            <td><strong>72</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Frontend/UX</td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-a">85 A</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-a">83 A-</span></td>
+            <td><strong>84</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>DevOps / CI</td>
+            <td><span class="score-pill pill-d">65 D+</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-d">40 F</span></td>
+            <td><span class="score-pill pill-f">20 F</span></td>
+            <td><strong>42</strong></td>
+          </tr>
+          <tr class="dim-row">
+            <td>Monetization</td>
+            <td><span class="score-pill pill-f">20 F</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><span class="score-pill pill-na">—</span></td>
+            <td><strong>20</strong></td>
+          </tr>
+          <tr class="dim-row" style="background:rgba(108,92,231,0.08);">
+            <td><strong>PURATA KESELURUHAN</strong></td>
+            <td><strong style="color:var(--qwen)">61</strong></td>
+            <td><strong style="color:var(--gemini)">N/A</strong></td>
+            <td><strong style="color:var(--codex)">N/A</strong></td>
+            <td><strong style="color:var(--claude)">69</strong></td>
+            <td><strong style="color:var(--opus)">69</strong></td>
+            <td><strong style="font-size:1.2em; color:var(--green);">66</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:16px; padding:14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border); font-size:0.85em; color:var(--text-dim);">
+        <strong style="color:var(--red);">Dimensi Terlemah (Consensus 5/5):</strong> Testing (purata 17/100) — semua reviewer bersetuju ini adalah kegagalan kritikal.<br>
+        <strong style="color:var(--orange);">Dimensi Kedua Terlemah:</strong> DevOps/CI (purata 42/100) — tiada CI/CD, tiada Docker, tiada automated deployment.<br>
+        <strong style="color:var(--green);">Dimensi Terkuat (Consensus 5/5):</strong> AI Integration (purata 88/100) — OpenClaw gateway dianggap production-grade oleh semua reviewer.
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 3. ISU CONSENSUS ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🎯</span>
+      <h2>3. Isu Consensus (Semua Reviewer Setuju)</h2>
+    </div>
+    <div class="section-body">
+      <p style="font-size:0.9em; color:var(--text-dim); margin-bottom:16px;">
+        Isu-isu berikut dikenal pasti oleh semua (atau hampir semua) reviewer. Ini adalah masalah yang pasti wujud dan perlu ditangani.
+      </p>
+      <div class="consensus-grid">
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-critical"></span>
+            <span class="sev-critical">Tiada Model User / Multi-Tenancy</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Prisma schema tiada User model. Semua data terikat pada satu implicit user. Tiada tenant isolation.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">4/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-critical"></span>
+            <span class="sev-critical">Testing Hampir Sifar (~0.5%)</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Hanya 3 test file wujud. 0% coverage untuk 69 API routes. Tiada E2E atau integration tests.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-critical"></span>
+            <span class="sev-critical">Tiada Security Headers</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Tiada CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Permissions-Policy.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-critical"></span>
+            <span class="sev-critical">Tiada CI/CD Pipeline</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Tiada automated testing, linting, atau deployment. Semua quality check manual.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-critical"></span>
+            <span class="sev-critical">DB Service Tanpa Auth & Validation</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">DB microservice (port 3005) tiada authentication dan tiada input validation. Raw body ke Prisma.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-high"></span>
+            <span class="sev-high">Hardcoded Credentials</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Admin email hardcoded, auto-sign-in wujud, kredensial default dipaparkan di UI login.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">4/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-high"></span>
+            <span class="sev-high">In-Memory Rate Limiting & Caching</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Rate limiter dan cache guna Map. Reset pada restart, tiada sharing antara instances.</div>
+          <div class="found-by">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-high"></span>
+            <span class="sev-high">Game Assets 13.2MB Tanpa CDN</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Game sprites served uncompressed. Tiada lazy loading strategy, tiada CDN. Slow load pada connection perlahan.</div>
+          <div class="found-by">
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+        <div class="consensus-item">
+          <div class="issue-name">
+            <span class="dot dot-medium"></span>
+            <span class="sev-medium">Agent Chat 100% Fake/Demo</span>
+          </div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Chat dalam Agent Office hardcoded demo messages. Tiada koneksi ke OpenClaw gateway sebenar.</div>
+          <div class="found-by">
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+            <span class="consensus-count">3/5</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 4. TEMUAN UNIK ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">💎</span>
+      <h2>4. Temuan Unik (Hanya Ditemui Oleh Satu Reviewer)</h2>
+    </div>
+    <div class="section-body">
+      <p style="font-size:0.9em; color:var(--text-dim); margin-bottom:16px;">
+        Isu-isu berikut hanya ditemui oleh satu reviewer sahaja. Ini menunjukkan kelebihan unik setiap AI dalam mengesan masalah tertentu.
+      </p>
+
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('unique', 0)">Qwen (8 unik)</button>
+        <button class="tab-btn" onclick="switchTab('unique', 1)">Gemini (3 unik)</button>
+        <button class="tab-btn" onclick="switchTab('unique', 2)">Codex (6 unik)</button>
+        <button class="tab-btn" onclick="switchTab('unique', 3)">Claude Code (6 unik)</button>
+        <button class="tab-btn" onclick="switchTab('unique', 4)">Opus (5 unik)</button>
+      </div>
+
+      <!-- Qwen Unique -->
+      <div class="tab-content active" id="unique-0">
+        <div class="unique-list">
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">Buffer crash di client-side code</div>
+            <div class="u-desc">`src/lib/qrcode.ts` guna `Buffer.from()` yang hanya wujud di Node.js — akan crash di browser/Edge runtime. Perlu ganti dengan `btoa()`.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">XSS via reflected user input</div>
+            <div class="u-desc">`/api/redirect/[shortCode]` memantulkan user input `shortCode` tanpa sanitization dalam error response. Boleh XSS jika rendered tanpa escape.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">Secret exposed in client bundle</div>
+            <div class="u-desc">`OFFICE_JOIN_KEY` di `shopee-office-store.ts` boleh dilihat di browser DevTools kerana file di-import oleh client components.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">Dual layout system (dead code)</div>
+            <div class="u-desc">Dua layout bersaing: `app-layout.tsx` (300+ lines, DEAD) vs `(dashboard)/layout.tsx` (aktif). Perlu delete yang mati.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">N+1 query pattern di DB service</div>
+            <div class="u-desc">Campaign stats dikira dengan `.reduce()` di JS bukan Prisma aggregation. Boleh ganti dengan `_sum` untuk performance.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">API versioning strategy</div>
+            <div class="u-desc">Semua routes di `/api/*` tanpa version prefix. Sebarang breaking change akan break semua clients.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">Stripe subscription + Monetization plan</div>
+            <div class="u-desc">Qwen satu-satunya yang cadangkan sistem Stripe, tier enforcement, referral system, dan RAG pipeline secara terperinci dengan code.</div>
+          </div>
+          <div class="unique-item u-qwen">
+            <span class="u-reviewer ft-qwen">Qwen</span>
+            <div class="u-title">Encrypt sensitive data at rest</div>
+            <div class="u-desc">Payout model menyimpan bank account numbers dalam plain text. Perlu AES-256-CBC encryption.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gemini Unique -->
+      <div class="tab-content" id="unique-1">
+        <div class="unique-list">
+          <div class="unique-item u-gemini">
+            <span class="u-reviewer ft-gemini">Gemini</span>
+            <div class="u-title">Polling 3 saat yang membunuh server</div>
+            <div class="u-desc">`agent-office-page.tsx` poll API `/api/shopee-office/agents` setiap 3 saat (~20 req/min/user). Perlu ganti dengan Socket.IO yang sudah wujud.</div>
+          </div>
+          <div class="unique-item u-gemini">
+            <span class="u-reviewer ft-gemini">Gemini</span>
+            <div class="u-title">Paip A2A tidak lengkap</div>
+            <div class="u-desc">Ejen `niagaaggregator` dan `niagaaggregator` dipinggirkan dalam rantaian A2A. Perlu tambah ke pipeline: research → marketing → computer → <strong>aggregator → reporter</strong>.</div>
+          </div>
+          <div class="unique-item u-gemini">
+            <span class="u-reviewer ft-gemini">Gemini</span>
+            <div class="u-title">Hydration mismatch dari localStorage</div>
+            <div class="u-desc">`agent-office-page.tsx` guna `localStorage` secara langsung semasa initialization — menyebabkan React hydration mismatch antara server dan client.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Codex Unique -->
+      <div class="tab-content" id="unique-2">
+        <div class="unique-list">
+          <div class="unique-item u-codex">
+            <span class="u-reviewer ft-codex">Codex</span>
+            <div class="u-title">Source artifact hilang tapi companion files masih ada</div>
+            <div class="u-desc">`a1918469/full_project_audit.md` tiada, tetapi `.metadata.json` dan `.resolved` masih wujud. Brain tiada integrity check.</div>
+          </div>
+          <div class="unique-item u-codex">
+            <span class="u-reviewer ft-codex">Codex</span>
+            <div class="u-title">Metadata schema terlalu nipis</div>
+            <div class="u-desc">Metadata hanya ada 5 field. Tiada `commitHash`, `branch`, `status`, `tags`, `parentArtifact`. Dokumen lama cepat hilang konteks.</div>
+          </div>
+          <div class="unique-item u-codex">
+            <span class="u-reviewer ft-codex">Codex</span>
+            <div class="u-title">Tiada manifest pusat / canonical index</div>
+            <div class="u-desc">Semua kandungan dipecah ikut UUID sesi tanpa fail indeks. UUID tidak self-describing. Sukar tahu sesi mana penting.</div>
+          </div>
+          <div class="unique-item u-codex">
+            <span class="u-reviewer ft-codex">Codex</span>
+            <div class="u-title">Canonical docs bercampur operational traces</div>
+            <div class="u-desc">Review, task, scratchpad, screenshots, DOM dumps, dan click feedback semua dalam satu folder. Brain lebih mirip raw execution log.</div>
+          </div>
+          <div class="unique-item u-codex">
+            <span class="u-reviewer ft-codex">Codex</span>
+            <div class="u-title">Archive sensitif tapi tanpa protection</div>
+            <div class="u-desc">Brain mengandungi review yang menyentuh `.env`, auth, gateway token. Patut dikendalikan sebagai sensitive internal knowledge.</div>
+          </div>
+          <div class="unique-item u-codex">
+            <span class="u-reviewer ft-codex">Codex</span>
+            <div class="u-title">Review freshness tiada mekanisme</div>
+            <div class="u-desc">Tiada `as-of commit`, `supersededBy`, atau `validatedOn`. Pembaca baru sukar tahu mana review masih authoritative.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Claude Code Unique -->
+      <div class="tab-content" id="unique-3">
+        <div class="unique-list">
+          <div class="unique-item u-claude">
+            <span class="u-reviewer ft-claude">Claude Code</span>
+            <div class="u-title">Math.random() data palsu di PRODUCTION</div>
+            <div class="u-desc">DB service guna `Math.random()` untuk generate click counts walaupun `DEMO_MODE=false`. Ini bukan demo — ini silent data corruption.</div>
+          </div>
+          <div class="unique-item u-claude">
+            <span class="u-reviewer ft-claude">Claude Code</span>
+            <div class="u-title">process.exit(1) dalam env validation</div>
+            <div class="u-desc">`env.ts` call `process.exit(1)` jika Zod validation gagal. Ini crash seluruh Next.js process tanpa graceful shutdown.</div>
+          </div>
+          <div class="unique-item u-claude">
+            <span class="u-reviewer ft-claude">Claude Code</span>
+            <div class="u-title">SDK fallback prompt injection (role: assistant)</div>
+            <div class="u-desc">Fallback guna `role: 'assistant'` untuk system prompt bukan `role: 'system'`. LLM treat assistant messages sebagai prior output, bukan instructions.</div>
+          </div>
+          <div class="unique-item u-claude">
+            <span class="u-reviewer ft-claude">Claude Code</span>
+            <div class="u-title">Dead code: config.ts, db-timeout.ts, unreliable service-urls.ts</div>
+            <div class="u-desc">3 fail utility yang wujud tapi tidak digunakan atau tidak berfungsi dengan betul. `isServiceConfigured()` check "localhost" substring.</div>
+          </div>
+          <div class="unique-item u-claude">
+            <span class="u-reviewer ft-claude">Claude Code</span>
+            <div class="u-title">Pipeline reports success on error branches</div>
+            <div class="u-desc">OpenClaw agent pipelines return `'success'` walaupun sub-agents gagal. Seharusnya return `'partial'` atau `'failed'`.</div>
+          </div>
+          <div class="unique-item u-claude">
+            <span class="u-reviewer ft-claude">Claude Code</span>
+            <div class="u-title">DELETE with request body (proxy-stripped)</div>
+            <div class="u-desc">Cron DELETE handler baca body. Banyak proxies/CDNs strip DELETE body — endpoint akan silently fail di production.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opus Unique -->
+      <div class="tab-content" id="unique-4">
+        <div class="unique-list">
+          <div class="unique-item u-opus">
+            <span class="u-reviewer ft-opus">Opus</span>
+            <div class="u-title">14.2MB orphan images di project root</div>
+            <div class="u-desc">5 Gemini-generated images (6.5MB + 6.6MB + 3 smaller) di root. Tiada reference dalam code. Perlu delete dan gitignore.</div>
+          </div>
+          <div class="unique-item u-opus">
+            <span class="u-reviewer ft-opus">Opus</span>
+            <div class="u-title">next-intl installed tapi unused</div>
+            <div class="u-desc">Package `next-intl` v4.3.4 wujud dalam package.json tapi tiada configuration atau usage. Perlu setup atau remove.</div>
+          </div>
+          <div class="unique-item u-opus">
+            <span class="u-reviewer ft-opus">Opus</span>
+            <div class="u-title">reactStrictMode: false</div>
+            <div class="u-desc">React Strict Mode dimatikan, kemungkinan untuk elak double-render dari Phaser. Ini menyembunyikan bug effect cleanup.</div>
+          </div>
+          <div class="unique-item u-opus">
+            <span class="u-reviewer ft-opus">Opus</span>
+            <div class="u-title">SKIP_AUTH=true di .env</div>
+            <div class="u-desc">Variable `SKIP_AUTH` wujud di `.env` tapi tidak di `env.ts` atau middleware. Jika dibaca terus dari `process.env`, auth bypassed.</div>
+          </div>
+          <div class="unique-item u-opus">
+            <span class="u-reviewer ft-opus">Opus</span>
+            <div class="u-title">Phaser ALREADY refactored to 488 lines + ECS</div>
+            <div class="u-desc">Opus mendapati `phaser-game.tsx` sudah di-refactor dari 1,560 ke 488 lines dengan modular ECS (WorkerManager, Player, Pathfinder). Ini menyangkal claim Claude Code yang masih 1,560 lines.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 5. KONTRADIKSI ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">⚡</span>
+      <h2>5. Kontradiksi Antara Reviewer</h2>
+    </div>
+    <div class="section-body">
+      <div style="overflow-x:auto;">
+
+        <table style="width:100%; border-collapse:collapse; font-size:0.85em;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid var(--border); background:var(--surface2);">Isu</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); background:var(--surface2);">Claude Code</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); background:var(--surface2);">Opus</th>
+              <th style="padding:10px; border-bottom:1px solid var(--border); background:var(--surface2);">Kebenaran</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:10px; border-bottom:1px solid var(--border); font-weight:600;">phaser-game.tsx size</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--red);">1,560 lines (monolith)</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--green);">488 lines + ECS modules (refactored)</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--green);">Opus betul — sudah di-refactor</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border-bottom:1px solid var(--border); font-weight:600;">SPA anti-pattern</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--red);">Still Zustand-based routing</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--green);">App Router migration DONE</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--orange);">Sebahagian — layout fixed, tapi Zustand `activePage` masih wujud</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border-bottom:1px solid var(--border); font-weight:600;">ignoreBuildErrors</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--orange);">Unknown status</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--green);">Set to `false` (FIXED)</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--green);">Opus betul — sudah `false`</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border-bottom:1px solid var(--border); font-weight:600;">Dual rendering systems</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--red);">Phaser vs CSS isometric — disconnected</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--green);">Phaser + ECS working well together</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--orange);">Perlu verify — mungkin Claude Code lihat CSS isometric yang memang terpisah</td>
+            </tr>
+            <tr>
+              <td style="padding:10px; border-bottom:1px solid var(--border); font-weight:600;">Brain file count</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border);">~175 files</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border);">—</td>
+              <td style="padding:10px; border-bottom:1px solid var(--border); color:var(--red);">Codex count: 626 files — Claude Code undercounted</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:16px; padding:14px; background:rgba(255,165,2,0.05); border:1px solid rgba(255,165,2,0.3); border-radius:8px; font-size:0.85em;">
+          <strong style="color:var(--orange);">Penting:</strong> Claude Code review dilakukan berdasarkan pembacaan code semasa, tetapi sesetengah file mungkin telah berubah sejak review. Opus review adalah yang terkini dan paling tepat tentang status semasa codebase. <strong>Sentiasa verify claims dengan membaca code terus sebelum bertindak.</strong>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 6. PROGRESS TRACKER ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">📈</span>
+      <h2>6. Status Isu Dari Review Lama ke Sekarang</h2>
+    </div>
+    <div class="section-body">
+
+      <div class="progress-item">
+        <div class="progress-icon icon-fixed">&#10003;</div>
+        <div class="progress-text">
+          <div class="p-issue">Root layout "use client" → Server Component</div>
+          <div class="p-detail">Diflag sejak 10 Apr. Opus confirm: FIXED. Metadata exports berfungsi.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-fixed">&#10003;</div>
+        <div class="progress-text">
+          <div class="p-issue">SPA anti-pattern → App Router migration</div>
+          <div class="p-detail">Opus confirm: 15 routes di `(dashboard)/` group. Zustand `activePage` masih wujud tapi tidak digunakan untuk routing.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-fixed">&#10003;</div>
+        <div class="progress-text">
+          <div class="p-issue">ignoreBuildErrors: true</div>
+          <div class="p-detail">Opus confirm: Set to `false`. Build errors: 0.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-fixed">&#10003;</div>
+        <div class="progress-text">
+          <div class="p-issue">Open redirect vulnerability</div>
+          <div class="p-detail">Domain whitelist di redirect handler. Semua reviewer agree: FIXED.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-fixed">&#10003;</div>
+        <div class="progress-text">
+          <div class="p-issue">Phaser monolith (1,560 lines)</div>
+          <div class="p-detail">Opus confirm: Refactored ke 488 lines + modular ECS (WorkerManager, Player, Pathfinder, CameraController, InteractionManager).</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-partial">&#8769;</div>
+        <div class="progress-text">
+          <div class="p-issue">Hardcoded credentials</div>
+          <div class="p-detail">Sebahagian fixed — password dari env, tetapi admin email masih hardcoded dan auto-sign-in mungkin masih wujud.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-partial">&#8769;</div>
+        <div class="progress-text">
+          <div class="p-issue">Mock/random data in APIs</div>
+          <div class="p-detail">DEMO_MODE flag wujud, tapi Claude Code jumpa Math.random() dalam DB service walaupun DEMO_MODE=false.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-missing">&#10007;</div>
+        <div class="progress-text">
+          <div class="p-issue">Tiada User model / Multi-Tenancy</div>
+          <div class="p-detail">Diflag 5 kali sejak 10 Apr. MASIH BELUM DIMULAKAN. Semua reviewer agree: ini P0.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-missing">&#10007;</div>
+        <div class="progress-text">
+          <div class="p-issue">Test coverage ~0.5%</div>
+          <div class="p-detail">Masih 3 test files sahaja. 0 coverage untuk API routes. Semua reviewer agree: critical gap.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-missing">&#10007;</div>
+        <div class="progress-text">
+          <div class="p-issue">Tiada CI/CD pipeline</div>
+          <div class="p-detail">Tiada GitHub Actions, tiada Docker, tiada automated deployment. Belum dimulakan.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-missing">&#10007;</div>
+        <div class="progress-text">
+          <div class="p-issue">Tiada Security Headers</div>
+          <div class="p-detail">CSP, HSTS, X-Frame-Options, Permissions-Policy — semua tiada di next.config.ts.</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-icon icon-missing">&#10007;</div>
+        <div class="progress-text">
+          <div class="p-issue">Redis untuk cache/rate limiting</div>
+          <div class="p-detail">Masih in-memory Map. Perlu Upstash Redis untuk production scalability.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 7. KEKUATAN ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🏆</span>
+      <h2>7. Kekuatan Projek (Yang Dipuji Oleh Reviewer)</h2>
+    </div>
+    <div class="section-body">
+      <div class="strengths-row">
+
+        <div class="strength-card">
+          <div class="s-name" style="color:var(--green);">OpenClaw Gateway Integration</div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Circuit breaker, retry, SSE streaming, SDK fallback, source tracking. Semua anggap production-grade.</div>
+          <div class="s-reviewers">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+          </div>
+        </div>
+
+        <div class="strength-card">
+          <div class="s-name" style="color:var(--green);">Phaser Game Engine (Selepas Refactor)</div>
+          <div style="font-size:0.82em; color:var(--text-dim);">A* pathfinding, WorkerManager, ECS architecture, deferred asset loading, SceneEventBridge.</div>
+          <div class="s-reviewers">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-opus">Opus</span>
+          </div>
+        </div>
+
+        <div class="strength-card">
+          <div class="s-name" style="color:var(--green);">Zod Validation + Rate Limiting</div>
+          <div style="font-size:0.82em; color:var(--text-dim);">13 Zod schemas, 4 rate limit tiers, env validation. Fondasi security wujud.</div>
+          <div class="s-reviewers">
+            <span class="found-tag ft-qwen">Qwen</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+          </div>
+        </div>
+
+        <div class="strength-card">
+          <div class="s-name" style="color:var(--green);">Shopee Integration Wiring</div>
+          <div style="font-size:0.82em; color:var(--text-dim);">11 lib files (SDK + AMS + GraphQL), 8 API routes, graceful 503 degradation. Ready for API keys.</div>
+          <div class="s-reviewers">
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-claude">Claude</span>
+            <span class="found-tag ft-opus">Opus</span>
+          </div>
+        </div>
+
+        <div class="strength-card">
+          <div class="s-name" style="color:var(--green);">UI/UX Premium Quality</div>
+          <div style="font-size:0.82em; color:var(--text-dim);">48 shadcn/ui components, glassmorphism, Framer Motion, dark theme, PWA, mobile nav, onboarding tour.</div>
+          <div class="s-reviewers">
+            <span class="found-tag ft-gemini">Gemini</span>
+            <span class="found-tag ft-opus">Opus</span>
+          </div>
+        </div>
+
+        <div class="strength-card">
+          <div class="s-name" style="color:var(--green);">Predictive Forecasting</div>
+          <div style="font-size:0.82em; color:var(--text-dim);">Linear regression + moving average dengan confidence intervals. Feature bermakna untuk affiliate earnings.</div>
+          <div class="s-reviewers">
+            <span class="found-tag ft-qwen">Qwen</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 8. FOCUS AREA ANALYSIS ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🔬</span>
+      <h2>8. Kawasan Fokus Setiap Reviewer</h2>
+    </div>
+    <div class="section-body">
+
+      <div style="margin-bottom:20px;">
+        <div class="focus-bar-wrap">
+          <div class="focus-label" style="color:var(--qwen);">Qwen Code — Security (25%) | Monetization (20%) | AI/ML (18%) | Performance (15%) | Architecture (12%) | DX (10%)</div>
+          <div class="focus-bar-bg">
+            <div class="focus-segment" style="width:25%; background:var(--red);">Security</div>
+            <div class="focus-segment" style="width:20%; background:var(--pink);">Monetize</div>
+            <div class="focus-segment" style="width:18%; background:var(--accent);">AI/ML</div>
+            <div class="focus-segment" style="width:15%; background:var(--blue);">Perf</div>
+            <div class="focus-segment" style="width:12%; background:var(--green);">Arch</div>
+            <div class="focus-segment" style="width:10%; background:var(--text-dim);">DX</div>
+          </div>
+        </div>
+
+        <div class="focus-bar-wrap">
+          <div class="focus-label" style="color:var(--gemini);">Gemini CLI — Brain Mining (30%) | Socket/Realtime (25%) | A2A Pipeline (20%) | UI Quality (15%) | Code Fixes (10%)</div>
+          <div class="focus-bar-bg">
+            <div class="focus-segment" style="width:30%; background:var(--gemini);">Brain</div>
+            <div class="focus-segment" style="width:25%; background:var(--accent);">Socket</div>
+            <div class="focus-segment" style="width:20%; background:var(--blue);">A2A</div>
+            <div class="focus-segment" style="width:15%; background:var(--green);">UI</div>
+            <div class="focus-segment" style="width:10%; background:var(--text-dim);">Fix</div>
+          </div>
+        </div>
+
+        <div class="focus-bar-wrap">
+          <div class="focus-label" style="color:var(--codex);">Codex CLI — Brain Structure (35%) | Metadata/Integrity (30%) | Content Classification (20%) | Retention Policy (15%)</div>
+          <div class="focus-bar-bg">
+            <div class="focus-segment" style="width:35%; background:var(--codex);">Structure</div>
+            <div class="focus-segment" style="width:30%; background:var(--accent);">Meta</div>
+            <div class="focus-segment" style="width:20%; background:var(--green);">Classify</div>
+            <div class="focus-segment" style="width:15%; background:var(--text-dim);">Retain</div>
+          </div>
+        </div>
+
+        <div class="focus-bar-wrap">
+          <div class="focus-label" style="color:var(--claude);">Claude Code — Critical Bugs (30%) | Security Vulns (25%) | Dead Code (20%) | Architecture (15%) | Brain Analysis (10%)</div>
+          <div class="focus-bar-bg">
+            <div class="focus-segment" style="width:30%; background:var(--red);">Bugs</div>
+            <div class="focus-segment" style="width:25%; background:var(--orange);">Security</div>
+            <div class="focus-segment" style="width:20%; background:var(--text-dim);">Dead</div>
+            <div class="focus-segment" style="width:15%; background:var(--green);">Arch</div>
+            <div class="focus-segment" style="width:10%; background:var(--accent);">Brain</div>
+          </div>
+        </div>
+
+        <div class="focus-bar-wrap">
+          <div class="focus-label" style="color:var(--opus);">Opus — Architecture (25%) | Progress Tracking (20%) | File Analysis (20%) | Security (15%) | Game Engine (10%) | Assets (10%)</div>
+          <div class="focus-bar-bg">
+            <div class="focus-segment" style="width:25%; background:var(--green);">Arch</div>
+            <div class="focus-segment" style="width:20%; background:var(--blue);">Progress</div>
+            <div class="focus-segment" style="width:20%; background:var(--opus);">Files</div>
+            <div class="focus-segment" style="width:15%; background:var(--red);">Security</div>
+            <div class="focus-segment" style="width:10%; background:var(--accent);">Game</div>
+            <div class="focus-segment" style="width:10%; background:var(--text-dim);">Assets</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:14px; background:var(--surface2); border-radius:8px; border:1px solid var(--border); font-size:0.85em; color:var(--text-dim);">
+        <strong style="color:var(--accent2);">Insight:</strong> Setiap reviewer mempunyai "lensa" berbeza. Qwen melihat dari perspektif produk/monetization. Gemini melihat dari perspektif brain knowledge & real-time. Codex melihat dari perspektif data integrity & organization. Claude Code melihat dari perspektif bug hunting & security. Opus melihat dari perspektif architecture & file-level audit. <strong>Gabungan kelima-lima memberikan gambaran menyeluruh 360 darjah.</strong>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 9. ROADMAP COMPARISON ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🗺️</span>
+      <h2>9. Perbandingan Roadmap</h2>
+    </div>
+    <div class="section-body" style="overflow-x:auto;">
+      <table class="roadmap-table">
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th style="color:var(--qwen)">Qwen</th>
+            <th style="color:var(--gemini)">Gemini</th>
+            <th style="color:var(--claude)">Claude Code</th>
+            <th style="color:var(--opus)">Opus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sev-critical">P0</span></td>
+            <td>Hardcoded creds, DB auth, Buffer crash, XSS, secret exposure</td>
+            <td>Fix Zod type errors, Socket.IO untuk polling</td>
+            <td>Math.random removal, DB validation, process.exit, DB auth, SDK role fix</td>
+            <td>User model, security headers, .env git verify, SKIP_AUTH remove, orphan images</td>
+          </tr>
+          <tr>
+            <td><span class="sev-high">P1</span></td>
+            <td>User model (24-40h), N+1 fix, API versioning</td>
+            <td>VPS PostgreSQL migration, Socket.IO Phaser integration</td>
+            <td>User model, dead code delete, settings schema fix, basic test suite</td>
+            <td>Redis, CI/CD, reactStrictMode, dead code remove</td>
+          </tr>
+          <tr>
+            <td><span class="sev-medium">P2</span></td>
+            <td>Redis (Upstash), bulk operations, dynamic imports, DB indexes</td>
+            <td>A2A pipeline expansion (5 agents)</td>
+            <td>App Router cleanup, Redis, security headers, CI/CD, lazy WS init</td>
+            <td>API integration tests, E2E (Playwright), component tests</td>
+          </tr>
+          <tr>
+            <td><span class="sev-low">P3</span></td>
+            <td>Security headers, encrypt at rest, CSRF, DB validation</td>
+            <td>—</td>
+            <td>Game refactor, chat wiring, CDN, pipeline status, SDK dedup</td>
+            <td>CDN for assets, deterministic demos, component splits, i18n</td>
+          </tr>
+          <tr>
+            <td><span style="color:var(--pink);">Advanced</span></td>
+            <td>RAG pipeline, NL analytics, content calendar, anomaly detection, Stripe, referral</td>
+            <td>—</td>
+            <td>—</td>
+            <td>Stripe, BullMQ, WebSocket events, webhooks</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== 10. VERDICT ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">💬</span>
+      <h2>10. Verdict Setiap Reviewer</h2>
+    </div>
+    <div class="section-body">
+      <div class="verdict-row">
+        <div class="verdict-card" style="border-top:3px solid var(--qwen);">
+          <div class="v-reviewer" style="color:var(--qwen);">Qwen Code</div>
+          <div class="v-quote">"Strong foundation, needs serious hardening. Platform fundamentally cannot serve real users without User model."</div>
+        </div>
+        <div class="verdict-card" style="border-top:3px solid var(--gemini);">
+          <div class="v-reviewer" style="color:var(--gemini);">Gemini CLI</div>
+          <div class="v-quote">"Seni bina AI yang kebal. Kualiti UI top-tier. Tapi perlu ubah polling ke WebSocket dan lengkapkan A2A pipeline."</div>
+        </div>
+        <div class="verdict-card" style="border-top:3px solid var(--codex);">
+          <div class="v-reviewer" style="color:var(--codex);">Codex CLI</div>
+          <div class="v-quote">"Brain kaya dengan bahan tapi belum cukup kemas. Perlu manifest pusat, retention policy, dan metadata enrichment."</div>
+        </div>
+        <div class="verdict-card" style="border-top:3px solid var(--claude);">
+          <div class="v-reviewer" style="color:var(--claude);">Claude Code</div>
+          <div class="v-quote">"Solid foundation. Critical gaps are operational, not architectural: fake data, no validation, no User model, zero tests."</div>
+        </div>
+        <div class="verdict-card" style="border-top:3px solid var(--opus);">
+          <div class="v-reviewer" style="color:var(--opus);">Opus Review</div>
+          <div class="v-quote">"Feature-rich with strong AI integration but critical infrastructure gaps for production. 5 issues fixed, 5 still pending."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 11. KESIMPULAN ===== -->
+  <div class="section">
+    <div class="section-header">
+      <span class="icon">🏁</span>
+      <h2>11. KESIMPULAN: Pelan Tindakan Untuk Improve Projek TheViralFinds</h2>
+    </div>
+    <div class="section-body">
+      <div class="conclusion">
+        <h3>Kesimpulan Berdasarkan Konsensus 5 AI Reviewer</h3>
+        <p style="font-size:0.9em; color:var(--text-dim); margin-bottom:20px;">
+          Lima reviewer berbeza (Qwen, Gemini, Codex, Claude Code, Opus) telah mengaudit projek TheViralFinds dari perspektif unik masing-masing. Walaupun fokus dan skor berbeza, <strong>semua bersetuju pada 3 kelemahan kritikal</strong>: tiada User model, testing hampir sifar, dan kelemahan security. Berikut adalah pelan tindakan gabungan yang menggabungkan insight dari kelima-lima reviewer:
+        </p>
+
+        <div class="conclusion-grid">
+
+          <div class="conclusion-card">
+            <div class="cc-phase">FASE 1: KESELAMATAN & DATA (Minggu 1-2) — P0</div>
+            <ul>
+              <li>Buang Math.random() dari DB service — ganti dengan data sebenar atau null (Claude Code)</li>
+              <li>Tambah Zod validation ke DB service — elak mass assignment (Qwen + Claude Code)</li>
+              <li>Wajibkan DB_SERVICE_SECRET — tiada bypass (Qwen + Claude Code + Opus)</li>
+              <li>Fix Buffer.from() → btoa() di qrcode.ts — elak crash browser (Qwen)</li>
+              <li>Fix SDK fallback role: 'assistant' → 'system' — elak prompt injection (Claude Code)</li>
+              <li>Ganti process.exit(1) dengan typed error di env.ts (Claude Code)</li>
+              <li>Tambah Security Headers ke next.config.ts (Qwen + Claude Code + Opus)</li>
+              <li>Buang hardcoded credentials dan auto-sign-in (Qwen + Gemini + Opus)</li>
+              <li>Buang orphan images (14.2MB) dan SKIP_AUTH (Opus)</li>
+            </ul>
+          </div>
+
+          <div class="conclusion-card">
+            <div class="cc-phase">FASE 2: USER MODEL & MULTI-TENANCY (Minggu 2-4) — P0</div>
+            <ul>
+              <li>Tambah User model ke Prisma schema dengan Role, Tier, Session (Qwen + Opus)</li>
+              <li>Tambah userId FK ke semua data models (Link, Campaign, Payout, dll)</li>
+              <li>Update semua 69 API routes untuk filter by userId (Opus)</li>
+              <li>Build registration + OAuth flow (Qwen)</li>
+              <li>Force password change on first login (Qwen)</li>
+              <li>Move admin email ke env var ADMIN_EMAIL (Claude Code)</li>
+              <li>Fix updateSettingsSchema — whitelist keys sahaja (Claude Code)</li>
+            </ul>
+          </div>
+
+          <div class="conclusion-card">
+            <div class="cc-phase">FASE 3: INFRA & TESTING (Minggu 4-6) — P1</div>
+            <ul>
+              <li>Redis (Upstash) untuk rate limiting + caching (Qwen + Claude Code + Opus)</li>
+              <li>CI/CD pipeline — GitHub Actions: lint, typecheck, test, build (Claude Code + Opus)</li>
+              <li>Test suite: API integration tests (top 20 routes), E2E (Playwright) (Opus)</li>
+              <li>Fix N+1 query pattern — guna Prisma _sum aggregation (Qwen)</li>
+              <li>API versioning: /api/v1/ prefix (Qwen)</li>
+              <li>Enable reactStrictMode: true (Opus)</li>
+              <li>Delete dead code: config.ts, db-timeout.ts, app-layout.tsx, activePage state (Claude Code + Opus)</li>
+              <li>Fix health endpoint version mismatch (Claude Code + Opus)</li>
+              <li>Ganti polling 3 saat → Socket.IO di Agent Office (Gemini)</li>
+            </ul>
+          </div>
+
+          <div class="conclusion-card">
+            <div class="cc-phase">FASE 4: AI & REAL-TIME (Minggu 6-8) — P2</div>
+            <ul>
+              <li>Lengkapkan A2A pipeline: tambah aggregator + reporter agents (Gemini)</li>
+              <li>Wire game chat ke OpenClaw gateway sebenar (Claude Code + Gemini)</li>
+              <li>Fix pipeline error status — success/partial/failed (Claude Code)</li>
+              <li>Lazy WebSocket initialization — getWsClient() pattern (Claude Code)</li>
+              <li>Buka Shopee API credentials — register, payment, affiliate access (Claude Code)</li>
+              <li>Fix DELETE-with-body di cron route — guna URL param (Claude Code)</li>
+            </ul>
+          </div>
+
+          <div class="conclusion-card">
+            <div class="cc-phase">FASE 5: PERFORMANCE & UX (Minggu 8-10) — P3</div>
+            <ul>
+              <li>CDN untuk game assets (13.2MB) — Cloudflare R2/BunnyCDN (Opus)</li>
+              <li>Deterministic demo data — ganti Math.random dengan seed (Opus)</li>
+              <li>Split large components: agent-profile (981 lines), openclaw-page (846 lines) (Opus)</li>
+              <li>Setup next-intl atau remove dependency (Opus)</li>
+              <li>Fix ESLint warnings (70) dan re-enable critical rules (Opus)</li>
+              <li>Encrypt sensitive data at rest (Payout bank details) (Qwen)</li>
+              <li>CSRF protection untuk mutations (Qwen)</li>
+            </ul>
+          </div>
+
+          <div class="conclusion-card">
+            <div class="cc-phase">FASE 6: MONETIZATION & ADVANCED (Minggu 10+) — Backlog</div>
+            <ul>
+              <li>Stripe subscription system dengan tier enforcement (Qwen + Opus)</li>
+              <li>Referral system dengan credits (Qwen)</li>
+              <li>RAG pipeline (Pinecone) untuk semantic product search (Qwen)</li>
+              <li>Natural language analytics — "Show me top 5 links" → chart (Qwen)</li>
+              <li>AI content calendar — auto-generate weekly social media (Qwen)</li>
+              <li>Anomaly detection — bot traffic, conversion drops (Qwen)</li>
+              <li>Multi-platform: Lazada + TikTok Shop + Amazon (Qwen)</li>
+              <li>Competitive intelligence dashboard dengan benchmarks (Qwen)</li>
+              <li>Brain directory reorganization — manifest, metadata, retention (Codex)</li>
+            </ul>
+          </div>
+
+        </div>
+
+        <div style="margin-top:24px; padding:16px; background:rgba(0,206,201,0.08); border:1px solid rgba(0,206,201,0.3); border-radius:8px;">
+          <h4 style="color:var(--green); margin-bottom:8px;">Quick Wins Boleh Buat HARI INI (< 2 jam)</h4>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:8px; font-size:0.85em;">
+            <div style="padding:6px 0;"><span style="color:var(--red);">&#9632;</span> Fix Buffer → btoa() (10 min) — <em>Qwen</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--red);">&#9632;</span> Tambah DB indexes (15 min) — <em>Qwen</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--red);">&#9632;</span> Delete orphan images 14.2MB (15 min) — <em>Opus</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--red);">&#9632;</span> Fix health version mismatch (15 min) — <em>Claude+Opus</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--orange);">&#9632;</span> Add security headers (30 min) — <em>Qwen+Opus</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--orange);">&#9632;</span> Remove hardcoded creds (30 min) — <em>Qwen</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--orange);">&#9632;</span> Delete app-layout.tsx dead code (20 min) — <em>Qwen+Opus</em></div>
+            <div style="padding:6px 0;"><span style="color:var(--yellow);">&#9632;</span> Remove SKIP_AUTH + activePage (15 min) — <em>Opus</em></div>
+          </div>
+          <div style="margin-top:10px; font-weight:700; color:var(--green); font-size:0.9em;">
+            Jumlah: ~2 jam → Security + Performance boost segera
+          </div>
+        </div>
+
+        <div style="margin-top:20px; padding:16px; background:rgba(108,92,231,0.08); border:1px solid rgba(108,92,231,0.3); border-radius:8px;">
+          <h4 style="color:var(--accent2); margin-bottom:8px;">Core Pattern: Stop Planning, Start Executing</h4>
+          <p style="font-size:0.88em; color:var(--text-dim);">
+            Brain directory mendedahkan corak membimbangkan: <strong>5 review cycles berturut-turut telah mencadangkan masalah yang sama</strong> tanpa pelaksanaan. Isu "Tiada User model" telah dicadangkan 5 kali sejak 10 April. Test coverage masih 0.5% selepas 4 cadangan. <br><br>
+            <strong>Pesan utama dari konsensus 5 AI:</strong> Jangan buat review lagi. Buat Fase 1 & 2 sekarang. Setiap hari tertangguh, migration User model jadi lebih painful kerana lebih data perlu di-migrate.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center; padding:40px 20px; color:var(--text-dim); font-size:0.8em; border-top:1px solid var(--border); margin-top:30px;">
+    <p>Dijana oleh Claude Code (Opus 4.6) berdasarkan analisis 5 review files</p>
+    <p>Qwen-Review.md | Gemini-Review.md | Codex-Review.md | ClaudeCode-Review.md | Opus-Review.md</p>
+    <p style="margin-top:8px;">TheViralFinds PROJECT-6 &mdash; 12 April 2026</p>
+  </div>
+
+</div>
+
+<script>
+function switchTab(group, index) {
+  const parent = document.getElementById(group + '-' + index)?.parentElement;
+  if (!parent) return;
+
+  // Deactivate all tabs in this group
+  parent.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  parent.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+  // Activate selected
+  parent.querySelectorAll('.tab-btn')[index]?.classList.add('active');
+  const target = document.getElementById(group + '-' + index);
+  if (target) target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

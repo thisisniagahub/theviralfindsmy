@@ -1,33 +1,30 @@
 /**
  * Worker entity for Shopee Office agents.
  * Handles movement, idle wandering, emotes, chat bubbles, and task management.
- * Inspired by agent-town's Worker class with modular sub-systems.
+ * Modularized with sub-systems for movement, idle, and tasks.
  */
 
 import * as Phaser from 'phaser'
 import { ChatBubble } from './ChatBubble'
 import type { Pathfinder, PathPoint } from '../utils/Pathfinder'
 import { agentStateTracker } from '../../agent-state-machine'
+import { STATUS_COLORS, type AgentStatus } from '../../types'
+import { gameEvents } from '../events'
 import {
-  WANDER_MIN_DELAY,
-  WANDER_MAX_DELAY,
   WANDER_INITIAL_MIN,
   WANDER_INITIAL_MAX,
-  WORKER_SPEED_FACTOR,
-  ARRIVE_THRESHOLD,
-  STUCK_FRAME_LIMIT,
-  POI_WANDER_CHANCE,
-  POI_STAY_MIN,
-  POI_STAY_MAX,
-  STAGGER_EXTRA_MIN,
-  STAGGER_EXTRA_MAX,
-  SEAT_ACTIVITIES,
-  POI_BUBBLE_TEXTS,
 } from '../config'
 import type { POI } from '../config'
 
-// ===== Worker Types (extended to match agent-state-machine.ts 10 states) =====
-export type WorkerStatus = 'idle' | 'writing' | 'researching' | 'executing' | 'syncing' | 'error' | 'thinking' | 'collaborating' | 'reporting' | 'break'
+const OVERHEAD_DEPTH = 950
+
+// Import sub-module logic
+import { updateMovement, navigateTo, navigateHome } from './worker/movement'
+import { scheduleWander, stopIdleActivity } from './worker/idle'
+import { getRandomTaskMessage } from './worker/task'
+
+// ===== Worker Types =====
+export type WorkerStatus = AgentStatus
 
 export interface QueuedTask {
   runId: string
@@ -40,7 +37,7 @@ export interface WorkerCtx {
   scene: Phaser.Scene
   seatId: string
   label: string
-  spriteKey: string
+  textureKey: string
   homeX: number
   homeY: number
   initialFacing: string
@@ -58,6 +55,7 @@ export interface WorkerCtx {
   pathfinder: Pathfinder | null
   canWander: boolean
   isWandering: boolean
+  isMoving: boolean
   pois: POI[]
   wanderTimer: Phaser.Time.TimerEvent | null
   activityTimer: Phaser.Time.TimerEvent | null
@@ -68,264 +66,18 @@ export interface WorkerCtx {
   taskQueue: QueuedTask[]
   taskVisualTimer: Phaser.Time.TimerEvent | null
   bubble: ChatBubble
-}
-
-// ===== Status Colors (all 10 states) =====
-const STATUS_COLORS: Record<WorkerStatus, number> = {
-  idle: 0x22c55e,
-  writing: 0xf97316,
-  researching: 0xa855f7,
-  executing: 0xeab308,
-  syncing: 0x3b82f6,
-  error: 0xef4444,
-  thinking: 0x06b6d4,
-  collaborating: 0xec4899,
-  reporting: 0x8b5cf6,
-  break: 0x6b7280,
-}
-
-// ===== Wander Clock (stagger wandering so agents don't all move at once) =====
-const wanderClock = { lastStartedAt: -Infinity }
-
-export function resetWanderClock() {
-  wanderClock.lastStartedAt = -Infinity
-}
-
-function poiBubbleText(poiName: string): string {
-  const lower = poiName.toLowerCase()
-  for (const [keyword, texts] of Object.entries(POI_BUBBLE_TEXTS)) {
-    if (lower.includes(keyword)) {
-      return texts[Math.floor(Math.random() * texts.length)]
-    }
-  }
-  return `At ${poiName}~`
-}
-
-// ===== Idle Behavior =====
-function stopIdleActivity(ctx: WorkerCtx) {
-  if (ctx.wanderTimer) {
-    ctx.wanderTimer.destroy()
-    ctx.wanderTimer = null
-  }
-  if (ctx.activityTimer) {
-    ctx.activityTimer.destroy()
-    ctx.activityTimer = null
-  }
-  ctx.onArrival = null
-  ctx.isWandering = false
-  ctx.interactionLocked = false
-}
-
-function scheduleWander(ctx: WorkerCtx) {
-  stopIdleActivity(ctx)
-  if (!ctx.canWander || ctx._status !== 'idle') return
-
-  const delay = Phaser.Math.Between(WANDER_MIN_DELAY, WANDER_MAX_DELAY)
-  ctx.wanderTimer = ctx.scene.time.delayedCall(delay, () => {
-    tryStartWander(ctx)
-  })
-}
-
-function tryStartWander(ctx: WorkerCtx) {
-  if (!ctx.canWander || ctx._status !== 'idle') return
-
-  const now = ctx.scene.time.now
-  const sinceLast = now - wanderClock.lastStartedAt
-  if (sinceLast < 1800) {
-    const extraDelay = 1800 - sinceLast + Phaser.Math.Between(STAGGER_EXTRA_MIN, STAGGER_EXTRA_MAX)
-    ctx.wanderTimer = ctx.scene.time.delayedCall(extraDelay, () => {
-      tryStartWander(ctx)
-    })
-    return
-  }
-
-  wanderClock.lastStartedAt = now
-  startWander(ctx)
-}
-
-function startWander(ctx: WorkerCtx) {
-  const goToPoi = ctx.pois.length > 0 && Math.random() < POI_WANDER_CHANCE
-  if (goToPoi) {
-    wanderToPoi(ctx)
-  } else {
-    seatActivity(ctx)
-  }
-}
-
-function wanderToPoi(ctx: WorkerCtx) {
-  const poi = Phaser.Utils.Array.GetRandom(ctx.pois) as POI
-  ctx.isWandering = true
-  ctx.arrivalFacing = poi.facing ?? null
-
-  ctx.onArrival = () => {
-    if (ctx._status !== 'idle' || !ctx.canWander) return
-    ctx.bubble?.show(poiBubbleText(poi.name), ctx.sprite.x, ctx.sprite.y - 50, POI_STAY_MIN)
-
-    const stayDuration = Phaser.Math.Between(POI_STAY_MIN, POI_STAY_MAX)
-    ctx.activityTimer = ctx.scene.time.delayedCall(stayDuration, () => {
-      if (ctx._status !== 'idle' || !ctx.canWander) return
-      ctx.onArrival = () => {
-        ctx.isWandering = false
-        scheduleWander(ctx)
-      }
-      navigateHome(ctx)
-      ctx.activityTimer = null
-    })
-  }
-
-  navigateTo(ctx, poi.x, poi.y, { x: poi.x, y: poi.y })
-}
-
-function seatActivity(ctx: WorkerCtx) {
-  const def = Phaser.Utils.Array.GetRandom(SEAT_ACTIVITIES) as (typeof SEAT_ACTIVITIES)[number]
-  const duration = Phaser.Math.Between(def.minDuration, def.maxDuration)
-
-  // Show emote as text above the agent
-  const emoteSymbols: Record<string, string> = {
-    sleep: '💤',
-    thinking: '🤔',
-    device: '💻',
-    star: '⭐',
-    heart: '❤️',
-    music: '🎵',
-    confused: '❓',
-    angry: '😡',
-  }
-  const symbol = emoteSymbols[def.emote] || '...'
-  ctx.bubble?.show(`${symbol} ${def.bubbles[0]}`, ctx.sprite.x, ctx.sprite.y - 50, duration)
-
-  ctx.activityTimer = ctx.scene.time.delayedCall(duration, () => {
-    if (ctx._status !== 'idle' || !ctx.canWander) return
-    scheduleWander(ctx)
-    ctx.activityTimer = null
-  })
-}
-
-// ===== Movement =====
-function updateMovement(ctx: WorkerCtx) {
-  if (!ctx.moveTarget) return
-
-  const dx = ctx.moveTarget.x - ctx.sprite.x
-  const dy = ctx.moveTarget.y - ctx.sprite.y
-  const dist = Math.sqrt(dx * dx + dy * dy)
-
-  // Check if stuck
-  if (dist > 2) {
-    const moved = Math.abs(ctx.sprite.x - ctx.lastX) + Math.abs(ctx.sprite.y - ctx.lastY)
-    if (moved < 0.5) {
-      ctx.stuckFrames++
-      if (ctx.stuckFrames > STUCK_FRAME_LIMIT) {
-        // Unstick: go home
-        ctx.moveTarget = null
-        ctx.currentPath = []
-        navigateHome(ctx)
-        ctx.stuckFrames = 0
-        return
-      }
-    } else {
-      ctx.stuckFrames = 0
-    }
-  }
-  ctx.lastX = ctx.sprite.x
-  ctx.lastY = ctx.sprite.y
-
-  // Follow path
-  if (ctx.currentPath.length > 0 && ctx.pathIndex < ctx.currentPath.length) {
-    const waypoint = ctx.currentPath[ctx.pathIndex]
-    const wdx = waypoint.x - ctx.sprite.x
-    const wdy = waypoint.y - ctx.sprite.y
-    const wdist = Math.sqrt(wdx * wdx + wdy * wdy)
-
-    if (wdist < ARRIVE_THRESHOLD) {
-      ctx.pathIndex++
-      if (ctx.pathIndex >= ctx.currentPath.length) {
-        ctx.moveTarget = null
-        ctx.currentPath = []
-        if (ctx.onArrival) {
-          const cb = ctx.onArrival
-          ctx.onArrival = null
-          cb()
-        }
-      }
-      return
-    }
-
-    const speed = 80 * WORKER_SPEED_FACTOR
-    let vx = (wdx / wdist) * speed
-    let vy = (wdy / wdist) * speed
-
-    // Normalize diagonal movement
-    if (vx !== 0 && vy !== 0) {
-      const factor = Math.SQRT1_2
-      vx *= factor
-      vy *= factor
-    }
-
-    const body = ctx.sprite.body as Phaser.Physics.Arcade.Body
-    body.setVelocity(vx, vy)
-
-    // Update facing
-    if (Math.abs(wdx) > Math.abs(wdy)) {
-      ctx.facing = wdx > 0 ? 'right' : 'left'
-    } else {
-      ctx.facing = wdy > 0 ? 'down' : 'up'
-    }
-  } else {
-    // Direct movement (fallback)
-    if (dist < ARRIVE_THRESHOLD) {
-      const body = ctx.sprite.body as Phaser.Physics.Arcade.Body
-      body.setVelocity(0, 0)
-      ctx.moveTarget = null
-      if (ctx.onArrival) {
-        const cb = ctx.onArrival
-        ctx.onArrival = null
-        cb()
-      }
-    } else {
-      const speed = 80 * WORKER_SPEED_FACTOR
-      let vx = (dx / dist) * speed
-      let vy = (dy / dist) * speed
-
-      // Normalize diagonal movement
-      if (vx !== 0 && vy !== 0) {
-        const factor = Math.SQRT1_2
-        vx *= factor
-        vy *= factor
-      }
-
-      const body = ctx.sprite.body as Phaser.Physics.Arcade.Body
-      body.setVelocity(vx, vy)
-    }
-  }
-}
-
-function navigateTo(ctx: WorkerCtx, x: number, y: number, _facePoi?: { x: number; y: number }) {
-  if (ctx.pathfinder) {
-    const path = ctx.pathfinder.findPath(ctx.sprite.x, ctx.sprite.y, x, y)
-    if (path && path.length > 1) {
-      ctx.currentPath = path
-      ctx.pathIndex = 1 // Skip first point (current position)
-      ctx.moveTarget = { x: path[path.length - 1].x, y: path[path.length - 1].y }
-      return
-    }
-  }
-  // Fallback: direct movement
-  ctx.currentPath = []
-  ctx.moveTarget = { x, y }
-}
-
-function navigateHome(ctx: WorkerCtx) {
-  navigateTo(ctx, ctx.homeX, ctx.homeY)
-  ctx.isReturningHome = true
+  emoteSprite: Phaser.GameObjects.Sprite | null
 }
 
 // ===== Main Worker Class =====
 export class Worker implements WorkerCtx {
   sprite: Phaser.Physics.Arcade.Sprite
   bubble: ChatBubble
+  emoteSprite: Phaser.GameObjects.Sprite | null = null
+
   readonly seatId: string
   readonly label: string
-  readonly spriteKey: string
+  readonly textureKey: string
   readonly homeX: number
   readonly homeY: number
   readonly scene: Phaser.Scene
@@ -348,6 +100,7 @@ export class Worker implements WorkerCtx {
   // Idle / wander
   canWander = true
   isWandering = false
+  isMoving = false
   pois: POI[] = []
   wanderTimer: Phaser.Time.TimerEvent | null = null
   activityTimer: Phaser.Time.TimerEvent | null = null
@@ -376,43 +129,36 @@ export class Worker implements WorkerCtx {
     seatId: string,
     label: string,
     emoji: string,
-    agentColor: number,
+    _agentColor: number,
+    textureKey: string = 'worker_male_1',
     facing: string = 'down',
   ) {
     this.scene = scene
     this.seatId = seatId
     this.label = label
-    this.spriteKey = seatId
     this.facing = facing
     this.initialFacing = facing
     this.homeX = x
     this.homeY = y
 
-    // Create agent sprite (colored circle with emoji)
-    const gfx = scene.add.graphics()
-    gfx.fillStyle(agentColor, 0.85)
-    gfx.fillCircle(24, 24, 24)
-    gfx.fillStyle(0x000000, 0.4)
-    gfx.fillCircle(24, 24, 26)
-    gfx.fillStyle(agentColor, 0.85)
-    gfx.fillCircle(24, 24, 23)
-    gfx.generateTexture(`agent_${seatId}`, 48, 48)
-    gfx.destroy()
+    // FIX: Add texture fallback to prevent "pink box" issues
+    this.textureKey = scene.textures.exists(textureKey) ? textureKey : 'worker_male_1'
 
-    this.sprite = scene.physics.add.sprite(x, y, `agent_${seatId}`)
+    // Create the sprite using the validated textureKey
+    this.sprite = scene.physics.add.sprite(x, y, this.textureKey)
     this.sprite.setDepth(5)
+    
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
-    body.setSize(20, 10)
-    body.setOffset(14, 38)
+    body.setSize(32, 16)
+    body.setOffset(16, 48)
     body.allowGravity = false
     body.pushable = false
     body.mass = 999
 
-    // Emoji on top
-    const emojiText = scene.add.text(x, y - 2, emoji, {
-      fontSize: '28px',
+    // Overlay emoji as a floating item above head
+    const emojiText = scene.add.text(x, y - 32, emoji, {
+      fontSize: '24px',
     }).setOrigin(0.5, 0.5).setDepth(6)
-    // Store reference for position updates
     this.sprite.setData('emojiText', emojiText)
 
     // Name tag
@@ -464,6 +210,29 @@ export class Worker implements WorkerCtx {
     })
   }
 
+
+  // ===== Movement =====
+  private updateBobble() {
+    if (this.isMoving) {
+      if (this.bobbleTween?.isPlaying()) return
+      this.bobbleTween = this.scene.tweens.add({
+        targets: this.sprite,
+        y: '-=4',
+        duration: 200,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      })
+    } else {
+      if (this.bobbleTween && this._status === 'idle') {
+        this.bobbleTween.stop()
+        this.bobbleTween.remove() // FIX: Explicitly remove to prevent leaks
+        this.bobbleTween = null
+        this.sprite.setY(this.sprite.y)
+      }
+    }
+  }
+
   // ===== Status =====
   get status(): WorkerStatus {
     return this._status
@@ -471,13 +240,22 @@ export class Worker implements WorkerCtx {
 
   setStatus(status: WorkerStatus) {
     if (this._status === status) return
-    this._status = status
-    
-    // Record state change in tracker
-    agentStateTracker.recordStateChange(this.seatId, status as any)
 
-    const colors: Record<WorkerStatus, number> = STATUS_COLORS
-    this.statusDot.setFillStyle(colors[status])
+    this._status = status
+
+    // Record state change in tracker
+    agentStateTracker.recordStateChange(this.seatId, status)
+    
+    // FIX: Emit status change event immediately for event-driven UI updates
+    gameEvents.emit('agent-status-changed', this.seatId, status)
+
+    this.statusDot.setFillStyle(STATUS_COLORS[status].hex)
+
+    // Trigger context-aware bubble when transitioning to an active state
+    if (status !== 'idle') {
+      const msg = getRandomTaskMessage(status)
+      this.bubble.show(msg, this.sprite.x, this.sprite.y - 12)
+    }
 
     if (status === 'idle') {
       this.stopBobble()
@@ -496,7 +274,7 @@ export class Worker implements WorkerCtx {
     } else {
       stopIdleActivity(this)
       this.canWander = false
-      this.startBobble()
+      if (!this.isMoving) this.startBobble()
     }
   }
 
@@ -516,9 +294,8 @@ export class Worker implements WorkerCtx {
   private stopBobble() {
     if (this.bobbleTween) {
       this.bobbleTween.stop()
+      this.bobbleTween.remove() // FIX: Explicitly remove to prevent leaks
       this.bobbleTween = null
-      // Reset positions to home/current
-      this.sprite.setY(this.sprite.y)
     }
   }
 
@@ -533,9 +310,12 @@ export class Worker implements WorkerCtx {
         repeat: -1
       })
     } else {
-      this.glowTween?.stop()
-      this.glowTween = null
-      this.sprite.setAlpha(1)
+      if (this.glowTween) {
+        this.glowTween.stop()
+        this.glowTween.remove() // FIX: Explicitly remove to prevent leaks
+        this.glowTween = null
+        this.sprite.setAlpha(1)
+      }
     }
   }
 
@@ -556,6 +336,34 @@ export class Worker implements WorkerCtx {
     this.bubble.show(message, this.sprite.x, this.sprite.y - 50, ttl)
   }
 
+  playEmote(emoteKey: string, duration = 2000) {
+    if (!this.emoteSprite) {
+      this.emoteSprite = this.scene.add.sprite(this.sprite.x, this.sprite.y - 48, 'emotes')
+      this.emoteSprite.setDepth(OVERHEAD_DEPTH)
+    }
+    this.emoteSprite.setVisible(true)
+    this.emoteSprite.play(emoteKey)
+
+    if (duration > 0) {
+      this.scene.time.delayedCall(duration, () => {
+        if (this.emoteSprite) this.emoteSprite.setVisible(false)
+      })
+    }
+  }
+
+  assignTask(runId: string, message: string) {
+    this.assignedRunId = runId
+    this.currentTaskMessage = message
+    this.setStatus('executing')
+    this.showBubble(`📋 ${message}`)
+    
+    // FIX: Walk home if away from desk when assigned a task
+    const distToHome = Phaser.Math.Distance.Between(this.sprite.x, this.sprite.y, this.homeX, this.homeY)
+    if (this.isWandering || distToHome > 16) {
+      navigateHome(this)
+    }
+  }
+
   // ===== Pause/Resume =====
   pause() {
     if (this.paused) return
@@ -567,25 +375,59 @@ export class Worker implements WorkerCtx {
   resume() {
     if (!this.paused) return
     this.paused = false
-    // Movement will resume in the next update
   }
 
   // ===== Update =====
   update() {
     if (!this.paused) updateMovement(this)
+    this.updateBobble()
 
     const emojiText = this.sprite.getData('emojiText') as Phaser.GameObjects.Text | undefined
     if (emojiText) {
-      emojiText.setPosition(this.sprite.x, this.sprite.y - 2)
+      emojiText.setPosition(this.sprite.x, this.sprite.y - 48)
+      emojiText.y += Math.sin(this.scene.time.now / 400) * 3
     }
 
-    this.nameTag.setPosition(this.sprite.x, this.sprite.y + 30)
-    this.statusDot.setPosition(this.sprite.x - 20, this.sprite.y + 34)
+    if (this.emoteSprite && this.emoteSprite.visible) {
+      this.emoteSprite.setPosition(this.sprite.x, this.sprite.y - 48)
+      this.emoteSprite.y += Math.sin(this.scene.time.now / 300) * 2
+    }
 
-    // Update task status text
-    const hasTask = this.assignedRunId || this.taskQueue.length > 0
+    // Update animation based on movement and state
+    if (this.isMoving) {
+      const animKey = `${this.textureKey}_walk_${this.facing}`
+      // FIX: Add animation validation to prevent errors if keys are missing
+      if (this.scene.anims.exists(animKey) && this.sprite.anims.currentAnim?.key !== animKey) {
+        this.sprite.play(animKey)
+      }
+    } else {
+      const isWorking = this._status !== 'idle'
+      if (isWorking) {
+        const workAnimKey = `${this.textureKey}_work`
+        if (this.scene.anims.exists(workAnimKey) && this.sprite.anims.currentAnim?.key !== workAnimKey) {
+          this.sprite.play(workAnimKey)
+        }
+      } else {
+        const idleAnimKey = `${this.textureKey}_idle_${this.facing}`
+        if (this.scene.anims.exists(idleAnimKey) && this.sprite.anims.currentAnim?.key !== idleAnimKey) {
+          this.sprite.play(idleAnimKey)
+        }
+      }
+    }
+
+    // Y-sorting (Depth Management)
+    this.sprite.setDepth(this.sprite.y)
+    
+    // UI elements should stay slightly above the sprite's base depth
+    const uiDepth = this.sprite.y + 10
+    this.nameTag.setDepth(uiDepth)
+    this.statusDot.setDepth(uiDepth + 1)
+
     if (this.taskStatusText) {
+      this.taskStatusText.setDepth(uiDepth)
       this.taskStatusText.setPosition(this.sprite.x, this.sprite.y + 44)
+      
+      const hasTask = this.assignedRunId || this.taskQueue.length > 0
       if (hasTask) {
         const parts: string[] = []
         if (this.currentTaskMessage) {
@@ -594,17 +436,18 @@ export class Worker implements WorkerCtx {
             : this.currentTaskMessage
           parts.push(`📋 ${snip}`)
         }
-        if (this.taskQueue.length > 0) {
-          parts.push(`Queue: ${this.taskQueue.length}`)
-        }
-        this.taskStatusText.setText(parts.join(' | '))
-        this.taskStatusText.setVisible(true)
+        if (this.taskQueue.length > 0) parts.push(`Queue: ${this.taskQueue.length}`)
+        this.taskStatusText.setText(parts.join(' | ')).setVisible(true)
       } else {
         this.taskStatusText.setVisible(false)
       }
     }
+    
+    this.bubble.setDepth(2000)
 
-    this.bubble.updatePosition(this.sprite.x, this.sprite.y - 50)
+    this.nameTag.setPosition(this.sprite.x, this.sprite.y + 30)
+    this.statusDot.setPosition(this.sprite.x - 20, this.sprite.y + 34)
+    this.bubble.updatePosition(this.sprite.x, this.sprite.y - 12)
   }
 
   // ===== Cleanup =====
@@ -618,12 +461,28 @@ export class Worker implements WorkerCtx {
       this.taskVisualTimer.destroy()
       this.taskVisualTimer = null
     }
+
+    // FIX: Properly destroy emojiText to prevent leaks
+    const emojiText = this.sprite.getData('emojiText')
+    emojiText?.destroy()
+
+    // FIX: Clean up health bar elements
+    this.sprite.getData('healthBar')?.destroy()
+    this.sprite.getData('healthBarBg')?.destroy()
+
     this.sprite.destroy()
     this.nameTag.destroy()
     this.taskStatusText.destroy()
     this.statusDot.destroy()
+    
+    // FIX: Safely clean up tweens
     this.stopBobble()
-    this.glowTween?.stop()
+    if (this.glowTween) {
+      this.glowTween.stop()
+      this.glowTween.remove()
+      this.glowTween = null
+    }
+
     this.bubble.destroy()
     this.pathfinder = null
     this.onArrival = null

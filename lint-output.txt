@@ -1,0 +1,249 @@
+$ eslint .
+
+G:\PROJECT-6\.external\openai-computer-use\src\run.mjs
+   13:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  294:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  295:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  296:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  297:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  361:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  362:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  371:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  374:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  383:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  405:7  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  414:3  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+G:\PROJECT-6\chrome-extension\content.js
+  11:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\mini-services\db-service\index.ts
+   37:41  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  107:16  warning  'verifyOwnership' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  108:24  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  579:1   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  582:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+G:\PROJECT-6\mini-services\db-service\routes\dashboard.ts
+  8:37  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\mini-services\db-service\routes\index.ts
+   44:41  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   91:43  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  119:39  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  159:37  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  202:40  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  215:65  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  237:45  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  278:40  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  324:42  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  357:46  warning  'req' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\mini-services\db-service\routes\links.ts
+  6:61  warning  'getBody' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  9:37  warning  'req' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\mini-services\notification-service\index.ts
+   73:13  warning  'amount' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  130:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  139:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  156:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  164:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  170:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  172:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  178:3   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  180:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+G:\PROJECT-6\src\app\api\agents\route.ts
+  139:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\auth\[...nextauth]\route.ts
+   7:10  warning  'redisRateLimiter' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+   8:10  warning  'RATE_LIMITS' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+   9:10  warning  'NextResponse' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  10:15  warning  'NextRequest' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\click-stats\route.ts
+  1:10  warning  'NextRequest' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\a2a-proxy\route.ts
+  152:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u    @typescript-eslint/no-unused-vars
+  229:7   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+G:\PROJECT-6\src\app\api\openclaw\ai-content\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\ai-insights\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\ai-keywords\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\analyze\route.ts
+  7:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\competitor\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\cron\route.ts
+  25:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  57:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\mcp-proxy\route.ts
+  80:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\price-track\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\smart-scheduler\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\stream\route.ts
+  8:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\trending\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\openclaw\web-reader\route.ts
+  13:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\reports\generate\route.ts
+  83:11  warning  'auth' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\shopee-office\agents\route.ts
+  56:11  warning  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\shopee-office\join\route.ts
+  34:11  warning  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\shopee-office\status\route.ts
+  31:11  warning  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\app\api\social-scheduler\route.ts
+   15:40  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   39:63  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   52:27  warning  'request' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+   60:33  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   61:31  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+   71:11  warning  'userId' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  103:37  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\app\login\page.tsx
+  12:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\dashboard\widget-customizer.tsx
+  25:32  warning  'WidgetDef' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\merchant-switcher.tsx
+  4:23  warning  'ShoppingBag' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\pages\agent-office-page.tsx
+  5:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\pages\settings\affiliate-profile.tsx
+  11:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  15:9   warning  'Link2' is defined but never used. Allowed unused vars must match /^_/u              @typescript-eslint/no-unused-vars
+  15:16  warning  'MousePointerClick' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  15:35  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  15:47  warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\pricing\pricing-page.tsx
+  7:22  warning  'TierId' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  7:30  warning  'hasFeature' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\pwa\install-prompt.tsx
+   5:35  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  10:56  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\components\pwa\pwa-provider.tsx
+  11:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  13:9  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+G:\PROJECT-6\src\components\shopee-office\activity-timeline.tsx
+  99:18  warning  'setIsLive' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\shopee-office\game\SceneEventBridge.ts
+   2:15  warning  'Worker' is defined but never used. Allowed unused vars must match /^_/u           @typescript-eslint/no-unused-vars
+  18:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  30:5   warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+  44:34  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\components\shopee-office\game\entities\Worker.ts
+  477:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\components\shopee-office\isometric-office.tsx
+  3:41  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  4:18  warning  'AnimatePresence' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\shopee-office\office-health-card.tsx
+  114:9  warning  'totalTasks' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\shopee-office\phaser-game.tsx
+   73:29  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+   74:22  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+   75:26  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+   76:32  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+   77:34  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+   78:32  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+  102:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-unused-vars')
+  140:9   warning  Unexpected console statement. Only these console methods are allowed: warn, error                     no-console
+  370:56  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+  394:26  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+  395:27  warning  Unexpected any. Specify a different type                                                              @typescript-eslint/no-explicit-any
+  464:10  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+G:\PROJECT-6\src\components\shopee-office\system-metrics-panel.tsx
+  5:20  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+  5:46  warning  'WifiOff' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\shopee-office\theme-selector.tsx
+  129:3  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+G:\PROJECT-6\src\components\team\team-management-panel.tsx
+  38:65  warning  'onRoleChange' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\components\voice-search.tsx
+   8:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  35:33  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  38:42  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  38:79  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\lib\agent-memory.ts
+  28:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\lib\api-auth.ts
+  37:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\lib\cache.ts
+  61:17  warning  'key' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\lib\rate-limit-redis.ts
+   9:25  warning  'RATE_LIMITS' is defined but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  10:15  warning  'RateLimitConfig' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+G:\PROJECT-6\src\lib\redis.ts
+  30:5  warning  Unexpected console statement. Only these console methods are allowed: warn, error  no-console
+
+G:\PROJECT-6\src\lib\shopee\orders.ts
+   83:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  100:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\lib\shopee\products.ts
+  56:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\lib\shopee\promotions.ts
+   57:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   97:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  148:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\lib\shopee\response-handler.ts
+  27:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+G:\PROJECT-6\src\types\next-auth.d.ts
+  1:8  warning  'NextAuth' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 132 problems (0 errors, 132 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+

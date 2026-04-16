@@ -1,7 +1,27 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import packageJson from '../../../../package.json'
 import { env } from '@/lib/env'
-import pkg from '../../../package.json'
+
+const APP_VERSION = packageJson.version
+
+async function checkServiceHealth(
+  url: string,
+  name: string,
+  timeoutMs = 3000
+): Promise<{ name: string; status: 'healthy' | 'unhealthy' }> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), timeoutMs)
+    const response = await fetch(`${url}/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    })
+    clearTimeout(timeout)
+    return { name, status: response.ok ? 'healthy' : 'unhealthy' }
+  } catch {
+    return { name, status: 'unhealthy' }
+  }
+}
 
 export async function GET() {
   const startTime = Date.now()
@@ -10,7 +30,7 @@ export async function GET() {
   if (env.DEMO_MODE === 'true') {
     return NextResponse.json({
       status: 'healthy',
-      version: pkg.version,
+      version: APP_VERSION,
       timestamp: new Date().toISOString(),
       uptime: Math.round(process.uptime()),
       services: {
@@ -23,52 +43,19 @@ export async function GET() {
     })
   }
 
-  // Check services
+  // Check services via HTTP (no direct Prisma imports)
+  const dbServiceResult = await checkServiceHealth(env.DB_SERVICE_URL, 'database')
+  const openclawResult = await checkServiceHealth(env.OPENCLAW_GATEWAY_URL, 'openclaw')
+  const notifResult = await checkServiceHealth(env.NOTIFICATION_SERVICE_URL, 'notification')
+
   const services = {
-    database: 'healthy',
-    openclaw: 'healthy',
-    notification: 'healthy',
-  }
-
-  // Check database
-  try {
-    await db.$queryRaw`SELECT 1`
-    services.database = 'healthy'
-  } catch {
-    services.database = 'unhealthy'
-  }
-
-  // Check OpenClaw Gateway
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 3000)
-    const res = await fetch(`${env.OPENCLAW_GATEWAY_URL}/health`, {
-      method: 'GET',
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
-    services.openclaw = res.ok ? 'healthy' : 'unhealthy'
-  } catch {
-    services.openclaw = 'unhealthy'
-  }
-
-  // Check Notification Service
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 3000)
-    const res = await fetch(`${env.NOTIFICATION_SERVICE_URL}/health`, {
-      method: 'GET',
-      signal: controller.signal,
-    })
-    clearTimeout(timeout)
-    services.notification = res.ok ? 'healthy' : 'unhealthy'
-  } catch {
-    services.notification = 'unhealthy'
+    database: dbServiceResult.status,
+    openclaw: openclawResult.status,
+    notification: notifResult.status,
   }
 
   // Determine overall status
   const isDatabaseDown = services.database === 'unhealthy'
-  const allServicesUp = Object.values(services).every((s) => s === 'healthy')
   const someServicesDown = Object.values(services).some((s) => s === 'unhealthy')
 
   let status: 'healthy' | 'degraded' | 'unhealthy'
@@ -82,7 +69,7 @@ export async function GET() {
 
   const response = {
     status,
-    version: pkg.version,
+    version: APP_VERSION,
     timestamp: new Date().toISOString(),
     uptime: Math.round(process.uptime()),
     services,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api-auth'
 
 /**
  * Affiliate Profile API
@@ -46,10 +47,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   try {
     const body = await request.json()
     const profile = {
-      id: '1',
+      id: auth!.userId,
       ...body,
       updatedAt: new Date().toISOString(),
     }

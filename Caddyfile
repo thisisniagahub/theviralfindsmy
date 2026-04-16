@@ -1,10 +1,14 @@
 :81 {
-	@transform_port_query {
-		query XTransformPort=*
-	}
+	# Only allow reverse proxy to known, whitelisted local service ports.
+	# The previous XTransformPort=* matcher allowed ARBITRARY port access,
+	# enabling any external caller to reach internal services (DB service,
+	# notification service, etc.) without authentication.
 
-	handle @transform_port_query {
-		reverse_proxy localhost:{query.XTransformPort} {
+	@port_3004 {
+		query XTransformPort=3004
+	}
+	handle @port_3004 {
+		reverse_proxy localhost:3004 {
 			header_up Host {host}
 			header_up X-Forwarded-For {remote_host}
 			header_up X-Forwarded-Proto {scheme}

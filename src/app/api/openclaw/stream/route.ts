@@ -1,9 +1,15 @@
 import { NextRequest } from 'next/server'
 import { streamOpenClawCompletion } from '@/lib/openclaw'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { requireAuth } from '@/lib/api-auth'
 
 export async function POST(request: NextRequest) {
-  const rateLimited = withRateLimit(request, RATE_LIMITS.ai)
+  // 1. Check auth
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
+  // 2. Check rate limit (10 req/min for AI)
+  const rateLimited = await withRateLimit(request, RATE_LIMITS.ai)
   if (rateLimited) return rateLimited
 
   const { model, messages, temperature } = await request.json()
@@ -20,7 +26,8 @@ export async function POST(request: NextRequest) {
         )
         controller.enqueue(encoder.encode('data: [DONE]\n\n'))
       } catch (err) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: String(err) })}\n\n`))
+        console.error('OpenClaw stream error:', err)
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: 'Stream processing failed' })}\n\n`))
       } finally {
         controller.close()
       }

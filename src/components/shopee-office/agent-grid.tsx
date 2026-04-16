@@ -441,18 +441,20 @@ export function AgentGrid({ agents, onSelectAgent, selectedAgentId, language }: 
 
         {/* Empty slot (9th cell for 3x3) */}
         <div
-          className="relative flex items-center justify-center"
+          className="relative flex items-center justify-center cursor-pointer hover:bg-[#0a0e1a] transition-colors"
           style={{
             padding: '12px 8px 10px',
             background: '#080b14',
-            border: '2px dashed #1a1e30',
+            border: '2px dashed #3a3f55',
             borderRadius: 6,
             minHeight: 120,
           }}
         >
-          <div className="flex flex-col items-center gap-1 opacity-30">
-            <Wrench size={20} style={{ color: '#333' }} />
-            <span style={{ fontSize: 8, color: '#333', letterSpacing: 1 }}>EMPTY</span>
+          <div className="flex flex-col items-center gap-2 opacity-60">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full border-2 border-dashed border-[#888]">
+              <span className="text-[#888] text-lg leading-none">+</span>
+            </div>
+            <span style={{ fontSize: 9, color: '#888', letterSpacing: 1, fontWeight: 'bold' }}>ADD AGENT</span>
           </div>
         </div>
       </div>

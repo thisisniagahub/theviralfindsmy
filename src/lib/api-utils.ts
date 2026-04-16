@@ -9,12 +9,12 @@ export function getClientIp(request: NextRequest): string {
     || 'unknown'
 }
 
-export function withRateLimit(
+export async function withRateLimit(
   request: NextRequest,
   config: RateLimitConfig = RATE_LIMITS.api
-): NextResponse | null {
+): Promise<NextResponse | null> {
   const ip = getClientIp(request)
-  const result = rateLimit(ip, config)
+  const result = await rateLimit(ip, config)
 
   if (!result.success) {
     return NextResponse.json(

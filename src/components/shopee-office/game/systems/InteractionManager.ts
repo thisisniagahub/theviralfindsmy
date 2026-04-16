@@ -18,6 +18,7 @@ export class InteractionManager {
   private player: Player
   private workerManager: WorkerManager
   private cameraController: CameraController
+  private terminalZone: { x: number; y: number } | null = null
 
   interactionMenu!: InteractionMenu
   nearestWorker: Worker | null = null
@@ -136,6 +137,17 @@ export class InteractionManager {
   /** Run proximity detection and prompt display in the update loop. */
   updateProximity(eKey: Phaser.Input.Keyboard.Key): boolean {
     const nearest = this.findNearestWorker()
+    let isNearTerminal = false
+
+    if (this.terminalZone) {
+      const dist = Phaser.Math.Distance.Between(
+        this.player.sprite.x,
+        this.player.sprite.y,
+        this.terminalZone.x,
+        this.terminalZone.y,
+      )
+      if (dist < 60) isNearTerminal = true
+    }
 
     if (nearest !== this.nearestWorker) {
       if (this.nearestWorker) this.nearestWorker.resume()
@@ -150,16 +162,28 @@ export class InteractionManager {
           nearest.sprite.y - 50 * PROMPT_Y_OFFSET,
         )
         this.workerPromptText.setVisible(true)
+      } else if (isNearTerminal && this.terminalZone) {
+        this.workerPromptText.setPosition(
+          this.terminalZone.x + 40,
+          this.terminalZone.y - 16,
+        )
+        this.workerPromptText.setVisible(true)
       } else {
         this.workerPromptText.setVisible(false)
       }
     }
 
-    // E key: worker menu takes priority
-    if (nearest && Phaser.Input.Keyboard.JustDown(eKey)) {
-      this.openWorkerMenu(nearest)
-      if (this.workerPromptText) this.workerPromptText.setVisible(false)
-      return true
+    // E key logic
+    if (Phaser.Input.Keyboard.JustDown(eKey)) {
+      if (nearest) {
+        this.openWorkerMenu(nearest)
+        if (this.workerPromptText) this.workerPromptText.setVisible(false)
+        return true
+      } else if (isNearTerminal) {
+        gameEvents.emit('open-terminal')
+        if (this.workerPromptText) this.workerPromptText.setVisible(false)
+        return true
+      }
     }
 
     return false
@@ -167,6 +191,10 @@ export class InteractionManager {
 
   clearIfNearest(worker: Worker) {
     if (this.nearestWorker === worker) this.nearestWorker = null
+  }
+
+  setTerminalZone(zone: { x: number; y: number } | null) {
+    this.terminalZone = zone
   }
 
   destroy() {

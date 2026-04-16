@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 
 interface ProfileData {
-  id: string
+  id?: string
   displayName: string
   bio: string
   avatar: string | null
@@ -31,10 +31,13 @@ interface ProfileData {
   isPublic: boolean
 }
 
+const defaultSocialLinks = { twitter: '', instagram: '', youtube: '', website: '' }
+
 export function AffiliateProfileSettings() {
   const { data: session } = useSession()
   const [saving, setSaving] = useState(false)
-  const [profile, setProfile] = useState<Partial<ProfileData>>({
+  const [profile, setProfile] = useState<ProfileData>({
+    id: '',
     displayName: '',
     bio: '',
     avatar: null,
@@ -165,7 +168,7 @@ export function AffiliateProfileSettings() {
               <Input
                 placeholder="Twitter handle"
                 value={profile.socialLinks?.twitter || ''}
-                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...p.socialLinks, twitter: e.target.value } }))}
+                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...defaultSocialLinks, ...p.socialLinks, twitter: e.target.value } }))}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -173,7 +176,7 @@ export function AffiliateProfileSettings() {
               <Input
                 placeholder="Instagram handle"
                 value={profile.socialLinks?.instagram || ''}
-                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...p.socialLinks, instagram: e.target.value } }))}
+                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...defaultSocialLinks, ...p.socialLinks, instagram: e.target.value } }))}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -181,7 +184,7 @@ export function AffiliateProfileSettings() {
               <Input
                 placeholder="YouTube channel"
                 value={profile.socialLinks?.youtube || ''}
-                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...p.socialLinks, youtube: e.target.value } }))}
+                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...defaultSocialLinks, ...p.socialLinks, youtube: e.target.value } }))}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -189,7 +192,7 @@ export function AffiliateProfileSettings() {
               <Input
                 placeholder="Website URL"
                 value={profile.socialLinks?.website || ''}
-                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...p.socialLinks, website: e.target.value } }))}
+                onChange={(e) => setProfile(p => ({ ...p, socialLinks: { ...defaultSocialLinks, ...p.socialLinks, website: e.target.value } }))}
               />
             </div>
           </div>

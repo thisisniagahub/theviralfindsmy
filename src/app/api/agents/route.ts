@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/api-auth'
 
 interface Agent {
   id: string
@@ -135,6 +136,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { auth, error } = await requireAuth()
+  if (error) return error
+
   try {
     const body = await request.json()
     const { agentId, status } = body as { agentId?: string; status?: Agent['status'] }

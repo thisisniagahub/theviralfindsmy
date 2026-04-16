@@ -15,7 +15,8 @@ export class ShortcutsOverlay {
       return
     }
 
-    this.container = this.scene.add.container(GAME_WIDTH / 2, GAME_HEIGHT / 2).setDepth(2000)
+    this.container = this.scene.add.container(GAME_WIDTH / 2, GAME_HEIGHT / 2).setDepth(4000)
+    this.container.setScrollFactor(0)
     
     const bg = this.scene.add.graphics()
     bg.fillStyle(0x000000, 0.85)
@@ -29,8 +30,6 @@ export class ShortcutsOverlay {
       ['E', 'Interact with Agent'],
       ['H', 'Toggle Help'],
       ['Click Agent', 'View Details'],
-      ['Click Plant/Poster', 'Change Style'],
-      ['Click Cat', 'Pet Cat'],
       ['Scroll', 'Zoom In/Out'],
     ]
 

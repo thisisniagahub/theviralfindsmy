@@ -4,18 +4,10 @@
  * Defines valid state transitions, duration tracking, and OpenClaw activity mapping.
  */
 
+import { STATUS_COLORS, type AgentStatus } from './types'
+
 // ===== Extended Agent States =====
-export type ExtendedAgentStatus =
-  | 'idle'
-  | 'writing'
-  | 'researching'
-  | 'executing'
-  | 'syncing'
-  | 'error'
-  | 'thinking'
-  | 'collaborating'
-  | 'reporting'
-  | 'break'
+export type ExtendedAgentStatus = AgentStatus
 
 // ===== State Metadata =====
 export interface StateMeta {
@@ -27,16 +19,16 @@ export interface StateMeta {
 }
 
 export const STATE_META: Record<ExtendedAgentStatus, StateMeta> = {
-  idle: { color: '#22c55e', emoji: '💤', label: { en: 'Idle', cn: '空闲', jp: 'アイドル' }, animation: 'none', isWorking: false },
-  writing: { color: '#f97316', emoji: '✍️', label: { en: 'Writing', cn: '编写', jp: '執筆' }, animation: 'typing', isWorking: true },
-  researching: { color: '#a855f7', emoji: '🔬', label: { en: 'Researching', cn: '研究', jp: '調査' }, animation: 'pulse', isWorking: true },
-  executing: { color: '#eab308', emoji: '⚡', label: { en: 'Executing', cn: '执行', jp: '実行' }, animation: 'spin', isWorking: true },
-  syncing: { color: '#3b82f6', emoji: '🔄', label: { en: 'Syncing', cn: '同步', jp: '同期' }, animation: 'spin', isWorking: true },
-  error: { color: '#ef4444', emoji: '🐛', label: { en: 'Error', cn: '错误', jp: 'エラー' }, animation: 'shake', isWorking: false },
-  thinking: { color: '#06b6d4', emoji: '🧠', label: { en: 'Thinking', cn: '思考', jp: '思考' }, animation: 'pulse', isWorking: true },
-  collaborating: { color: '#ec4899', emoji: '🤝', label: { en: 'Collaborating', cn: '协作', jp: 'コラボ' }, animation: 'bounce', isWorking: true },
-  reporting: { color: '#8b5cf6', emoji: '📊', label: { en: 'Reporting', cn: '汇报', jp: 'レポート' }, animation: 'wave', isWorking: true },
-  break: { color: '#6b7280', emoji: '☕', label: { en: 'Break', cn: '休息', jp: '休憩' }, animation: 'none', isWorking: false },
+  idle: { color: STATUS_COLORS.idle.css, emoji: '💤', label: { en: 'Idle', cn: '空闲', jp: 'アイドル' }, animation: 'none', isWorking: false },
+  writing: { color: STATUS_COLORS.writing.css, emoji: '✍️', label: { en: 'Writing', cn: '编写', jp: '執筆' }, animation: 'typing', isWorking: true },
+  researching: { color: STATUS_COLORS.researching.css, emoji: '🔬', label: { en: 'Researching', cn: '研究', jp: '調査' }, animation: 'pulse', isWorking: true },
+  executing: { color: STATUS_COLORS.executing.css, emoji: '⚡', label: { en: 'Executing', cn: '执行', jp: '実行' }, animation: 'spin', isWorking: true },
+  syncing: { color: STATUS_COLORS.syncing.css, emoji: '🔄', label: { en: 'Syncing', cn: '同步', jp: '同期' }, animation: 'spin', isWorking: true },
+  error: { color: STATUS_COLORS.error.css, emoji: '🐛', label: { en: 'Error', cn: '错误', jp: 'エラー' }, animation: 'shake', isWorking: false },
+  thinking: { color: STATUS_COLORS.thinking.css, emoji: '🧠', label: { en: 'Thinking', cn: '思考', jp: '思考' }, animation: 'pulse', isWorking: true },
+  collaborating: { color: STATUS_COLORS.collaborating.css, emoji: '🤝', label: { en: 'Collaborating', cn: '协作', jp: 'コラボ' }, animation: 'bounce', isWorking: true },
+  reporting: { color: STATUS_COLORS.reporting.css, emoji: '📊', label: { en: 'Reporting', cn: '汇报', jp: 'レポート' }, animation: 'wave', isWorking: true },
+  break: { color: STATUS_COLORS.break.css, emoji: '☕', label: { en: 'Break', cn: '休息', jp: '休憩' }, animation: 'none', isWorking: false },
 }
 
 // ===== Valid State Transitions =====
@@ -168,6 +160,10 @@ export class AgentStateTracker {
 
   getAllAgents(): string[] {
     return Array.from(this.history.keys())
+  }
+
+  removeAgent(agentId: string): void {
+    this.history.delete(agentId)
   }
 }
 

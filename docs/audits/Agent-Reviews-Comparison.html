@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="ms" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TheViralFinds — Perbandingan Review 5 AI Agents</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg-primary: #0a0a1a;
+    --bg-secondary: #111128;
+    --bg-card: #161636;
+    --bg-hover: #1e1e48;
+    --text-primary: #e8e8f0;
+    --text-secondary: #9898b8;
+    --text-muted: #6868a0;
+    --accent-orange: #ee4d2d;
+    --accent-blue: #3b82f6;
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+    --accent-yellow: #eab308;
+    --accent-purple: #a855f7;
+    --accent-cyan: #06b6d4;
+    --accent-pink: #ec4899;
+    --border: #2a2a4a;
+    --glass: rgba(255,255,255,0.04);
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ─── HERO ────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0a0a2e 0%, #1a0a3e 30%, #2a0a2e 60%, #0a1a3e 100%);
+    padding: 60px 24px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 30% 40%, rgba(238,77,45,0.08) 0%, transparent 60%),
+                radial-gradient(circle at 70% 60%, rgba(59,130,246,0.06) 0%, transparent 60%);
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 900;
+    background: linear-gradient(135deg, #ee4d2d, #f090a0, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .hero p { color: var(--text-secondary); font-size: 16px; position: relative; max-width: 700px; margin: 0 auto; }
+  .hero .badge-row { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; position: relative; }
+  .badge {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: 1px solid;
+  }
+  .badge-qwen { border-color: var(--accent-purple); color: var(--accent-purple); background: rgba(168,85,247,0.08); }
+  .badge-gemini { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59,130,246,0.08); }
+  .badge-codex { border-color: var(--accent-green); color: var(--accent-green); background: rgba(34,197,94,0.08); }
+  .badge-claude { border-color: var(--accent-orange); color: var(--accent-orange); background: rgba(238,77,45,0.08); }
+  .badge-opus { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(6,182,212,0.08); }
+
+  /* ─── LAYOUT ──────────────────────────────── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+
+  .section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-subtitle { color: var(--text-secondary); margin-bottom: 32px; font-size: 14px; }
+
+  /* ─── CARDS ───────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, border-color 0.3s;
+  }
+  .card:hover { transform: translateY(-2px); border-color: rgba(238,77,45,0.3); }
+
+  .grid-5 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ─── AGENT PROFILE CARDS ─────────────────── */
+  .agent-card { position: relative; overflow: hidden; }
+  .agent-card .icon { font-size: 40px; margin-bottom: 12px; }
+  .agent-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .agent-card .role { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+  .agent-card .score-big {
+    font-size: 48px;
+    font-weight: 900;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+  .agent-card .grade { font-size: 14px; font-weight: 600; margin-top: 4px; }
+  .agent-card .stats { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .agent-card .stat-row { display: flex; justify-content: space-between; font-size: 13px; }
+  .agent-card .stat-row .label { color: var(--text-secondary); }
+  .agent-card .stat-row .value { font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  .agent-card.qwen { border-top: 3px solid var(--accent-purple); }
+  .agent-card.gemini { border-top: 3px solid var(--accent-blue); }
+  .agent-card.codex { border-top: 3px solid var(--accent-green); }
+  .agent-card.claude { border-top: 3px solid var(--accent-orange); }
+  .agent-card.opus { border-top: 3px solid var(--accent-cyan); }
+
+  .agent-card.qwen .score-big { color: var(--accent-purple); }
+  .agent-card.gemini .score-big { color: var(--accent-blue); }
+  .agent-card.codex .score-big { color: var(--accent-green); }
+  .agent-card.claude .score-big { color: var(--accent-orange); }
+  .agent-card.opus .score-big { color: var(--accent-cyan); }
+
+  /* ─── TABLES ──────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    text-align: left;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.03);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .cell-yes { color: var(--accent-green); font-weight: 600; }
+  .cell-no { color: var(--accent-red); font-weight: 600; }
+  .cell-partial { color: var(--accent-yellow); font-weight: 600; }
+
+  /* ─── CONSENSUS BAR ───────────────────────── */
+  .consensus-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .consensus-count {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .consensus-5 { background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+  .consensus-4 { background: rgba(234,179,8,0.15); color: var(--accent-yellow); border: 1px solid rgba(234,179,8,0.3); }
+  .consensus-3 { background: rgba(59,130,246,0.15); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.3); }
+  .consensus-info h4 { font-size: 15px; font-weight: 600; }
+  .consensus-info p { color: var(--text-secondary); font-size: 13px; margin-top: 2px; }
+  .consensus-agents { display: flex; gap: 6px; margin-top: 6px; }
+  .consensus-agents .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .dot-qwen { background: var(--accent-purple); }
+  .dot-gemini { background: var(--accent-blue); }
+  .dot-codex { background: var(--accent-green); }
+  .dot-claude { background: var(--accent-orange); }
+  .dot-opus { background: var(--accent-cyan); }
+
+  /* ─── UNIQUE FINDINGS ─────────────────────── */
+  .unique-card { padding: 20px; position: relative; }
+  .unique-card::before {
+    content: '✨';
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 20px;
+    opacity: 0.5;
+  }
+  .unique-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .unique-card p { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .unique-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  /* ─── CONCLUSION ──────────────────────────── */
+  .conclusion-box {
+    background: linear-gradient(135deg, rgba(238,77,45,0.06), rgba(59,130,246,0.06));
+    border: 1px solid rgba(238,77,45,0.2);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-top: 32px;
+  }
+  .conclusion-box h3 { font-size: 22px; font-weight: 800; margin-bottom: 20px; }
+
+  .action-list { list-style: none; counter-reset: actions; }
+  .action-list li {
+    counter-increment: actions;
+    padding: 14px 16px 14px 56px;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .action-list li::before {
+    content: counter(actions);
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--accent-orange);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .action-list li strong { display: block; font-size: 14px; }
+  .action-list li span { color: var(--text-secondary); font-size: 13px; }
+
+  /* ─── CHART AREA ──────────────────────────── */
+  .chart-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .chart-wrapper canvas { width: 100% !important; height: auto !important; }
+
+  /* ─── PRIORITY MATRIX ─────────────────────── */
+  .priority-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .p-critical { background: rgba(239,68,68,0.15); color: var(--accent-red); }
+  .p-high { background: rgba(234,179,8,0.15); color: var(--accent-yellow); }
+  .p-medium { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .p-low { background: rgba(34,197,94,0.15); color: var(--accent-green); }
+
+  /* ─── FOOTER ──────────────────────────────── */
+  .footer {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── SCROLL NAV ──────────────────────────── */
+  .toc {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+  .toc a {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    display: block;
+    transition: all 0.3s;
+  }
+  .toc a:hover { background: var(--accent-orange); transform: scale(1.4); }
+  @media (max-width: 1200px) { .toc { display: none; } }
+
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .text-sm { font-size: 13px; }
+  .text-muted { color: var(--text-secondary); }
+  .mt-2 { margin-top: 8px; }
+  .mt-4 { margin-top: 16px; }
+  .mb-4 { margin-bottom: 16px; }
+
+  .table-scroll { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ NAV DOTS ═══════════════════ -->
+<nav class="toc">
+  <a href="#agents" title="Profil Agent"></a>
+  <a href="#radar" title="Radar Chart"></a>
+  <a href="#comparison" title="Perbandingan"></a>
+  <a href="#consensus" title="Konsensus"></a>
+  <a href="#unique" title="Unik"></a>
+  <a href="#priority" title="Prioriti"></a>
+  <a href="#conclusion" title="Kesimpulan"></a>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<header class="hero">
+  <h1>🔍 Perbandingan Review 5 AI Agents</h1>
+  <p>Analisis silang antara Qwen, Gemini CLI, Codex, Claude Code, dan Opus (Antigravity) untuk projek <strong>TheViralFinds</strong></p>
+  <div class="badge-row">
+    <span class="badge badge-qwen">🟣 Qwen Code</span>
+    <span class="badge badge-gemini">🔵 Gemini CLI</span>
+    <span class="badge badge-codex">🟢 Codex</span>
+    <span class="badge badge-claude">🟠 Claude Code</span>
+    <span class="badge badge-opus">🔷 Opus (Antigravity)</span>
+  </div>
+</header>
+
+<main class="container">
+
+<!-- ═══════════════════ AGENT PROFILES ═══════════════════ -->
+<section class="section" id="agents">
+  <h2 class="section-title">👤 Profil Setiap Agent</h2>
+  <p class="section-subtitle">Ringkasan skor, fokus, dan saiz review setiap agent</p>
+
+  <div class="grid-5">
+    <!-- QWEN -->
+    <div class="card agent-card qwen">
+      <div class="icon">🟣</div>
+      <h3>Qwen Code</h3>
+      <div class="role">Deep Analysis · Full Codebase</div>
+      <div class="score-big">61</div>
+      <div class="grade text-sm">Gred: C+ — "Strong foundation, needs serious hardening"</div>
+      <div class="stats">
+        <div class="stat-row"><span class="label">Saiz Review</span><span class="value">1,389 baris</span></div>
+        <div class="stat-row"><span class="label">Fail Dianalisis</span><span class="value">200+</span></div>
+        <div class="stat-row"><span class="label">Isu Kritikal</span><span class="value">5</span></div>
+        <div class="stat-row"><span class="label">Kod Contoh</span><span class="value">25+ snippets</span></div>
+        <div class="stat-row"><span class="label">Fokus Utama</span><span class="value">Monetization</span></div>
+      </div>
+    </div>
+
+    <!-- GEMINI -->
+    <div class="card agent-card gemini">
+      <div class="icon">🔵</div>
+      <h3>Gemini CLI</h3>
+      <div class="role">Brain Mining · Bahasa Melayu</div>
+      <div class="score-big">—</div>
+      <div class="grade text-sm">Tiada skor angka — fokus kualitatif</div>
+      <div class="stats">
+        <div class="stat-row"><span class="label">Saiz Review</span><span class="value">73 baris</span></div>
+        <div class="stat-row"><span class="label">Fail Dianalisis</span><span class="value">Brain + Kod</span></div>
+        <div class="stat-row"><span class="label">Isu Kritikal</span><span class="value">4 idea</span></div>
+        <div class="stat-row"><span class="label">Kod Contoh</span><span class="value">0</span></div>
+        <div class="stat-row"><span class="label">Fokus Utama</span><span class="value">Idea Tercicir</span></div>
+      </div>
+    </div>
+
+    <!-- CODEX -->
+    <div class="card agent-card codex">
+      <div class="icon">🟢</div>
+      <h3>Codex</h3>
+      <div class="role">Brain Audit · Knowledge System</div>
+      <div class="score-big">—</div>
+      <div class="grade text-sm">Review Brain sahaja — bukan kod projek</div>
+      <div class="stats">
+        <div class="stat-row"><span class="label">Saiz Review</span><span class="value">302 baris</span></div>
+        <div class="stat-row"><span class="label">Fail Dianalisis</span><span class="value">626 (brain)</span></div>
+        <div class="stat-row"><span class="label">Isu Kritikal</span><span class="value">9 findings</span></div>
+        <div class="stat-row"><span class="label">Kod Contoh</span><span class="value">1 JSON</span></div>
+        <div class="stat-row"><span class="label">Fokus Utama</span><span class="value">Metadata/Archive</span></div>
+      </div>
+    </div>
+
+    <!-- CLAUDE CODE -->
+    <div class="card agent-card claude">
+      <div class="icon">🟠</div>
+      <h3>Claude Code</h3>
+      <div class="role">Bug Hunter · Cross-Session Tracker</div>
+      <div class="score-big">69</div>
+      <div class="grade text-sm">Gred: B- — "Solid foundation, operational gaps"</div>
+      <div class="stats">
+        <div class="stat-row"><span class="label">Saiz Review</span><span class="value">526 baris</span></div>
+        <div class="stat-row"><span class="label">Fail Dianalisis</span><span class="value">295 + Brain</span></div>
+        <div class="stat-row"><span class="label">Isu Kritikal</span><span class="value">5 bugs</span></div>
+        <div class="stat-row"><span class="label">Kod Contoh</span><span class="value">15 snippets</span></div>
+        <div class="stat-row"><span class="label">Fokus Utama</span><span class="value">Bug & Security</span></div>
+      </div>
+    </div>
+
+    <!-- OPUS -->
+    <div class="card agent-card opus">
+      <div class="icon">🔷</div>
+      <h3>Opus (Antigravity)</h3>
+      <div class="role">Full Audit · Architecture Map</div>
+      <div class="score-big">69</div>
+      <div class="grade text-sm">Gred: B- — "Feature-rich, infrastructure gaps"</div>
+      <div class="stats">
+        <div class="stat-row"><span class="label">Saiz Review</span><span class="value">558 baris</span></div>
+        <div class="stat-row"><span class="label">Fail Dianalisis</span><span class="value">295</span></div>
+        <div class="stat-row"><span class="label">Isu Kritikal</span><span class="value">4</span></div>
+        <div class="stat-row"><span class="label">Kod Contoh</span><span class="value">Mermaid + diff</span></div>
+        <div class="stat-row"><span class="label">Fokus Utama</span><span class="value">Progress Track</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ RADAR CHART ═══════════════════ -->
+<section class="section" id="radar">
+  <h2 class="section-title">📊 Radar Skor Per Dimensi</h2>
+  <p class="section-subtitle">Perbandingan skor 8 dimensi merentasi 3 agent yang memberikan skor angka (Qwen, ClaudeCode, Opus)</p>
+
+  <div class="chart-wrapper">
+    <canvas id="radarChart"></canvas>
+  </div>
+
+  <div class="card mt-4" style="max-width:600px;margin:24px auto 0;">
+    <h4 style="font-size:14px;font-weight:700;margin-bottom:12px;">📝 Nota Skor</h4>
+    <ul style="list-style:none;font-size:13px;color:var(--text-secondary);display:flex;flex-direction:column;gap:6px;">
+      <li>• <strong>Gemini CLI</strong> & <strong>Codex</strong> tidak memberikan skor angka — fokus mereka lebih kualitatif</li>
+      <li>• Skor dinormalisasi ke skala 0-100 untuk perbandingan yang adil</li>
+      <li>• <span style="color:var(--accent-green);">Hijau (AI Integration)</span> = dimensi terkuat merentasi SEMUA agent</li>
+      <li>• <span style="color:var(--accent-red);">Merah (Testing)</span> = dimensi terlemah — SEMUA agent setuju</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ═══════════════════ COMPARISON TABLE ═══════════════════ -->
+<section class="section" id="comparison">
+  <h2 class="section-title">📋 Perbandingan Terperinci</h2>
+  <p class="section-subtitle">Setiap isu utama dipetakan merentasi kesemua 5 agent — siapa yang perasan, siapa yang terlepas</p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th style="min-width:250px;">Isu / Penemuan</th>
+          <th style="min-width:90px;text-align:center;">🟣 Qwen</th>
+          <th style="min-width:90px;text-align:center;">🔵 Gemini</th>
+          <th style="min-width:90px;text-align:center;">🟢 Codex</th>
+          <th style="min-width:90px;text-align:center;">🟠 Claude</th>
+          <th style="min-width:90px;text-align:center;">🔷 Opus</th>
+          <th style="min-width:80px;text-align:center;">Konsensus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- CRITICAL -->
+        <tr>
+          <td><strong>Tiada Model User / Multi-Tenancy</strong><br><span class="text-muted text-sm">Semua data terbuka — tiada isolasi pengguna</span></td>
+          <td class="cell-yes" style="text-align:center">✅ A-02</td>
+          <td class="cell-yes" style="text-align:center">✅ Idea 3</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ ARCH-1</td>
+          <td class="cell-yes" style="text-align:center">✅ C1</td>
+          <td style="text-align:center"><strong class="cell-yes">4/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Tiada Security Headers (CSP, HSTS)</strong><br><span class="text-muted text-sm">next.config.ts tidak ada headers()</span></td>
+          <td class="cell-yes" style="text-align:center">✅ S-01</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ P2-15</td>
+          <td class="cell-yes" style="text-align:center">✅ C2</td>
+          <td style="text-align:center"><strong class="cell-partial">3/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Testing Coverage ~0.5%</strong><br><span class="text-muted text-sm">3 test files sahaja untuk 295 source files</span></td>
+          <td class="cell-yes" style="text-align:center">✅ 15/100</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ 2/10</td>
+          <td class="cell-yes" style="text-align:center">✅ F (15)</td>
+          <td style="text-align:center"><strong class="cell-partial">3/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>In-Memory Rate Limiting / Caching</strong><br><span class="text-muted text-sm">Map() hilang selepas restart, tak scalable</span></td>
+          <td class="cell-yes" style="text-align:center">✅ P-01</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ ARCH-3</td>
+          <td class="cell-yes" style="text-align:center">✅ M1</td>
+          <td style="text-align:center"><strong class="cell-partial">3/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Hardcoded Credentials / Admin Email</strong><br><span class="text-muted text-sm">admin@theviralfinds.my hardcoded</span></td>
+          <td class="cell-yes" style="text-align:center">✅ C-01</td>
+          <td class="cell-yes" style="text-align:center">✅ Idea 3</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ SEC-4</td>
+          <td class="cell-partial" style="text-align:center">⚠️ Partial</td>
+          <td style="text-align:center"><strong class="cell-yes">4/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Tiada CI/CD Pipeline</strong><br><span class="text-muted text-sm">Tiada GitHub Actions / automated deploy</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ ARCH-4</td>
+          <td class="cell-yes" style="text-align:center">✅ T2.2</td>
+          <td style="text-align:center"><strong>2/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>DB Service Tiada Autentikasi</strong><br><span class="text-muted text-sm">Port 3005 terbuka tanpa auth token</span></td>
+          <td class="cell-yes" style="text-align:center">✅ C-02</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ BUG-5</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td style="text-align:center"><strong>2/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Math.random() dalam Production Data</strong><br><span class="text-muted text-sm">Dashboard / db-service guna data palsu</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ BUG-1</td>
+          <td class="cell-yes" style="text-align:center">✅ M3</td>
+          <td style="text-align:center"><strong>2/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Polling 3 Saat di Agent Office</strong><br><span class="text-muted text-sm">~20 req/min per user — patut guna WebSocket</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ Idea 1</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td style="text-align:center"><strong>1/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Buffer.from() dalam Client Code</strong><br><span class="text-muted text-sm">Node.js API dalam browser — akan crash</span></td>
+          <td class="cell-yes" style="text-align:center">✅ C-03</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td style="text-align:center"><strong>1/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>SDK Fallback role:'assistant' (Injection Risk)</strong><br><span class="text-muted text-sm">System prompt sebagai assistant — lemah</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ SEC-1</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td style="text-align:center"><strong>1/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Brain Archive: Tiada Manifest Pusat</strong><br><span class="text-muted text-sm">626 fail tanpa index — susah navigasi</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ Finding 3</td>
+          <td class="cell-partial" style="text-align:center">⚠️ Noted</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td style="text-align:center"><strong>2/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Game Engine 13.2MB Assets tanpa CDN</strong><br><span class="text-muted text-sm">Sprites besar dimuatkan tanpa optimisasi</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ GAME-3</td>
+          <td class="cell-yes" style="text-align:center">✅ M5</td>
+          <td style="text-align:center"><strong>2/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Dead Code: app-layout.tsx (444 baris)</strong><br><span class="text-muted text-sm">Old SPA layout masih dalam codebase</span></td>
+          <td class="cell-yes" style="text-align:center">✅ A-01</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-partial" style="text-align:center">⚠️ DEAD</td>
+          <td class="cell-yes" style="text-align:center">✅ N2</td>
+          <td style="text-align:center"><strong class="cell-partial">3/5</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Version Mismatch (8.0.0 vs 0.7.0)</strong><br><span class="text-muted text-sm">Health endpoint ≠ package.json</span></td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-no" style="text-align:center">—</td>
+          <td class="cell-yes" style="text-align:center">✅ DEAD-4</td>
+          <td class="cell-yes" style="text-align:center">✅ N5</td>
+          <td style="text-align:center"><strong>2/5</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════ CONSENSUS ═══════════════════ -->
+<section class="section" id="consensus">
+  <h2 class="section-title">🤝 Konsensus Tertinggi</h2>
+  <p class="section-subtitle">Isu yang dipersetujui oleh PALING BANYAK agent — ini adalah keutamaan mutlak</p>
+
+  <div class="card">
+    <div class="consensus-item">
+      <div class="consensus-count consensus-5">4</div>
+      <div class="consensus-info">
+        <h4>🔴 Tiada Model User / Multi-Tenancy</h4>
+        <p>Platform TIDAK BOLEH serve real users tanpa ini. Semua data dikongsi. Ini isu #1 yang wajib diselesaikan.</p>
+        <div class="consensus-agents">
+          <span class="dot dot-qwen" title="Qwen"></span>
+          <span class="dot dot-gemini" title="Gemini"></span>
+          <span class="dot dot-claude" title="Claude"></span>
+          <span class="dot dot-opus" title="Opus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="consensus-item">
+      <div class="consensus-count consensus-5">4</div>
+      <div class="consensus-info">
+        <h4>🔴 Hardcoded Credentials / Single Admin</h4>
+        <p>Email admin hardcoded, password default 'admin123' pernah wujud — partial fixed tapi belum sepenuhnya.</p>
+        <div class="consensus-agents">
+          <span class="dot dot-qwen" title="Qwen"></span>
+          <span class="dot dot-gemini" title="Gemini"></span>
+          <span class="dot dot-claude" title="Claude"></span>
+          <span class="dot dot-opus" title="Opus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="consensus-item">
+      <div class="consensus-count consensus-4">3</div>
+      <div class="consensus-info">
+        <h4>🟡 Testing Coverage ~0.5%</h4>
+        <p>3 test files untuk 295 source + 69 API routes. Semua agent beri F/Fail untuk testing.</p>
+        <div class="consensus-agents">
+          <span class="dot dot-qwen" title="Qwen"></span>
+          <span class="dot dot-claude" title="Claude"></span>
+          <span class="dot dot-opus" title="Opus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="consensus-item">
+      <div class="consensus-count consensus-4">3</div>
+      <div class="consensus-info">
+        <h4>🟡 In-Memory Rate Limiting (Perlu Redis)</h4>
+        <p>Map() hilang selepas restart. Patut migrate ke Upstash Redis untuk production scalability.</p>
+        <div class="consensus-agents">
+          <span class="dot dot-qwen" title="Qwen"></span>
+          <span class="dot dot-claude" title="Claude"></span>
+          <span class="dot dot-opus" title="Opus"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="consensus-item">
+      <div class="consensus-count consensus-4">3</div>
+      <div class="consensus-info">
+        <h4>🟡 Dead Code: app-layout.tsx masih wujud</h4>
+        <p>444 baris SPA layout lama — sudah diganti oleh App Router. Patut delete.</p>
+        <div class="consensus-agents">
+          <span class="dot dot-qwen" title="Qwen"></span>
+          <span class="dot dot-claude" title="Claude"></span>
+          <span class="dot dot-opus" title="Opus"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ UNIQUE FINDINGS ═══════════════════ -->
+<section class="section" id="unique">
+  <h2 class="section-title">✨ Penemuan Unik Setiap Agent</h2>
+  <p class="section-subtitle">Isu atau idea yang HANYA satu agent perasan — nilai tambah setiap perspektif</p>
+
+  <div class="grid-3">
+    <div class="card unique-card" style="border-left:3px solid var(--accent-purple);">
+      <span class="unique-tag" style="background:rgba(168,85,247,0.15);color:var(--accent-purple);">🟣 Qwen Sahaja</span>
+      <h4>Buffer.from() dalam Client Code</h4>
+      <p><code>src/lib/qrcode.ts</code> guna <code>Buffer</code> (Node.js) — akan crash dalam browser. Fix: guna <code>btoa()</code>.</p>
+    </div>
+    <div class="card unique-card" style="border-left:3px solid var(--accent-purple);">
+      <span class="unique-tag" style="background:rgba(168,85,247,0.15);color:var(--accent-purple);">🟣 Qwen Sahaja</span>
+      <h4>XSS via Reflected shortCode</h4>
+      <p>Redirect API reflect user input tanpa sanitize. Perlu <code>escapeHtml()</code> sebelum reflect.</p>
+    </div>
+    <div class="card unique-card" style="border-left:3px solid var(--accent-purple);">
+      <span class="unique-tag" style="background:rgba(168,85,247,0.15);color:var(--accent-purple);">🟣 Qwen Sahaja</span>
+      <h4>Secret dalam Client Bundle</h4>
+      <p><code>OFFICE_JOIN_KEY</code> di <code>shopee-office-store.ts</code> — visible dalam browser DevTools.</p>
+    </div>
+
+    <div class="card unique-card" style="border-left:3px solid var(--accent-blue);">
+      <span class="unique-tag" style="background:rgba(59,130,246,0.15);color:var(--accent-blue);">🔵 Gemini Sahaja</span>
+      <h4>Polling 3s di Agent Office</h4>
+      <p>~20 req/min per user ke <code>/api/shopee-office/agents</code>. Patut tukar ke WebSocket / SSE.</p>
+    </div>
+    <div class="card unique-card" style="border-left:3px solid var(--accent-blue);">
+      <span class="unique-tag" style="background:rgba(59,130,246,0.15);color:var(--accent-blue);">🔵 Gemini Sahaja</span>
+      <h4>A2A Pipeline Belum Lengkap</h4>
+      <p>Agent Aggregator & Reporter tidak digunakan dalam rantaian. Boleh tambah untuk output Markdown yang lengkap.</p>
+    </div>
+
+    <div class="card unique-card" style="border-left:3px solid var(--accent-green);">
+      <span class="unique-tag" style="background:rgba(34,197,94,0.15);color:var(--accent-green);">🟢 Codex Sahaja</span>
+      <h4>Brain Archive Berat pada Ephemeral</h4>
+      <p>74.6MB brain — 95% adalah media/temp. Hanya 0.38MB knowledge sebenar. Perlu retention policy.</p>
+    </div>
+    <div class="card unique-card" style="border-left:3px solid var(--accent-green);">
+      <span class="unique-tag" style="background:rgba(34,197,94,0.15);color:var(--accent-green);">🟢 Codex Sahaja</span>
+      <h4>Metadata Schema Terlalu Nipis</h4>
+      <p>Tiada <code>commitHash</code>, <code>tags</code>, <code>status</code>, <code>supersededBy</code>. Dokumen lama cepat hilang konteks.</p>
+    </div>
+
+    <div class="card unique-card" style="border-left:3px solid var(--accent-orange);">
+      <span class="unique-tag" style="background:rgba(238,77,45,0.15);color:var(--accent-orange);">🟠 Claude Sahaja</span>
+      <h4>SDK Fallback Prompt Injection</h4>
+      <p><code>role: 'assistant'</code> untuk system prompt — LLM treat sebagai output model, bukan arahan. Buka vektor injection.</p>
+    </div>
+    <div class="card unique-card" style="border-left:3px solid var(--accent-orange);">
+      <span class="unique-tag" style="background:rgba(238,77,45,0.15);color:var(--accent-orange);">🟠 Claude Sahaja</span>
+      <h4>process.exit(1) dalam env.ts</h4>
+      <p>Missing env var = seluruh Next.js process mati. Patut throw error dan biar caller decide.</p>
+    </div>
+
+    <div class="card unique-card" style="border-left:3px solid var(--accent-cyan);">
+      <span class="unique-tag" style="background:rgba(6,182,212,0.15);color:var(--accent-cyan);">🔷 Opus Sahaja</span>
+      <h4>14.2MB Orphan Images di Root</h4>
+      <p>5 fail <code>Gemini_Generated_Image_*.png</code> di root projek — tiada reference dalam kod. Buang.</p>
+    </div>
+    <div class="card unique-card" style="border-left:3px solid var(--accent-cyan);">
+      <span class="unique-tag" style="background:rgba(6,182,212,0.15);color:var(--accent-cyan);">🔷 Opus Sahaja</span>
+      <h4>next-intl Installed tapi Unused</h4>
+      <p>Dependency <code>next-intl@4.3.4</code> dalam package.json tapi tiada konfigurasi. Setup i18n atau buang.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ STRENGTH TABLE ═══════════════════ -->
+<section class="section">
+  <h2 class="section-title">💪 Kekuatan Setiap Agent</h2>
+  <p class="section-subtitle">Apa yang setiap agent buat PALING BAIK dalam review mereka</p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Kekuatan Utama</th>
+          <th>Coverage Terbaik</th>
+          <th>Kelemahan</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>🟣 Qwen</strong></td>
+          <td>Paling LENGKAP — 1,389 baris dengan 25+ snippets penyelesaian. Merangkumi monetization (Stripe), RAG pipeline, anomaly detection.</td>
+          <td>Security + Monetization + AI/ML Features</td>
+          <td>Terlalu panjang untuk dibaca — tiada executive summary ringkas</td>
+        </tr>
+        <tr>
+          <td><strong>🔵 Gemini</strong></td>
+          <td>Satu-satunya agent yang mine data dari BRAIN. Cari "idea tercicir" dari sesi lama. Tulis dalam Bahasa Melayu penuh.</td>
+          <td>Context Mining + Hidden Insights</td>
+          <td>Terlalu ringkas (73 baris), tiada skor angka, tiada roadmap terperinci</td>
+        </tr>
+        <tr>
+          <td><strong>🟢 Codex</strong></td>
+          <td>Satu-satunya agent yang audit BRAIN filesystem (626 fail). Cadangan metadata schema, retention policy, manifest pusat.</td>
+          <td>Knowledge Management System</td>
+          <td>Tidak review kod projek langsung — hanya brain directory</td>
+        </tr>
+        <tr>
+          <td><strong>🟠 Claude</strong></td>
+          <td>BUG HUNTER terbaik — jumpa 10 isu yang TIADA agent lain perasan (Math.random production, process.exit, prompt injection).</td>
+          <td>Bug Detection + Cross-Session Tracking</td>
+          <td>Beberapa isu (GAME-2, ARCH-2) sudah fixed dalam codebase semasa</td>
+        </tr>
+        <tr>
+          <td><strong>🔷 Opus</strong></td>
+          <td>Architecture diagram Mermaid + progress tracking (apa dah fix vs belum). Source map lengkap (295 files).</td>
+          <td>Architecture Mapping + Progress Audit</td>
+          <td>Kurang deep-dive ke code-level bugs berbanding Claude/Qwen</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════ PRIORITY MATRIX ═══════════════════ -->
+<section class="section" id="priority">
+  <h2 class="section-title">🎯 Matriks Keutamaan Gabungan</h2>
+  <p class="section-subtitle">Semua isu digabungkan dan disusun mengikut keutamaan berdasarkan konsensus agent</p>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Prioriti</th>
+          <th>Task</th>
+          <th>Agents</th>
+          <th>Anggaran Masa</th>
+          <th>Impak</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="mono">1</td>
+          <td><span class="priority-tag p-critical">KRITIKAL</span></td>
+          <td><strong>User Model + Multi-Tenancy</strong><br><span class="text-muted text-sm">Prisma schema + semua 69 API routes</span></td>
+          <td>Q G C O</td>
+          <td class="mono">24-40h</td>
+          <td>Platform boleh serve multiple users</td>
+        </tr>
+        <tr>
+          <td class="mono">2</td>
+          <td><span class="priority-tag p-critical">KRITIKAL</span></td>
+          <td><strong>DB Service Authentication</strong><br><span class="text-muted text-sm">Bearer token + input validation (Zod)</span></td>
+          <td>Q C</td>
+          <td class="mono">4h</td>
+          <td>Tutup akses terbuka ke database</td>
+        </tr>
+        <tr>
+          <td class="mono">3</td>
+          <td><span class="priority-tag p-critical">KRITIKAL</span></td>
+          <td><strong>Buang Hardcoded Credentials</strong><br><span class="text-muted text-sm">Admin email → env var, buang auto-signin</span></td>
+          <td>Q G C O</td>
+          <td class="mono">1h</td>
+          <td>Tutup lubang keselamatan utama</td>
+        </tr>
+        <tr>
+          <td class="mono">4</td>
+          <td><span class="priority-tag p-high">TINGGI</span></td>
+          <td><strong>Security Headers</strong><br><span class="text-muted text-sm">CSP, HSTS, X-Frame-Options di next.config.ts</span></td>
+          <td>Q C O</td>
+          <td class="mono">1h</td>
+          <td>Protection dari XSS/clickjacking</td>
+        </tr>
+        <tr>
+          <td class="mono">5</td>
+          <td><span class="priority-tag p-high">TINGGI</span></td>
+          <td><strong>Redis (Upstash) untuk Cache + Rate Limit</strong><br><span class="text-muted text-sm">Ganti Map() dengan distributed store</span></td>
+          <td>Q C O</td>
+          <td class="mono">8-12h</td>
+          <td>Production-scalable infrastructure</td>
+        </tr>
+        <tr>
+          <td class="mono">6</td>
+          <td><span class="priority-tag p-high">TINGGI</span></td>
+          <td><strong>Fix Math.random() → Deterministic Demo Data</strong><br><span class="text-muted text-sm">Dashboard + DB service fake data</span></td>
+          <td>C O</td>
+          <td class="mono">2h</td>
+          <td>Data integrity & reliability</td>
+        </tr>
+        <tr>
+          <td class="mono">7</td>
+          <td><span class="priority-tag p-high">TINGGI</span></td>
+          <td><strong>Test Suite Foundation</strong><br><span class="text-muted text-sm">20 API routes + 5 core libs</span></td>
+          <td>Q C O</td>
+          <td class="mono">3-4 hari</td>
+          <td>Safety net sebelum refactor besar</td>
+        </tr>
+        <tr>
+          <td class="mono">8</td>
+          <td><span class="priority-tag p-medium">SEDERHANA</span></td>
+          <td><strong>CI/CD Pipeline (GitHub Actions)</strong></td>
+          <td>C O</td>
+          <td class="mono">4h</td>
+          <td>Automated quality gates</td>
+        </tr>
+        <tr>
+          <td class="mono">9</td>
+          <td><span class="priority-tag p-medium">SEDERHANA</span></td>
+          <td><strong>CDN untuk Game Assets (13.2MB)</strong></td>
+          <td>C O</td>
+          <td class="mono">4h</td>
+          <td>Faster load times</td>
+        </tr>
+        <tr>
+          <td class="mono">10</td>
+          <td><span class="priority-tag p-medium">SEDERHANA</span></td>
+          <td><strong>Tukar Polling → WebSocket (Agent Office)</strong></td>
+          <td>G</td>
+          <td class="mono">4-6h</td>
+          <td>Reduce server load 20x</td>
+        </tr>
+        <tr>
+          <td class="mono">11</td>
+          <td><span class="priority-tag p-low">RENDAH</span></td>
+          <td><strong>Delete Dead Code</strong><br><span class="text-muted text-sm">app-layout.tsx, activePage, config.ts, db-timeout.ts</span></td>
+          <td>Q C O</td>
+          <td class="mono">1h</td>
+          <td>Cleaner codebase</td>
+        </tr>
+        <tr>
+          <td class="mono">12</td>
+          <td><span class="priority-tag p-low">RENDAH</span></td>
+          <td><strong>Brain Archive: Manifest + Retention Policy</strong></td>
+          <td>Codex</td>
+          <td class="mono">4h</td>
+          <td>Knowledge system maturity</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════ CONCLUSION ═══════════════════ -->
+<section class="section" id="conclusion">
+  <h2 class="section-title">🏁 KESIMPULAN: Pelan Untuk Improve TheViralFinds</h2>
+  <p class="section-subtitle">Gabungan pandangan 5 AI agents — pelan tindakan yang disatukan</p>
+
+  <div class="conclusion-box">
+    <h3>🧬 Diagnosis Gabungan</h3>
+    <p style="color:var(--text-secondary);margin-bottom:24px;line-height:1.8;">
+      <strong>TheViralFinds</strong> adalah projek yang <strong>kaya dengan fitur</strong> tetapi <strong>kurang matang untuk production</strong>. 
+      Kelima-lima agent bersetuju bahawa AI integration (OpenClaw Gateway) adalah komponen terkuat (88-92/100), 
+      manakala testing (15/100) dan multi-tenancy (0/100) adalah jurang paling kritikal. 
+      Projek ini ibarat kereta sport dengan enjin berkuasa tinggi tetapi <strong>tiada brek dan tiada seatbelt</strong>.
+    </p>
+
+    <h3 style="margin-top:32px;">📋 Pelan Tindakan 6 Minggu</h3>
+
+    <div class="grid-2 mt-4">
+      <div class="card" style="border-left:3px solid var(--accent-red);">
+        <h4 style="color:var(--accent-red);font-size:14px;font-weight:700;">🔴 Minggu 1-2: KESELAMATAN</h4>
+        <ol class="action-list">
+          <li><strong>Tambah Model User + Multi-Tenancy</strong><span>Prisma schema → userId FK → semua API routes</span></li>
+          <li><strong>Autentikasi DB Service</strong><span>Bearer token + Zod validation pada setiap request</span></li>
+          <li><strong>Buang Hardcoded Credentials</strong><span>Admin email → env var, buang auto-signin</span></li>
+          <li><strong>Security Headers</strong><span>CSP, HSTS, X-Frame-Options di next.config.ts</span></li>
+        </ol>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--accent-yellow);">
+        <h4 style="color:var(--accent-yellow);font-size:14px;font-weight:700;">🟡 Minggu 3-4: INFRASTRUKTUR</h4>
+        <ol class="action-list">
+          <li><strong>Redis (Upstash) Integration</strong><span>Ganti in-memory cache + rate limiter</span></li>
+          <li><strong>Test Suite Foundation</strong><span>Target: 20 API route tests + 5 core lib tests</span></li>
+          <li><strong>CI/CD Pipeline</strong><span>GitHub Actions: lint → typecheck → test → build</span></li>
+          <li><strong>Fix Demo Data</strong><span>Deterministic seed data, buang Math.random()</span></li>
+        </ol>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--accent-blue);">
+        <h4 style="color:var(--accent-blue);font-size:14px;font-weight:700;">🔵 Minggu 5: PRESTASI</h4>
+        <ol class="action-list">
+          <li><strong>CDN untuk Game Assets</strong><span>Cloudflare R2 / BunnyCDN untuk 13.2MB sprites</span></li>
+          <li><strong>WebSocket untuk Agent Office</strong><span>Tukar polling 3s ke SSE / Socket.IO</span></li>
+          <li><strong>Split Komponen Besar</strong><span>agent-profile.tsx (981), openclaw-page.tsx (846)</span></li>
+          <li><strong>Delete Dead Code</strong><span>app-layout.tsx, config.ts, orphan images</span></li>
+        </ol>
+      </div>
+
+      <div class="card" style="border-left:3px solid var(--accent-green);">
+        <h4 style="color:var(--accent-green);font-size:14px;font-weight:700;">🟢 Minggu 6+: BUSINESS VALUE</h4>
+        <ol class="action-list">
+          <li><strong>Shopee Live API Integration</strong><span>Connect real credentials, buang mock data</span></li>
+          <li><strong>Stripe Subscription System</strong><span>Free / Pro / Enterprise tier enforcement</span></li>
+          <li><strong>RAG Pipeline + NL Analytics</strong><span>"Tunjuk top product minggu ini" → real chart</span></li>
+          <li><strong>Multi-Platform (Lazada, TikTok Shop)</strong><span>USP unik — tiada competitor yang ada ini</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL VERDICT -->
+  <div class="card mt-4" style="background: linear-gradient(135deg, rgba(34,197,94,0.06), rgba(6,182,212,0.06)); border-color: rgba(34,197,94,0.2);">
+    <h3 style="font-size:20px;font-weight:800;margin-bottom:16px;">🏆 Verdict Akhir: 5 Agent Bersetuju</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+      <div>
+        <h4 style="color:var(--accent-green);font-size:14px;">✅ Yang Dah Baik</h4>
+        <ul style="font-size:13px;color:var(--text-secondary);list-style:none;display:flex;flex-direction:column;gap:4px;">
+          <li>• OpenClaw AI integration (A+)</li>
+          <li>• Phaser game engine refactored</li>
+          <li>• App Router migration done</li>
+          <li>• Shopee SDK ready</li>
+          <li>• Zod validation present</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:var(--accent-red);font-size:14px;">❌ Yang Wajib Fix</h4>
+        <ul style="font-size:13px;color:var(--text-secondary);list-style:none;display:flex;flex-direction:column;gap:4px;">
+          <li>• User Model (4/5 agents)</li>
+          <li>• Credentials hardcoded (4/5)</li>
+          <li>• Testing ~0.5% (3/5)</li>
+          <li>• No security headers (3/5)</li>
+          <li>• In-memory stores (3/5)</li>
+        </ul>
+      </div>
+      <div>
+        <h4 style="color:var(--accent-purple);font-size:14px;">🚀 Competitive Advantage</h4>
+        <ul style="font-size:13px;color:var(--text-secondary);list-style:none;display:flex;flex-direction:column;gap:4px;">
+          <li>• Multi-platform (unique USP)</li>
+          <li>• AI Agent Office (gamification)</li>
+          <li>• NL Analytics</li>
+          <li>• 8 live AI agents</li>
+          <li>• Malaysian market focus</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:24px;padding:16px;background:rgba(238,77,45,0.08);border-radius:10px;font-size:14px;text-align:center;color:var(--text-primary);">
+      <strong style="color:var(--accent-orange);">📌 Bottom Line:</strong> Selesaikan User Model + Security < 2 minggu = projek READY untuk beta users.
+      <br>OpenClaw AI + Phaser Office + Shopee SDK = <strong>competitive moat yang sangat kuat</strong>.
+    </p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <p>TheViralFinds — Agent Reviews Comparison · Generated 12 April 2026</p>
+  <p style="margin-top:4px;">Qwen Code · Gemini CLI · OpenAI Codex · Claude Code (Opus 4.6) · Antigravity (Opus)</p>
+</footer>
+
+<!-- ═══════════════════ RADAR CHART ═══════════════════ -->
+<script>
+const ctx = document.getElementById('radarChart').getContext('2d');
+new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: ['Security', 'Architecture', 'Performance', 'Code Quality', 'AI Integration', 'Testing', 'DX', 'Game Engine'],
+    datasets: [
+      {
+        label: 'Qwen (61)',
+        data: [71, 82, 78, 68, 88, 15, 65, 75],
+        borderColor: '#a855f7',
+        backgroundColor: 'rgba(168,85,247,0.08)',
+        borderWidth: 2,
+        pointRadius: 3,
+      },
+      {
+        label: 'Claude Code (69)',
+        data: [50, 60, 60, 70, 80, 20, 40, 60],
+        borderColor: '#ee4d2d',
+        backgroundColor: 'rgba(238,77,45,0.08)',
+        borderWidth: 2,
+        pointRadius: 3,
+      },
+      {
+        label: 'Opus (69)',
+        data: [62, 84, 78, 78, 92, 15, 75, 85],
+        borderColor: '#06b6d4',
+        backgroundColor: 'rgba(6,182,212,0.08)',
+        borderWidth: 2,
+        pointRadius: 3,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 100,
+        ticks: {
+          stepSize: 20,
+          color: '#6868a0',
+          backdropColor: 'transparent',
+          font: { family: 'JetBrains Mono', size: 10 }
+        },
+        grid: { color: 'rgba(255,255,255,0.06)' },
+        angleLines: { color: 'rgba(255,255,255,0.06)' },
+        pointLabels: {
+          color: '#9898b8',
+          font: { family: 'Inter', size: 11, weight: '500' }
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#9898b8',
+          font: { family: 'Inter', size: 12 },
+          padding: 16,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,140 +1,114 @@
-/* ========================================================================
-   Shopee Office — Pixel-Art Inspired Styling (Shopee Brand Theme)
-   Enhanced with Activity Feed, Commission Widget, Agent Command,
-   Office Health, and Pipeline Workflow styles
-   ======================================================================== */
+/* ===== Design Tokens (Stitch Integration) ===== */
+:root {
+  --oc-primary: #EE4D2D;
+  --oc-secondary: #ffb4a4;
+  --oc-tertiary: #76d1ff;
+  --oc-surface: #121315;
+  --oc-surface-container: #1f2022;
+  --oc-surface-container-high: #292a2c;
+  --oc-surface-container-low: #1b1c1e;
+  --oc-outline: #5b403b;
+  --oc-glass: rgba(18, 19, 21, 0.8);
+  --oc-glass-border: rgba(238, 77, 45, 0.2);
+}
+
+.pixel-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
 
 /* ===== Container ===== */
 .shopee-office-container {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  font-family: 'Courier New', monospace;
-  padding: 20px 0;
-  gap: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* ===== Game Wrapper ===== */
-.shopee-office-game-wrapper {
+  background: var(--oc-surface);
   position: relative;
-  width: 1280px;
-  max-width: 100%;
-  margin: 0 auto;
-}
-
-.shopee-office-game-wrapper canvas {
-  image-rendering: pixelated;
-}
-
-.shopee-office-game-frame {
-  border: 4px solid #EE4D2D;
-  box-shadow:
-    0 0 0 2px #7a2210,
-    0 0 20px rgba(238, 77, 45, 0.3),
-    inset 0 0 30px rgba(0, 0, 0, 0.4);
-  border-radius: 4px;
   overflow: hidden;
-  animation: borderGlow 3s ease-in-out infinite;
+  padding: 0;
 }
 
-/* Scanline overlay */
-.shopee-office-scanlines {
-  pointer-events: none;
+.shopee-office-container::before {
+  content: '';
   position: absolute;
-  inset: 4px;
-  border-radius: 2px;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.06) 2px,
-    rgba(0, 0, 0, 0.06) 4px
-  );
-  z-index: 2;
-  opacity: 0.5;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(238, 77, 45, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ===== Glass Panel ===== */
+.office-glass-card {
+  background: var(--oc-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--oc-glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.office-glass-card:hover {
+  border-color: rgba(238, 77, 45, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ===== Panels Grid ===== */
 .shopee-office-panels {
   display: flex;
-  gap: 16px;
-  max-width: 1280px;
-  margin: 20px auto 0;
+  gap: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* ===== Panel Base ===== */
 .shopee-office-panel {
-  background: #141722;
-  border: 3px solid #0e1119;
-  border-radius: 6px;
-  padding: 12px 14px;
+  background: var(--oc-surface-container-low);
+  border: 1px solid var(--oc-outline);
+  border-radius: 8px;
+  padding: 16px;
   position: relative;
   overflow: hidden;
+  transition: border-color 0.2s ease;
 }
 
-/* Pixel corner decorations - Shopee orange */
-.shopee-office-panel::before,
-.shopee-office-panel::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 2px solid #EE4D2D;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.shopee-office-panel::before {
-  top: 3px;
-  left: 3px;
-  border-right: none;
-  border-bottom: none;
-}
-
-.shopee-office-panel::after {
-  bottom: 3px;
-  right: 3px;
-  border-left: none;
-  border-top: none;
+.shopee-office-panel:hover {
+  border-color: var(--oc-primary);
 }
 
 /* Panel title - Shopee orange */
 .shopee-panel-title {
-  color: #EE4D2D;
-  font-family: 'Courier New', monospace;
+  color: var(--oc-primary);
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 14px;
   font-weight: bold;
-  text-align: center;
-  letter-spacing: 1px;
-  padding: 6px 0 10px;
-  border-bottom: 2px solid #2a2a3e;
-  margin-bottom: 10px;
-  text-shadow: 0 0 8px rgba(238, 77, 45, 0.3);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ===== Pixel Art Buttons ===== */
 .shopee-btn {
-  background: #2a2d3e;
-  color: #e0e0e0;
-  border: 2px solid #3a3f55;
+  background: var(--oc-surface-container-high);
+  color: var(--on-surface);
+  border: 1px solid var(--oc-outline);
   border-radius: 4px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  transition: all 0.15s ease;
-  white-space: nowrap;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .shopee-btn:hover {
-  background: #3a3f55;
-  border-color: #EE4D2D;
+  background: var(--oc-primary);
+  color: white;
+  border-color: var(--oc-primary);
   transform: translateY(-1px);
-}
-
-.shopee-btn:active {
-  transform: translateY(0);
-  background: #1a1d2e;
 }
 
 .shopee-btn-active {

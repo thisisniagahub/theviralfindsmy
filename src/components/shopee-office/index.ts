@@ -1,4 +1,3 @@
-export { default as PhaserGame } from './phaser-game'
 export type { PhaserGameProps, AgentData } from './phaser-game'
 export { LanguageToggle } from './language-toggle'
 export type { Language } from './language-toggle'

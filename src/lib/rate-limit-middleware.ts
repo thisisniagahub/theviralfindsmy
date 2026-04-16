@@ -7,9 +7,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimitByIP } from './rate-limit'
 
-export function applyRateLimit(request: NextRequest, routeName?: string): NextResponse | null {
+export async function applyRateLimit(request: NextRequest, routeName?: string): Promise<NextResponse | null> {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-  const result = rateLimitByIP(ip)
+  const result = await rateLimitByIP(ip)
 
   if (!result.allowed) {
     console.warn(`[RateLimit] ${routeName || 'API'} — IP ${ip} exceeded rate limit (${result.retryAfter}s remaining)`)

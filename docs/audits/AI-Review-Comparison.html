@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TheViralFinds — AI Review Comparison Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #334155;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-yellow: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --accent-pink: #ec4899;
+            --accent-orange: #f97316;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .meta-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .meta-item .label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-item .value {
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* AI Reviewer Cards */
+        .reviewers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .reviewer-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reviewer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        .reviewer-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-color);
+        }
+
+        .reviewer-card.qwen { --accent-color: #3b82f6; }
+        .reviewer-card.gemini { --accent-color: #10b981; }
+        .reviewer-card.codex { --accent-color: #f59e0b; }
+        .reviewer-card.claude { --accent-color: #ec4899; }
+        .reviewer-card.opus { --accent-color: #8b5cf6; }
+
+        .reviewer-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+        }
+
+        .reviewer-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .reviewer-date {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-color) var(--score-deg), var(--bg-primary) 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .score-circle::before {
+            content: '';
+            position: absolute;
+            width: 48px;
+            height: 48px;
+            background: var(--bg-card);
+            border-radius: 50%;
+        }
+
+        .score-value {
+            position: relative;
+            z-index: 1;
+            font-size: 0.9rem;
+            font-weight: 800;
+        }
+
+        .score-grade {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        /* Sections */
+        .section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title .icon {
+            font-size: 1.5rem;
+        }
+
+        /* Comparison Tables */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comparison-table th {
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .comparison-table tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .comparison-table td {
+            color: var(--text-primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .badge-yellow { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-blue { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .badge-purple { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+
+        /* Scorecard Grid */
+        .scorecard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .scorecard-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .scorecard-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .scorecard-bar {
+            height: 8px;
+            background: var(--bg-hover);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .scorecard-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .scorecard-value {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        /* Issue Cards */
+        .issue-card {
+            background: var(--bg-primary);
+            border-left: 4px solid;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+        }
+
+        .issue-card.critical { border-color: var(--accent-red); }
+        .issue-card.warning { border-color: var(--accent-yellow); }
+        .issue-card.info { border-color: var(--accent-blue); }
+        .issue-card.success { border-color: var(--accent-green); }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .issue-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .issue-file {
+            color: var(--text-muted);
+            font-family: 'Fira Code', 'Consolas', monospace;
+            font-size: 0.85rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .issue-desc {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .issue-fix {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: var(--accent-green);
+            font-size: 0.9rem;
+        }
+
+        .issue-fix strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Venn Diagram Section */
+        .venn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .venn-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .venn-circle:hover {
+            transform: scale(1.05);
+        }
+
+        .venn-circle h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .venn-circle .count {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .venn-circle .label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Consensus Section */
+        .consensus-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .consensus-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .consensus-votes {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .vote-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .vote-qwen { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .vote-gemini { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .vote-codex { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .vote-claude { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+        .vote-opus { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+
+        .consensus-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Roadmap Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 2rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, var(--accent-blue), var(--accent-purple), var(--accent-pink));
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            padding-left: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.35rem;
+            top: 0.25rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            border: 3px solid var(--bg-card);
+        }
+
+        .timeline-week {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline-tasks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .timeline-task {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .timeline-task .effort {
+            color: var(--accent-yellow);
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        /* Conclusion Box */
+        .conclusion-box {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .conclusion-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .conclusion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .conclusion-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .conclusion-item h4 {
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .conclusion-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .conclusion-item ul {
+            color: var(--text-secondary);
+            margin-left: 1.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .conclusion-item li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container { padding: 1rem; }
+            .header h1 { font-size: 2rem; }
+            .comparison-table { font-size: 0.9rem; }
+            .comparison-table th, .comparison-table td { padding: 0.75rem 0.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5rem; }
+            .reviewers-grid { grid-template-columns: 1fr; }
+            .scorecard-grid { grid-template-columns: 1fr; }
+            .comparison-table { display: block; overflow-x: auto; }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; color: black; }
+            .section { box-shadow: none; border: 1px solid #ddd; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔍 Perbandingan Reviu AI: TheViralFinds</h1>
+            <p class="subtitle">Analisis Komprehensif dari 5 AI Assistant — Qwen, Gemini, Codex, Claude Code & Opus</p>
+            
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <div class="label">Projek</div>
+                    <div class="value">TheViralFinds</div>
+                </div>
+                <div class="meta-item">
+                    <div class="label">Tarikh Reviu</div>
+                    <div class="value">12 April 2026</div>
+                </div>
+                <div class="meta-item">
+                    <div class="label">Jumlah Fail</div>
+                    <div class="value">295+ fail</div>
+                </div>
+                <div class="meta-item">
+                    <div class="label">AI Reviewers</div>
+                    <div class="value">5</div>
+                </div>
+                <div class="meta-item">
+                    <div class="label">Status</div>
+                    <div class="value" style="color: #f59e0b;">⚠️ Perlu Perbaikan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Reviewers Overview -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">🤖</span> Profil AI Reviewers</h2>
+            <div class="reviewers-grid">
+                <!-- Qwen -->
+                <div class="reviewer-card qwen">
+                    <div class="reviewer-header">
+                        <div class="reviewer-icon">Q</div>
+                        <div>
+                            <div class="reviewer-name">Qwen Code</div>
+                            <div class="reviewer-date">12 April 2026</div>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <div class="score-circle" style="--score-deg: 219.6deg;">
+                            <div class="score-value">61</div>
+                        </div>
+                        <div class="score-grade">C+</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Fokus: 5 Critical Security Issues, Architecture, Advanced AI Features, Monetization
+                    </p>
+                    <div style="margin-top: 1rem;">
+                        <span class="badge badge-red">5 Critical</span>
+                        <span class="badge badge-yellow">5 Architecture</span>
+                        <span class="badge badge-blue">4 AI/ML</span>
+                    </div>
+                </div>
+
+                <!-- Gemini -->
+                <div class="reviewer-card gemini">
+                    <div class="reviewer-header">
+                        <div class="reviewer-icon">G</div>
+                        <div>
+                            <div class="reviewer-name">Gemini CLI</div>
+                            <div class="reviewer-date">12 April 2026</div>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <div class="score-circle" style="--score-deg: N/A;">
+                            <div class="score-value">—</div>
+                        </div>
+                        <div class="score-grade">A-</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Fokus: BRAIN mining, polling issues, Phaser refactor, A2A pipeline
+                    </p>
+                    <div style="margin-top: 1rem;">
+                        <span class="badge badge-green">4 Strengths</span>
+                        <span class="badge badge-yellow">4 Ideas</span>
+                        <span class="badge badge-blue">3 Bugs</span>
+                    </div>
+                </div>
+
+                <!-- Codex -->
+                <div class="reviewer-card codex">
+                    <div class="reviewer-header">
+                        <div class="reviewer-icon">C</div>
+                        <div>
+                            <div class="reviewer-name">Codex CLI</div>
+                            <div class="reviewer-date">12 April 2026</div>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <div class="score-circle" style="--score-deg: N/A;">
+                            <div class="score-value">—</div>
+                        </div>
+                        <div class="score-grade">B-</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Fokus: BRAIN archive quality, metadata, knowledge management
+                    </p>
+                    <div style="margin-top: 1rem;">
+                        <span class="badge badge-yellow">9 Findings</span>
+                        <span class="badge badge-blue">7 Improvements</span>
+                        <span class="badge badge-purple">626 Files</span>
+                    </div>
+                </div>
+
+                <!-- Claude Code -->
+                <div class="reviewer-card claude">
+                    <div class="reviewer-header">
+                        <div class="reviewer-icon">Cl</div>
+                        <div>
+                            <div class="reviewer-name">Claude Code</div>
+                            <div class="reviewer-date">12 April 2026</div>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <div class="score-circle" style="--score-deg: 248.4deg;">
+                            <div class="score-value">69</div>
+                        </div>
+                        <div class="score-grade">B-</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Fokus: 5 Critical Bugs, Security, Dead Code, Game Engine, BRAIN analysis
+                    </p>
+                    <div style="margin-top: 1rem;">
+                        <span class="badge badge-red">5 Bugs</span>
+                        <span class="badge badge-yellow">4 Security</span>
+                        <span class="badge badge-purple">4 Dead Code</span>
+                    </div>
+                </div>
+
+                <!-- Opus -->
+                <div class="reviewer-card opus">
+                    <div class="reviewer-header">
+                        <div class="reviewer-icon">O</div>
+                        <div>
+                            <div class="reviewer-name">Opus (Claude 4.6)</div>
+                            <div class="reviewer-date">12 April 2026</div>
+                        </div>
+                    </div>
+                    <div class="score-display">
+                        <div class="score-circle" style="--score-deg: 248.4deg;">
+                            <div class="score-value">69</div>
+                        </div>
+                        <div class="score-grade">B-</div>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Fokus: 4 Critical, 7 Moderate, 7 Minor — Complete source map & progress tracking
+                    </p>
+                    <div style="margin-top: 1rem;">
+                        <span class="badge badge-red">4 P0</span>
+                        <span class="badge badge-yellow">7 P1</span>
+                        <span class="badge badge-green">Progress ✅</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overall Score Comparison -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">📊</span> Perbandingan Skor Keseluruhan</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>AI Reviewer</th>
+                        <th>Skor</th>
+                        <th>Gred</th>
+                        <th>Fail Dianalisis</th>
+                        <th>Critical Issues</th>
+                        <th>Warnings</th>
+                        <th>Suggestions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong style="color: #3b82f6;">Qwen Code</strong></td>
+                        <td><strong>61/100</strong></td>
+                        <td><span class="badge badge-red">C+</span></td>
+                        <td>200+</td>
+                        <td>5</td>
+                        <td>5</td>
+                        <td>25+</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color: #10b981;">Gemini CLI</strong></td>
+                        <td><strong>— (A-)</strong></td>
+                        <td><span class="badge badge-green">A-</span></td>
+                        <td>BRAIN + Code</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>10+</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color: #f59e0b;">Codex CLI</strong></td>
+                        <td><strong>— (B-)</strong></td>
+                        <td><span class="badge badge-yellow">B-</span></td>
+                        <td>626 (BRAIN)</td>
+                        <td>0</td>
+                        <td>9</td>
+                        <td>7</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color: #ec4899;">Claude Code</strong></td>
+                        <td><strong>69/100</strong></td>
+                        <td><span class="badge badge-yellow">B-</span></td>
+                        <td>295</td>
+                        <td>5</td>
+                        <td>4</td>
+                        <td>22</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color: #8b5cf6;">Opus (4.6)</strong></td>
+                        <td><strong>69/100</strong></td>
+                        <td><span class="badge badge-yellow">B-</span></td>
+                        <td>295</td>
+                        <td>4</td>
+                        <td>7</td>
+                        <td>20+</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Dimension Scorecards -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">📈</span> Perbandingan Skor Mengikut Dimensi</h2>
+            
+            <h3 style="margin: 1.5rem 0 1rem; color: var(--text-secondary);">Qwen Code Scorecard</h3>
+            <div class="scorecard-grid">
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Security</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 71%; background: #ef4444;"></div></div>
+                    <div class="scorecard-value" style="color: #ef4444;">71/100 (C+)</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Architecture</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 82%; background: #3b82f6;"></div></div>
+                    <div class="scorecard-value" style="color: #3b82f6;">82/100 (A-)</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">AI Integration</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 88%; background: #10b981;"></div></div>
+                    <div class="scorecard-value" style="color: #10b981;">88/100 (A)</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Testing</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 15%; background: #ef4444;"></div></div>
+                    <div class="scorecard-value" style="color: #ef4444;">15/100 (F)</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 1.5rem 0 1rem; color: var(--text-secondary);">Claude Code Scorecard</h3>
+            <div class="scorecard-grid">
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Security</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 50%; background: #ef4444;"></div></div>
+                    <div class="scorecard-value" style="color: #ef4444;">5/10</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Architecture</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 60%; background: #f59e0b;"></div></div>
+                    <div class="scorecard-value" style="color: #f59e0b;">6/10</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">AI Integration</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 80%; background: #10b981;"></div></div>
+                    <div class="scorecard-value" style="color: #10b981;">8/10</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Testing</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 20%; background: #ef4444;"></div></div>
+                    <div class="scorecard-value" style="color: #ef4444;">2/10</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 1.5rem 0 1rem; color: var(--text-secondary);">Opus Scorecard</h3>
+            <div class="scorecard-grid">
+                <div class="scorecard-item">
+                    <div class="scorecard-label">OpenClaw AI</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 92%; background: #10b981;"></div></div>
+                    <div class="scorecard-value" style="color: #10b981;">92/100 (A+)</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Game Engine</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 85%; background: #10b981;"></div></div>
+                    <div class="scorecard-value" style="color: #10b981;">85/100 (A)</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Auth & Security</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 62%; background: #f59e0b;"></div></div>
+                    <div class="scorecard-value" style="color: #f59e0b;">62/100 (C)</div>
+                </div>
+                <div class="scorecard-item">
+                    <div class="scorecard-label">Testing</div>
+                    <div class="scorecard-bar"><div class="scorecard-fill" style="width: 15%; background: #ef4444;"></div></div>
+                    <div class="scorecard-value" style="color: #ef4444;">15/100 (F)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Issues - Cross-AI Consensus -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">🔴</span> Isu Kritikal — Konsensus 5 AI</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Isu-isu yang dikenalpasti oleh SEMUA atau MAJORITI AI reviewers:</p>
+
+            <!-- Consensus Issue 1 -->
+            <div class="consensus-item">
+                <div class="issue-header">
+                    <div class="issue-title">🔴 #1: Tiada Model User / Multi-Tenancy</div>
+                    <span class="badge badge-red">5/5 AI Agree</span>
+                </div>
+                <div class="consensus-votes">
+                    <span class="vote-badge vote-qwen">Qwen ✅</span>
+                    <span class="vote-badge vote-gemini">Gemini ✅</span>
+                    <span class="vote-badge vote-codex">Codex ❌</span>
+                    <span class="vote-badge vote-claude">Claude ✅</span>
+                    <span class="vote-badge vote-opus">Opus ✅</span>
+                </div>
+                <div class="issue-desc">
+                    <strong>Masalah:</strong> Tiada model User dalam Prisma. Semua data (links, campaigns, earnings) adalah global — tiada cara untuk mengasingkan data antara pengguna. Sistem single-tenant sahaja.
+                </div>
+                <div class="issue-fix">
+                    <strong>✅ Penyelesaian:</strong>
+                    Tambah model User dengan email, passwordHash, role, tier. Tambah userId foreign key ke semua model data. Filter semua queries by userId.
+                </div>
+            </div>
+
+            <!-- Consensus Issue 2 -->
+            <div class="consensus-item">
+                <div class="issue-header">
+                    <div class="issue-title">🔴 #2: Tiada Security Headers</div>
+                    <span class="badge badge-red">4/5 AI Agree</span>
+                </div>
+                <div class="consensus-votes">
+                    <span class="vote-badge vote-qwen">Qwen ✅</span>
+                    <span class="vote-badge vote-gemini">Gemini ❌</span>
+                    <span class="vote-badge vote-codex">Codex ❌</span>
+                    <span class="vote-badge vote-claude">Claude ✅</span>
+                    <span class="vote-badge vote-opus">Opus ✅</span>
+                </div>
+                <div class="issue-desc">
+                    <strong>Masalah:</strong> next.config.ts tiada headers(). Missing CSP, HSTS, X-Frame-Options, Permissions-Policy — semua critical untuk production security.
+                </div>
+                <div class="issue-fix">
+                    <strong>✅ Penyelesaian:</strong>
+                    Tambah async headers() dalam next.config.ts dengan CSP, X-Content-Type-Options, X-Frame-Options: DENY, HSTS, Permissions-Policy.
+                </div>
+            </div>
+
+            <!-- Consensus Issue 3 -->
+            <div class="consensus-item">
+                <div class="issue-header">
+                    <div class="issue-title">🔴 #3: DB Service Tanpa Authentication</div>
+                    <span class="badge badge-red">4/5 AI Agree</span>
+                </div>
+                <div class="consensus-votes">
+                    <span class="vote-badge vote-qwen">Qwen ✅</span>
+                    <span class="vote-badge vote-gemini">Gemini ✅</span>
+                    <span class="vote-badge vote-codex">Codex ❌</span>
+                    <span class="vote-badge vote-claude">Claude ✅</span>
+                    <span class="vote-badge vote-opus">Opus ✅</span>
+                </div>
+                <div class="issue-desc">
+                    <strong>Masalah:</strong> DB microservice pada port 3005 tiada authentication. Mana-mana proses pada mesin boleh baca/tulis seluruh database termasuk nombor akaun bank.
+                </div>
+                <div class="issue-fix">
+                    <strong>✅ Penyelesaian:</strong>
+                    Tambah DB_SERVICE_SECRET env var. Validate Authorization: Bearer token pada setiap request. Jadikan mandatory (no bypass).
+                </div>
+            </div>
+
+            <!-- Consensus Issue 4 -->
+            <div class="consensus-item">
+                <div class="issue-header">
+                    <div class="issue-title">🔴 #4: Zero Test Coverage</div>
+                    <span class="badge badge-red">5/5 AI Agree</span>
+                </div>
+                <div class="consensus-votes">
+                    <span class="vote-badge vote-qwen">Qwen ✅</span>
+                    <span class="vote-badge vote-gemini">Gemini ✅</span>
+                    <span class="vote-badge vote-codex">Codex ✅</span>
+                    <span class="vote-badge vote-claude">Claude ✅</span>
+                    <span class="vote-badge vote-opus">Opus ✅</span>
+                </div>
+                <div class="issue-desc">
+                    <strong>Masalah:</strong> Hanya 3 test files (~0.5% coverage). 69 API routes tanpa sebarang integration test. 0 E2E tests. 0 component tests.
+                </div>
+                <div class="issue-fix">
+                    <strong>✅ Penyelesaian:</strong>
+                    Target 60% coverage: 40+ unit tests (lib/), 20+ API integration tests, 5+ Playwright E2E tests (login, create link, dashboard).
+                </div>
+            </div>
+
+            <!-- Consensus Issue 5 -->
+            <div class="consensus-item">
+                <div class="issue-header">
+                    <div class="issue-title">🔴 #5: In-Memory Rate Limiting & Caching</div>
+                    <span class="badge badge-yellow">4/5 AI Agree</span>
+                </div>
+                <div class="consensus-votes">
+                    <span class="vote-badge vote-qwen">Qwen ✅</span>
+                    <span class="vote-badge vote-gemini">Gemini ✅</span>
+                    <span class="vote-badge vote-codex">Codex ❌</span>
+                    <span class="vote-badge vote-claude">Claude ✅</span>
+                    <span class="vote-badge vote-opus">Opus ✅</span>
+                </div>
+                <div class="issue-desc">
+                    <strong>Masalah:</strong> Rate limiting dan caching guna Map<string> — data hilang bila server restart. Tak berfungsi dalam serverless/multi-instance deployment.
+                </div>
+                <div class="issue-fix">
+                    <strong>✅ Penyelesaian:</strong>
+                    Migrate ke Upstash Redis. Guna @upstash/ratelimit untuk distributed rate limiting. Cache shared across all instances.
+                </div>
+            </div>
+        </div>
+
+        <!-- Unique Findings per AI -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">💡</span> Penemuan Unik Setiap AI</h2>
+            
+            <h3 style="color: #3b82f6; margin: 1.5rem 0 1rem;">🔵 Qwen Code — Advanced Features & Monetization</h3>
+            <div class="issue-card info">
+                <div class="issue-title">RAG Pipeline (Vector Search)</div>
+                <div class="issue-desc">Qwen adalah SATU-SATUNYA yang suggest Pinecone/Qdrant untuk vector embeddings — membolehkan users tanya soalan natural language dan dapat jawapan dari data mereka sendiri.</div>
+            </div>
+            <div class="issue-card info">
+                <div class="issue-title">Natural Language Analytics</div>
+                <div class="issue-desc">"Show me my top 5 links this week" → auto-generate chart. Guna niagacomputer agent untuk translate NL → Prisma queries.</div>
+            </div>
+            <div class="issue-card info">
+                <div class="issue-title">Stripe Subscription + Tier Enforcement</div>
+                <div class="issue-desc">Full implementation guide: Checkout, Webhooks, Customer Portal, feature gating by tier (FREE/PRO/ENTERPRISE).</div>
+            </div>
+
+            <h3 style="color: #10b981; margin: 1.5rem 0 1rem;">🟢 Gemini CLI — BRAIN Mining & Performance</h3>
+            <div class="issue-card success">
+                <div class="issue-title">Polling Issue dalam Agent Office</div>
+                <div class="issue-desc">Gemini jumpa agent-office-page poll API setiap 3 saat (20 req/min per user!) — akan bunuh server bila trafik tinggi. Suggest tukar ke WebSocket/SSE.</div>
+            </div>
+            <div class="issue-card success">
+                <div class="issue-title">Phaser Monolith Perlu Dipecahkan</div>
+                <div class="issue-desc">phaser-game.tsx = 52KB menampung scene + entities + React wrapper. Suggest pecah kepada 3 bahagian: Setup, Scene, Wrapper.</div>
+            </div>
+
+            <h3 style="color: #f59e0b; margin: 1.5rem 0 1rem;">🟡 Codex CLI — BRAIN Archive Quality</h3>
+            <div class="issue-card warning">
+                <div class="issue-title">Signal-to-Noise Ratio Rendah</div>
+                <div class="issue-desc">626 files tapi dokumen utama cuma 34 (0.38MB). 343 temp media files (22MB) tenggelamkan knowledge sebenar. Suggest: Pisahkan canonical vs ephemeral.</div>
+            </div>
+            <div class="issue-card warning">
+                <div class="issue-title">Metadata Schema Terlalu Nipis</div>
+                <div class="issue-desc">Cuma 4 fields (artifactType, summary, updatedAt, version). Missing: sessionId, project, commitHash, tags, status, sensitivity, relatedArtifacts.</div>
+            </div>
+
+            <h3 style="color: #ec4899; margin: 1.5rem 0 1rem;">🔴 Claude Code — Critical Bugs & Dead Code</h3>
+            <div class="issue-card critical">
+                <div class="issue-title">Math.random() dalam Production DB Service</div>
+                <div class="issue-desc">Dashboard guna Math.random() untuk generate clicks/earnings — BUKAN demo data! Ini silent data corruption. Users nampak fabricated analytics.</div>
+            </div>
+            <div class="issue-card critical">
+                <div class="issue-title">Dead Code: config.ts, db-timeout.ts, isServiceConfigured()</div>
+                <div class="issue-desc">3 utility files yang NEVER imported. config.ts ada env validation kedua (duplicate). db-timeout.ts defined but unused. isServiceConfigured() unreliable.</div>
+            </div>
+            <div class="issue-card critical">
+                <div class="issue-title">SDK Fallback Prompt Injection Risk</div>
+                <div class="issue-desc">System prompts dihantar sebagai role: 'assistant' (bukan 'system') — LLM treat sebagai prior output, bukan instructions. Weakens prompt adherence.</div>
+            </div>
+
+            <h3 style="color: #8b5cf6; margin: 1.5rem 0 1rem;">🟣 Opus — Progress Tracking & Completeness</h3>
+            <div class="issue-card success">
+                <div class="issue-title">Progress Since Last Reviews — Detailed Table</div>
+                <div class="issue-desc">Opus SATU-SATUNYA yang track apa dah fix vs apa masih pending: Root layout ✅, SPA anti-pattern ✅, ignoreBuildErrors ✅, Phaser monolith ✅, User model ❌, Tests ❌</div>
+            </div>
+            <div class="issue-card success">
+                <div class="issue-title">Complete Source Map (295 files)</div>
+                <div class="issue-desc">Full directory tree dengan line counts, file sizes, dan concern flags. Termasuk top 20 largest components dengan split recommendations.</div>
+            </div>
+        </div>
+
+        <!-- Issues Comparison Table -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">⚠️</span> Perbandingan Isu Terperinci</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Isu</th>
+                        <th>Qwen</th>
+                        <th>Gemini</th>
+                        <th>Codex</th>
+                        <th>Claude</th>
+                        <th>Opus</th>
+                        <th>Priority</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Tiada User Model</strong></td>
+                        <td><span class="badge badge-red">✅ P0</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-red">✅ P0</span></td>
+                        <td><span class="badge badge-red">✅ C1</span></td>
+                        <td><span class="badge badge-red">🔴 CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Security Headers Missing</strong></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-red">✅ C2</span></td>
+                        <td><span class="badge badge-red">🔴 HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>DB Service No Auth</strong></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-red">✅ P0</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-red">🔴 CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Zero Test Coverage</strong></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-red">✅ C4</span></td>
+                        <td><span class="badge badge-red">🔴 CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>In-Memory Rate Limiting</strong></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-yellow">✅ M1</span></td>
+                        <td><span class="badge badge-yellow">🟡 HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hardcoded Credentials</strong></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-yellow">✅ Partial</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-red">🔴 CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Math.random() in DB</strong></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-red">✅ BUG-1</span></td>
+                        <td><span class="badge badge-yellow">✅ M3</span></td>
+                        <td><span class="badge badge-red">🔴 CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>No CI/CD Pipeline</strong></td>
+                        <td><span class="badge badge-red">✅</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-yellow">🟡 HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Polling in Agent Office</strong></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-red">✅ P0</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-yellow">🟡 MEDIUM</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>BRAIN Archive Quality</strong></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-red">✅ Major</span></td>
+                        <td><span class="badge badge-yellow">✅</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-blue">🔵 LOW</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dead Code (config.ts, etc)</strong></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-muted">❌</span></td>
+                        <td><span class="badge badge-yellow">✅ 4 files</span></td>
+                        <td><span class="badge badge-yellow">✅ N1-N4</span></td>
+                        <td><span class="badge badge-blue">🔵 LOW</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recommended Roadmap -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">🗺️</span> Pelan Tindakan Disatukan (Consensus Roadmap)</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Berdasarkan konsensus 5 AI reviewers, berikut adalah roadmap yang disatukan:</p>
+
+            <div class="timeline">
+                <!-- Week 1-2 -->
+                <div class="timeline-item">
+                    <div class="timeline-week">Minggu 1-2 — Foundation & Security (P0)</div>
+                    <div class="timeline-title">🔴 Betulkan Critical Issues Dahulu</div>
+                    <div class="timeline-tasks">
+                        <div class="timeline-task">
+                            <strong>Tambah User Model + Multi-Tenancy</strong>
+                            <div class="effort">24-40h • 5/5 AI Agree</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Tambah User, Session, Role, Tier models. userId FK ke semua data models.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Security Headers (CSP, HSTS, etc)</strong>
+                            <div class="effort">1h • 4/5 AI Agree</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Tambah async headers() dalam next.config.ts.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>DB Service Authentication</strong>
+                            <div class="effort">2h • 4/5 AI Agree</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Mandatory DB_SERVICE_SECRET. Validate bearer token on every request.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Remove Math.random() from DB Service</strong>
+                            <div class="effort">1h • Claude + Opus</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Return real aggregate data atau 0/null instead of fake random numbers.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Fix Buffer in QR Code</strong>
+                            <div class="effort">10min • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Replace Buffer dengan btoa() untuk browser compatibility.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Delete Dead Code</strong>
+                            <div class="effort">30min • Claude + Opus</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Padam config.ts, db-timeout.ts, app-layout.tsx (jika unused).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 3-4 -->
+                <div class="timeline-item">
+                    <div class="timeline-week">Minggu 3-4 — Infrastructure & Testing (P1)</div>
+                    <div class="timeline-title">🟡 Bina Foundation untuk Production</div>
+                    <div class="timeline-tasks">
+                        <div class="timeline-task">
+                            <strong>Redis/Upstash Integration</strong>
+                            <div class="effort">8-12h • 4/5 AI Agree</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Replace in-memory rate limiting & caching. Shared across instances.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Test Suite Foundation</strong>
+                            <div class="effort">24-32h • 5/5 AI Agree</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">40+ unit tests, 20+ API integration, 5+ Playwright E2E. Target 60% coverage.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>CI/CD Pipeline (GitHub Actions)</strong>
+                            <div class="effort">4-6h • 4/5 AI Agree</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">lint → typecheck → test → build → deploy. Auto-preview untuk PRs.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Shopee Affiliate API Integration</strong>
+                            <div class="effort">16-24h • Gemini + Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Connect real API, remove mock data. Login affiliate.shopee.com.my/offer/api untuk docs.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 5-6 -->
+                <div class="timeline-item">
+                    <div class="timeline-week">Minggu 5-6 — Advanced AI & Performance (P2)</div>
+                    <div class="timeline-title">🟢 Advanced Features & Optimization</div>
+                    <div class="timeline-tasks">
+                        <div class="timeline-task">
+                            <strong>RAG Pipeline (Vector Search)</strong>
+                            <div class="effort">24-32h • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Pinecone/Qdrant + OpenAI embeddings. Natural language queries → answers.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Natural Language Analytics</strong>
+                            <div class="effort">16-24h • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">"Show me top 5 links" → auto chart. niagacomputer agent NL → Prisma.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>WebSocket for Agent Office</strong>
+                            <div class="effort">8-12h • Gemini</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Replace polling (3s interval) dengan SSE/WebSocket. Jimat 20 req/min per user.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>AI Content Calendar</strong>
+                            <div class="effort">12-16h • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Auto-generate 7-day social media content from trending products + user data.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week 7-8 -->
+                <div class="timeline-item">
+                    <div class="timeline-week">Minggu 7-8 — Monetization & Scale (P3)</div>
+                    <div class="timeline-title">🔵 Revenue Features & Multi-Platform</div>
+                    <div class="timeline-tasks">
+                        <div class="timeline-task">
+                            <strong>Stripe Subscription System</strong>
+                            <div class="effort">24-40h • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">FREE/PRO/ENTERPRISE tiers. Checkout, webhooks, feature gating, usage metering.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Multi-Platform Support</strong>
+                            <div class="effort">8-12h/platform • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Lazada → TikTok Shop → Amazon. First unified affiliate dashboard for MY market.</p>
+                        </div>
+                        <div class="timeline-task">
+                            <strong>Competitive Intelligence</strong>
+                            <div class="effort">16-20h • Qwen</div>
+                            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.5rem;">Industry benchmarks, percentile rankings, anonymized aggregate comparisons.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strengths Comparison -->
+        <div class="section">
+            <h2 class="section-title"><span class="icon">✅</span> Kekuatan Projek (Apa yang Semua AI Pujian)</h2>
+            
+            <div class="issue-card success">
+                <div class="issue-header">
+                    <div class="issue-title">1. OpenClaw AI Integration — Production-Grade</div>
+                    <span class="badge badge-green">5/5 AI Praise</span>
+                </div>
+                <div class="issue-desc">
+                    Circuit breaker, exponential backoff retry, SDK fallback, SSE streaming, modular 6-file structure. Source tracking untuk debugging. Semua AI setuju ini adalah <strong>best-in-class</strong> implementation.
+                </div>
+            </div>
+
+            <div class="issue-card success">
+                <div class="issue-header">
+                    <div class="issue-title">2. Zod Validation & Environment Safety</div>
+                    <span class="badge badge-green">5/5 AI Praise</span>
+                </div>
+                <div class="issue-desc">
+                    13 Zod schemas untuk API validation. env.ts fail fast on startup. Semua POST/PUT endpoints validated. Fail-safe approach yang professional.
+                </div>
+            </div>
+
+            <div class="issue-card success">
+                <div class="issue-header">
+                    <div class="issue-title">3. Phaser Game Engine — Well-Refactored</div>
+                    <span class="badge badge-green">4/5 AI Praise</span>
+                </div>
+                <div class="issue-desc">
+                    Down from 1,560 lines monolith → 488 lines + ECS modules (WorkerManager, Pathfinder, CameraController). Deferred asset loading. Proper cleanup on unmount.
+                </div>
+            </div>
+
+            <div class="issue-card success">
+                <div class="issue-header">
+                    <div class="issue-title">4. App Router Migration — DONE</div>
+                    <span class="badge badge-green">3/5 AI Acknowledge</span>
+                </div>
+                <div class="issue-desc">
+                    Root layout is Server Component (no "use client"). 15 dashboard sub-routes dengan proper file-based routing. Auth guard di layout level. SSR working.
+                </div>
+            </div>
+
+            <div class="issue-card success">
+                <div class="issue-header">
+                    <div class="issue-title">5. Database Schema Design</div>
+                    <span class="badge badge-green">5/5 AI Praise</span>
+                </div>
+                <div class="issue-desc">
+                    8 Prisma models dengan 20+ indexes. Cascade deletes. Proper foreign keys. Multi-merchant enum (forward-looking). AgentMemory model for AI conversations.
+                </div>
+            </div>
+        </div>
+
+        <!-- Conclusion -->
+        <div class="conclusion-box">
+            <h2 class="conclusion-title">🎯 KESIMPULAN & CADANGAN UTAMA</h2>
+            
+            <p style="text-align: center; color: var(--text-secondary); font-size: 1.1rem; margin-bottom: 2rem;">
+                Berdasarkan analisis mendalam dari <strong>5 AI reviewers</strong> yang membaca <strong>200-626 fail</strong> setiap satu, berikut adalah kesimpulan muktamad untuk improve TheViralFinds:
+            </p>
+
+            <div class="conclusion-grid">
+                <div class="conclusion-item">
+                    <h4>🔴 #1 PRIORITY: User Model + Multi-Tenancy</h4>
+                    <p><strong>Kenapa:</strong> Platform tak boleh serve real users tanpa ini. Semua data adalah global — tiada tenant isolation.</p>
+                    <ul>
+                        <li>Tambah User, Session, Role, Tier models</li>
+                        <li>Add userId FK ke semua data models</li>
+                        <li>Filter semua queries by userId</li>
+                        <li>Build registration + OAuth flow</li>
+                    </ul>
+                    <p style="color: var(--accent-yellow); margin-top: 0.5rem;"><strong>Effort: 24-40h • 5/5 AI Agree</strong></p>
+                </div>
+
+                <div class="conclusion-item">
+                    <h4>🔴 #2 PRIORITY: Security Hardening</h4>
+                    <p><strong>Kenapa:</strong> 5 critical security vulnerabilities yang boleh compromise production:</p>
+                    <ul>
+                        <li>Add security headers (CSP, HSTS, X-Frame)</li>
+                        <li>DB service mandatory authentication</li>
+                        <li>Remove hardcoded credentials</li>
+                        <li>Fix Buffer in QR code (client crash)</li>
+                        <li>Encrypt sensitive data (bank accounts)</li>
+                    </ul>
+                    <p style="color: var(--accent-yellow); margin-top: 0.5rem;"><strong>Effort: 8-12h • 4/5 AI Agree</strong></p>
+                </div>
+
+                <div class="conclusion-item">
+                    <h4>🟡 #3 PRIORITY: Real Data Connection</h4>
+                    <p><strong>Kenapa:</strong> Shopee integration 100% MOCK data. Dashboard show Math.random() numbers — ini bukan demo, ini silent corruption.</p>
+                    <ul>
+                        <li>Connect real Shopee Affiliate API</li>
+                        <li>Remove Math.random() from DB service</li>
+                        <li>Login affiliate.shopee.com.my/offer/api untuk API docs</li>
+                        <li>Show real isShopeeConfigured() state</li>
+                    </ul>
+                    <p style="color: var(--accent-yellow); margin-top: 0.5rem;"><strong>Effort: 16-24h • Gemini + Claude</strong></p>
+                </div>
+
+                <div class="conclusion-item">
+                    <h4>🟡 #4 PRIORITY: Test Suite + CI/CD</h4>
+                    <p><strong>Kenapa:</strong> 0.5% coverage = high-risk refactoring. No automated quality gates. Manual deployments only.</p>
+                    <ul>
+                        <li>40+ unit tests (lib/ utilities)</li>
+                        <li>20+ API integration tests</li>
+                        <li>5+ Playwright E2E tests</li>
+                        <li>GitHub Actions CI/CD pipeline</li>
+                    </ul>
+                    <p style="color: var(--accent-yellow); margin-top: 0.5rem;"><strong>Effort: 28-38h • 5/5 AI Agree</strong></p>
+                </div>
+
+                <div class="conclusion-item">
+                    <h4>🟢 #5 PRIORITY: Redis/Upstash Integration</h4>
+                    <p><strong>Kenapa:</strong> In-memory rate limiting & caching tak works dalam production (serverless, multi-instance).</p>
+                    <ul>
+                        <li>Setup Upstash Redis (free tier)</li>
+                        <li>Replace Map-based rate limiter</li>
+                        <li>Replace Map-based cache</li>
+                        <li>Shared state across all instances</li>
+                    </ul>
+                    <p style="color: var(--accent-yellow); margin-top: 0.5rem;"><strong>Effort: 8-12h • 4/5 AI Agree</strong></p>
+                </div>
+
+                <div class="conclusion-item">
+                    <h4>🔵 #6 PRIORITY: Advanced AI Features</h4>
+                    <p><strong>Kenapa:</strong> Ini competitive advantages yang bezakan TheViralFinds dari tools lain:</p>
+                    <ul>
+                        <li>RAG Pipeline (vector search) — unique</li>
+                        <li>Natural Language Analytics — "show me..." → chart</li>
+                        <li>AI Content Calendar — auto-generate posts</li>
+                        <li>Wire Agent Office to real activity — LIVE agents</li>
+                    </ul>
+                    <p style="color: var(--accent-yellow); margin-top: 0.5rem;"><strong>Effort: 68-92h • Qwen独有建议</strong></p>
+                </div>
+            </div>
+
+            <div style="background: var(--bg-primary); border: 2px solid var(--accent-green); border-radius: 12px; padding: 2rem; margin-top: 2rem;">
+                <h3 style="color: var(--accent-green); font-size: 1.5rem; margin-bottom: 1rem; text-align: center;">📊 Overall Assessment</h3>
+                <p style="color: var(--text-secondary); text-align: center; font-size: 1.1rem; line-height: 1.8;">
+                    <strong style="color: var(--text-primary);">TheViralFinds</strong> ada <strong style="color: var(--accent-green);">foundation yang sangat kukuh</strong> — OpenClaw AI integration, App Router migration, Phaser game engine, dan database schema adalah <strong>production-grade</strong>.<br><br>
+                    
+                    Namun, <strong style="color: var(--accent-red);">critical gaps</strong> dalam security (no User model, no headers), testing (0.5% coverage), dan data integrity (Math.random() in production) menghalang platform dari serving real users.<br><br>
+                    
+                    <strong style="color: var(--accent-blue);">Recommended approach:</strong> Execute P0 items (User model + security) dalam <strong>2 minggu pertama</strong>, kemudian build testing infrastructure, dan akhirnya add advanced AI features untuk competitive advantage.<br><br>
+                    
+                    <strong style="color: var(--accent-purple);">Estimated timeline:</strong> 3 bulan untuk transform dari <strong>61-69/100 (C+/B-)</strong> ke <strong>90+/100 (A)</strong> production-ready system.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            <p>📄 Dokumen ini dijana pada <strong>12 April 2026</strong></p>
+            <p>🤖 Analisis dari: Qwen Code • Gemini CLI • Codex CLI • Claude Code • Opus (Claude 4.6)</p>
+            <p>📁 Source files: Qwen-Review.md • Gemini-Review.md • Codex-Review.md • ClaudeCode-Review.md • Opus-Review.md</p>
+            <p style="margin-top: 1rem; color: var(--text-secondary);">
+                <strong>Fail ini:</strong> <code style="background: var(--bg-secondary); padding: 0.25rem 0.5rem; border-radius: 4px;">g:\PROJECT-6\AI-Review-Comparison.html</code>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
