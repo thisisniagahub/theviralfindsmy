@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 
 const db = new PrismaClient()
 
@@ -83,7 +83,7 @@ async function main() {
   console.log(`✅ Created ${campaigns.count} campaigns`)
 
   // Create affiliate links
-  const affiliateLinks = [
+  const affiliateLinks: Prisma.AffiliateLinkUncheckedCreateInput[] = [
     {
       id: 'link_01',
       userId,
