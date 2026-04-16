@@ -20,9 +20,10 @@ const STATUS_COLORS: Record<AgentStatus, string> = {
   executing: '#f97316', syncing: '#06b6d4', error: '#ef4444',
 }
 
-const translations = {
+const translations: Record<Language, { back: string; tasksCompleted: string; authStatus: string }> = {
   en: { back: 'BACK', tasksCompleted: 'TASKS', authStatus: 'AUTH' },
-  ms: { back: 'KEMBALI', tasksCompleted: 'TUGAS', authStatus: 'AUTENTIKASI' },
+  cn: { back: '返回', tasksCompleted: '任务', authStatus: '认证' },
+  jp: { back: '戻る', tasksCompleted: 'タスク', authStatus: '認証' },
 }
 
 function StatusRing({ status, size = 100 }: { status: AgentStatus; size?: number }) {
