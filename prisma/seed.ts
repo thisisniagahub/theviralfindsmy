@@ -31,53 +31,55 @@ async function main() {
   await db.notification.deleteMany()
 
   // Create campaigns
+  const campaignData: Prisma.CampaignUncheckedCreateManyInput[] = [
+    {
+      id: 'camp_01',
+      userId,
+      name: 'Ramadan Sale 2025',
+      description: 'Special affiliate campaign for Ramadan mega sale period',
+      status: 'active',
+      budget: 5000,
+      spent: 2340,
+      startDate: new Date('2025-02-15'),
+      endDate: new Date('2025-04-15'),
+    },
+    {
+      id: 'camp_02',
+      userId,
+      name: 'Tech Gadgets Promo',
+      description: 'Electronics and gadgets affiliate push',
+      status: 'active',
+      budget: 3000,
+      spent: 1200,
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-06-30'),
+    },
+    {
+      id: 'camp_03',
+      userId,
+      name: 'Beauty & Skincare',
+      description: 'Beauty product affiliate links for Q1 2025',
+      status: 'paused',
+      budget: 2000,
+      spent: 1800,
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-03-31'),
+    },
+    {
+      id: 'camp_04',
+      userId,
+      name: 'Back to School',
+      description: 'School supplies and electronics for students',
+      status: 'completed',
+      budget: 1500,
+      spent: 1500,
+      startDate: new Date('2024-12-01'),
+      endDate: new Date('2025-01-31'),
+    },
+  ]
+
   const campaigns = await db.campaign.createMany({
-    data: [
-      {
-        id: 'camp_01',
-        userId,
-        name: 'Ramadan Sale 2025',
-        description: 'Special affiliate campaign for Ramadan mega sale period',
-        status: 'active',
-        budget: 5000,
-        spent: 2340,
-        startDate: new Date('2025-02-15'),
-        endDate: new Date('2025-04-15'),
-      },
-      {
-        id: 'camp_02',
-        userId,
-        name: 'Tech Gadgets Promo',
-        description: 'Electronics and gadgets affiliate push',
-        status: 'active',
-        budget: 3000,
-        spent: 1200,
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-06-30'),
-      },
-      {
-        id: 'camp_03',
-        userId,
-        name: 'Beauty & Skincare',
-        description: 'Beauty product affiliate links for Q1 2025',
-        status: 'paused',
-        budget: 2000,
-        spent: 1800,
-        startDate: new Date('2025-01-01'),
-        endDate: new Date('2025-03-31'),
-      },
-      {
-        id: 'camp_04',
-        userId,
-        name: 'Back to School',
-        description: 'School supplies and electronics for students',
-        status: 'completed',
-        budget: 1500,
-        spent: 1500,
-        startDate: new Date('2024-12-01'),
-        endDate: new Date('2025-01-31'),
-      },
-    ],
+    data: campaignData,
   })
 
   console.log(`✅ Created ${campaigns.count} campaigns`)
@@ -437,7 +439,7 @@ async function main() {
   const devices = ['Mobile', 'Desktop', 'Tablet']
   const referers = ['google.com', 'facebook.com', 'instagram.com', 'tiktok.com', 'direct', 'twitter.com', 'shopee.com.my', 'whatsapp.com']
 
-  const clickRecords = []
+  const clickRecords: Prisma.ClickRecordUncheckedCreateManyInput[] = []
   for (let i = 0; i < 60; i++) {
     const linkIdx = Math.floor(Math.random() * affiliateLinks.length)
     const link = affiliateLinks[linkIdx]
@@ -462,7 +464,7 @@ async function main() {
 
   // Create conversions
   const conversionStatuses = ['pending', 'confirmed', 'confirmed', 'confirmed', 'paid', 'rejected']
-  const conversions = []
+  const conversions: Prisma.ConversionUncheckedCreateManyInput[] = []
   for (let i = 0; i < 25; i++) {
     const linkIdx = Math.floor(Math.random() * affiliateLinks.length)
     const link = affiliateLinks[linkIdx]
@@ -486,7 +488,7 @@ async function main() {
   console.log(`✅ Created ${conversions.length} conversions`)
 
   // Create payouts
-  const payouts = [
+  const payouts: Prisma.PayoutUncheckedCreateManyInput[] = [
     {
       id: 'pay_01',
       userId,
@@ -569,7 +571,7 @@ async function main() {
   console.log(`✅ Created ${payouts.length} payouts`)
 
   // Create app settings
-  const settings = [
+  const settings: Prisma.AppSettingUncheckedCreateManyInput[] = [
     { userId, key: 'api_key', value: 'shopee_aff_abc123def456ghi789jkl' },
     { userId, key: 'shopee_username', value: 'ahmad_affiliate' },
     { userId, key: 'default_commission_rate', value: '10' },
@@ -585,7 +587,7 @@ async function main() {
 
   // Create earning goals
   const now = new Date()
-  const earningGoals = [
+  const earningGoals: Prisma.EarningGoalUncheckedCreateInput[] = [
     {
       id: 'goal_01',
       userId,
@@ -627,7 +629,7 @@ async function main() {
   console.log(`✅ Created ${earningGoals.length} earning goals`)
 
   // Create notifications
-  const notifications = [
+  const notifications: Prisma.NotificationUncheckedCreateInput[] = [
     {
       id: 'notif_01',
       userId,
