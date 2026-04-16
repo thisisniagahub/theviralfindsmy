@@ -56,6 +56,10 @@ const MAP_BASE_DEPTH = -200
 const OBJECT_DEPTH_OFFSET = -8
 const OVERHEAD_DEPTH = 950
 const HUD_DEPTH = 5000
+type CachedTilesetMeta = {
+  image?: string
+  name?: string
+}
 
 export class OfficeScene extends Phaser.Scene {
   private workerManager!: WorkerManager
@@ -147,8 +151,15 @@ export class OfficeScene extends Phaser.Scene {
 
     // Fallback tileset loader
     this.events.once('update', () => {
-      const map = this.make.tilemap({ key: OFFICE_MAP_KEY })
-      for (const tileset of map.tilesets) {
+      const cachedMap = this.cache.tilemap.get(OFFICE_MAP_KEY)
+      const tilesets =
+        ((cachedMap?.data as { tilesets?: CachedTilesetMeta[] } | undefined)?.tilesets ?? [])
+
+      for (const tileset of tilesets) {
+        if (typeof tileset.name !== 'string' || typeof tileset.image !== 'string') {
+          continue
+        }
+
         const basename = getTilesetBasename(tileset.image)
         this.load.image(tileset.name, `${OFFICE_TILESET_BASE_PATH}/${basename}`)
       }
