@@ -597,9 +597,10 @@ export async function getSDK(): Promise<OpenClawSDK> {
       completions: {
         async create(request: OpenClawCompletionRequest & { stream?: boolean }) {
           const completion = await openClawCompletion(request)
+          const completionPayload = isRecord(completion) ? completion : {}
 
           return {
-            ...completion,
+            ...completionPayload,
             choices: [{
               message: {
                 content: extractMessageContent(completion),
