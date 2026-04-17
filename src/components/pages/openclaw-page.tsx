@@ -202,7 +202,7 @@ export function OpenClawPage() {
               </div>
               {/* Protocol Status Indicators */}
               <div className="grid grid-cols-3 gap-3 mt-4">
-                {[ 
+                {[
                   { name: 'MCP Server', port: 'Gateway', online: mcpOnline, icon: Server, color: mcpOnline ? 'text-emerald-400' : 'text-red-400', tools: mcpToolCount },
                   { name: 'A2A Agents', port: 'Gateway', online: a2aOnline, icon: Network, color: a2aOnline ? 'text-blue-400' : 'text-red-400', tools: a2aAgentCount },
                   { name: 'ACP Client', port: 'Local', online: true, icon: Radio, color: 'text-purple-400', tools: 'Active' },
