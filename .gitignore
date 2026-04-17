@@ -76,3 +76,4 @@ keep-alive.sh
 
 # Build info
 download/
+.vercel
