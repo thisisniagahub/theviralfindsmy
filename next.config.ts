@@ -35,8 +35,8 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      // Inline script hashes from Next.js runtime scripts + dev tools
-      `script-src 'self' ${isDev ? "'unsafe-inline' " : ''}${isDev ? "'unsafe-eval' " : ''}https://cdn.jsdelivr.net https://vercel.live`,
+      // Inline script hashes from Next.js runtime scripts + dev tools + Vercel Live
+      `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval' " : ''}https://cdn.jsdelivr.net https://vercel.live`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' https://fonts.gstatic.com",
@@ -45,6 +45,7 @@ const securityHeaders = [
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "frame-src 'self' https://vercel.live",
       "frame-ancestors 'none'",
     ].join('; '),
   },
