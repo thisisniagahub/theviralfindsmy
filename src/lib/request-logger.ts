@@ -40,16 +40,23 @@ export function logRequestComplete(
   durationMs: number,
   context?: RequestContext
 ) {
-  const level = statusCode >= 500 ? 'error' : statusCode >= 400 ? 'warn' : 'info'
-
-  logger[level](`${req.method} ${req.url} - ${statusCode} (${durationMs}ms)`, {
+  const message = `${req.method} ${req.url} - ${statusCode} (${durationMs}ms)`
+  const logContext = {
     method: req.method,
     url: req.url,
     statusCode,
     durationMs,
     userId: context?.userId,
     ip: context?.ip,
-  })
+  }
+
+  if (statusCode >= 500) {
+    logger.error(message, undefined, logContext)
+  } else if (statusCode >= 400) {
+    logger.warn(message, logContext)
+  } else {
+    logger.info(message, logContext)
+  }
 }
 
 /**
