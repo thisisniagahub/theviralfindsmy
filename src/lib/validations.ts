@@ -126,7 +126,7 @@ export const conversionTrackSchema = z.object({
 
 export const activityLogSchema = z.object({
   action: z.string().min(1).max(100),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 export const requestPayoutSchema = createPayoutSchema
