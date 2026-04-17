@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { successResponse, paginatedResponse } from '@/lib/api-response'
 
 interface ActivityEntry {
   id: string
@@ -123,5 +124,5 @@ function generateActivityLog(count: number): ActivityEntry[] {
 
 export async function GET() {
   const entries = generateActivityLog(50)
-  return NextResponse.json({ entries })
+  return NextResponse.json(successResponse(entries))
 }

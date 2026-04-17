@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import packageJson from '../../../../package.json'
 import { env } from '@/lib/env'
+import { withErrorHandling, ApiError } from '@/lib/api-handler'
+import { successResponse, errorResponse } from '@/lib/api-response'
 
 const APP_VERSION = packageJson.version
 
@@ -23,12 +25,12 @@ async function checkServiceHealth(
   }
 }
 
-export async function GET() {
+export const GET = withErrorHandling(async () => {
   const startTime = Date.now()
 
   // Demo mode: return all healthy
   if (env.DEMO_MODE === 'true') {
-    return NextResponse.json({
+    return NextResponse.json(successResponse({
       status: 'healthy',
       version: APP_VERSION,
       timestamp: new Date().toISOString(),
@@ -40,7 +42,7 @@ export async function GET() {
       },
       responseTimeMs: Date.now() - startTime,
       _demo: true,
-    })
+    }))
   }
 
   // Check services via HTTP (no direct Prisma imports)
@@ -76,5 +78,5 @@ export async function GET() {
     responseTimeMs: Date.now() - startTime,
   }
 
-  return NextResponse.json(response)
-}
+  return NextResponse.json(successResponse(response))
+})

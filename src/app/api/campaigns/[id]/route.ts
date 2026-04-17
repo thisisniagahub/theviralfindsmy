@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
+import { updateCampaignSchema } from '@/lib/validations'
+import { sanitizeValidationError } from '@/lib/error-sanitizer'
 
 const DB_URL = process.env.DB_SERVICE_URL
 

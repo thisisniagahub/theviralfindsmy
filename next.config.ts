@@ -35,11 +35,12 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      `script-src 'self' ${isDev ? "'unsafe-inline' " : ''}${isDev ? "'unsafe-eval' " : ''}https://cdn.jsdelivr.net`,
+      // Inline script hashes from Next.js runtime scripts + dev tools
+      `script-src 'self' ${isDev ? "'unsafe-inline' " : ''}${isDev ? "'unsafe-eval' " : ''}https://cdn.jsdelivr.net https://vercel.live`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' https://fonts.gstatic.com",
-      `connect-src 'self' ${isDev ? 'http://127.0.0.1:3004 http://127.0.0.1:3005 ' : ''}https://operator.gangniaga.my wss://operator.gangniaga.my https://shopee.gangniaga.my wss://shopee.gangniaga.my`,
+      `connect-src 'self' ${isDev ? 'http://127.0.0.1:3004 http://127.0.0.1:3005 ws://localhost:3004 ws://localhost:3005 ' : ''}https://operator.gangniaga.my wss://operator.gangniaga.my https://shopee.gangniaga.my wss://shopee.gangniaga.my https://vercel.live wss://vercel.live`,
       "media-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",

@@ -65,7 +65,7 @@ export class OfficeScene extends Phaser.Scene {
   private workerManager!: WorkerManager
   private player!: Player
   private doorManager!: DoorManager
-  private pathfinder!: Pathfinder
+  private pathfinder!: Pathfinder | null
   private terminalZone: { x: number; y: number } | null = null
   private cameraController!: CameraController
   private interactionManager!: InteractionManager
@@ -211,7 +211,6 @@ export class OfficeScene extends Phaser.Scene {
     this.setWsStatus(this.isWsConnected)
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.cleanup())
-    this.events.once(Phaser.Scenes.Events.DESTROY, () => this.cleanup())
   }
 
   private buildOfficeWorld() {
@@ -455,14 +454,64 @@ export class OfficeScene extends Phaser.Scene {
   }
 
   cleanup() {
+    // Prevent double cleanup
+    if (!this.workerManager) return
+
     this.eventBridgeCleanup?.()
     this.eventBridgeCleanup = undefined
+
+    // Stop all timers first
+    if (this.earningsTimer) {
+      this.earningsTimer.destroy()
+      this.earningsTimer = null
+    }
+    if (this.typewriterTimer) {
+      this.typewriterTimer.destroy()
+      this.typewriterTimer = null
+    }
+
+    // Stop any active tweens on HUD elements
+    if (this.connectionDot) {
+      this.tweens.getTweensOf(this.connectionDot).forEach((tween) => tween.destroy())
+    }
+    if (this.earningsText) {
+      this.tweens.getTweensOf(this.earningsText).forEach((tween) => tween.destroy())
+    }
+
+    // Destroy game systems
     this.workerManager?.destroyAll()
+    this.workerManager = undefined as unknown as WorkerManager
     this.player?.destroy()
+    this.player = undefined as unknown as Player
     this.interactionManager?.destroy()
+    this.interactionManager = undefined as unknown as InteractionManager
+    this.cameraController?.destroy()
+    this.cameraController = undefined as unknown as CameraController
     this.shortcutsOverlay?.destroy()
-    if (this.input.keyboard) this.input.keyboard.removeAllListeners()
-    if (this.earningsTimer) this.earningsTimer.destroy()
-    if (this.typewriterTimer) this.typewriterTimer.destroy()
+    this.shortcutsOverlay = undefined as unknown as ShortcutsOverlay
+
+    // Pathfinder has no destroy method but clear its reference
+    this.pathfinder = null
+
+    // Clean up keyboard input
+    if (this.input.keyboard) {
+      this.input.keyboard.removeAllListeners()
+      if (this.eKey) {
+        this.input.keyboard.removeKey(this.eKey, true)
+        this.eKey = undefined
+      }
+    }
+
+    // Clean up HUD elements
+    this.earningsText?.destroy()
+    this.earningsBg?.destroy()
+    this.typewriterText?.destroy()
+    this.connectionDot?.destroy()
+    this.connectionText?.destroy()
+
+    // Clear references
+    this.agentsDataRef = []
+    this.onAgentSelected = undefined
+    this.onStatusUpdate = undefined
   }
 }

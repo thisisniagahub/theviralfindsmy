@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { withErrorHandling, parseJsonBody, ValidationError } from '@/lib/api-handler'
 import { requireAuth } from '@/lib/api-auth'
+import { successResponse, errorResponse } from '@/lib/api-response'
 
 interface Agent {
   id: string
@@ -131,40 +133,35 @@ const statusDetails: Record<Agent['status'], string[]> = {
   ],
 }
 
-export async function GET() {
-  return NextResponse.json({ agents })
-}
+export const GET = withErrorHandling(async () => {
+  return NextResponse.json(successResponse({ agents }))
+})
 
-export async function POST(request: Request) {
+export const POST = withErrorHandling(async (request) => {
   const { auth, error } = await requireAuth()
   if (error) return error
 
-  try {
-    const body = await request.json()
-    const { agentId, status } = body as { agentId?: string; status?: Agent['status'] }
+  const body = await parseJsonBody<{ agentId?: string; status?: Agent['status'] }>(request)
 
-    if (agentId && status) {
-      const agent = agents.find((a) => a.id === agentId)
-      if (agent) {
-        const details = statusDetails[status]
-        agent.status = status
-        agent.detail = details[Math.floor(Math.random() * details.length)]
-        agent.updatedAt = new Date().toISOString()
+  if (body.agentId && body.status) {
+    const agent = agents.find((a) => a.id === body.agentId)
+    if (agent) {
+      const details = statusDetails[body.status]
+      agent.status = body.status
+      agent.detail = details[Math.floor(Math.random() * details.length)]
+      agent.updatedAt = new Date().toISOString()
 
-        // Update zone based on status
-        if (status === 'idle') agent.zone = 'rest'
-        else if (status === 'syncing') agent.zone = 'sync'
-        else if (status === 'error') agent.zone = 'error'
-        else agent.zone = 'work'
+      // Update zone based on status
+      if (body.status === 'idle') agent.zone = 'rest'
+      else if (body.status === 'syncing') agent.zone = 'sync'
+      else if (body.status === 'error') agent.zone = 'error'
+      else agent.zone = 'work'
 
-        if (status !== 'error' && status !== 'idle') {
-          agent.tasksCompleted += 1
-        }
+      if (body.status !== 'error' && body.status !== 'idle') {
+        agent.tasksCompleted += 1
       }
     }
-
-    return NextResponse.json({ agents })
-  } catch {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
-}
+
+  return NextResponse.json(successResponse({ agents }))
+})

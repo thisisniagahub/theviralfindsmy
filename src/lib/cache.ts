@@ -1,7 +1,7 @@
 /**
  * API Response Caching
- * Uses in-memory Map as primary store (fast local reads).
- * Optionally syncs to Upstash Redis when configured (cross-instance sharing).
+ * PRIMARY: Upstash Redis for production scalability
+ * FALLBACK: In-memory Map for local dev only
  * Supports dashboard stats, leaderboard, achievements, etc.
  */
 
@@ -20,7 +20,10 @@ class ResponseCache {
   private cleanupInterval: ReturnType<typeof setInterval> | null = null
 
   constructor() {
-    this.startCleanup()
+    // Only start in-memory cleanup in development
+    if (process.env.NODE_ENV !== 'production') {
+      this.startCleanup()
+    }
   }
 
   private startCleanup() {
@@ -36,22 +39,48 @@ class ResponseCache {
     if (this.cleanupInterval.unref) this.cleanupInterval.unref()
   }
 
+  private isProductionRedisRequired(): boolean {
+    if (process.env.NODE_ENV === 'production' && !redis.isRedisAvailable()) {
+      throw new Error('[Cache] Redis is required in production. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
+    }
+    return redis.isRedisAvailable()
+  }
+
   set<T>(key: string, data: T, ttlMs?: number): void {
+    const ttl = ttlMs || this.defaultTTL
+
+    // In production, require Redis
+    if (process.env.NODE_ENV === 'production') {
+      this.isProductionRedisRequired()
+      const ttlSec = Math.ceil(ttl / 1000)
+      void redis.set(key, JSON.stringify({ data, expiresAt: Date.now() + ttl }), ttlSec)
+      return
+    }
+
+    // Development: use in-memory with optional Redis sync
     this.store.set(key, {
       data,
-      expiresAt: Date.now() + (ttlMs || this.defaultTTL),
+      expiresAt: Date.now() + ttl,
       createdAt: Date.now(),
       hits: 0,
     })
 
     // Sync to Redis asynchronously when available
     if (redis.isRedisAvailable()) {
-      const ttlSec = ttlMs ? Math.ceil(ttlMs / 1000) : Math.ceil(this.defaultTTL / 1000)
-      void redis.set(key, JSON.stringify({ data, expiresAt: Date.now() + ttlSec * 1000 }), ttlSec)
+      const ttlSec = Math.ceil(ttl / 1000)
+      void redis.set(key, JSON.stringify({ data, expiresAt: Date.now() + ttl }), ttlSec)
     }
   }
 
   get<T>(key: string): T | null {
+    // In production, require Redis
+    if (process.env.NODE_ENV === 'production') {
+      this.isProductionRedisRequired()
+      // Async Redis get would require API changes, so we return null for now
+      // For sync Redis access in production, use cache-redis.ts (RedisBackedCache)
+      return null
+    }
+
     const entry = this.store.get(key)
     if (!entry) return null
 
@@ -65,14 +94,71 @@ class ResponseCache {
     return entry.data as T
   }
 
+  async getAsync<T>(key: string): Promise<T | null> {
+    // Try Redis first if available
+    if (redis.isRedisAvailable()) {
+      try {
+        const data = await redis.get(key)
+        if (data) {
+          const parsed = JSON.parse(data)
+          // Check if expired
+          if (parsed.expiresAt && parsed.expiresAt < Date.now()) {
+            await redis.del(key)
+            return null
+          }
+          return parsed.data as T
+        }
+      } catch (error) {
+        console.warn('[Cache] Redis get failed:', error)
+      }
+    }
+
+    // Production: fail fast if Redis not available
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[Cache] Redis is required in production for caching. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
+    }
+
+    // Fallback to in-memory
+    return this.get<T>(key)
+  }
+
   invalidate(key: string): void {
+    // In production, require Redis
+    if (process.env.NODE_ENV === 'production') {
+      this.isProductionRedisRequired()
+      void redis.del(key)
+      return
+    }
+
     this.store.delete(key)
     if (redis.isRedisAvailable()) {
       void redis.del(key)
     }
   }
 
+  async invalidateAsync(key: string): Promise<void> {
+    this.store.delete(key)
+
+    if (redis.isRedisAvailable()) {
+      try {
+        await redis.del(key)
+      } catch (error) {
+        console.warn('[Cache] Redis delete failed:', error)
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      throw new Error('[Cache] Redis is required in production. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
+    }
+  }
+
   invalidatePattern(pattern: string): void {
+    // In production, require Redis
+    if (process.env.NODE_ENV === 'production') {
+      this.isProductionRedisRequired()
+      // Pattern invalidation with Redis requires KEYS command
+      // For now, just throw to indicate this needs Redis
+      throw new Error('[Cache] Pattern invalidation in production requires direct Redis access. Use invalidatePatternAsync.')
+    }
+
     for (const [key] of this.store) {
       if (key.includes(pattern)) {
         this.store.delete(key)
@@ -80,6 +166,32 @@ class ResponseCache {
           void redis.del(key)
         }
       }
+    }
+  }
+
+  async invalidatePatternAsync(pattern: string): Promise<void> {
+    // Clear in-memory matches
+    for (const [key] of this.store) {
+      if (key.includes(pattern)) {
+        this.store.delete(key)
+      }
+    }
+
+    // Clear Redis matches
+    if (redis.isRedisAvailable()) {
+      try {
+        const redisClient = redis.getRedis()
+        if (redisClient) {
+          const keys = await redisClient.keys(`*${pattern}*`)
+          if (keys.length > 0) {
+            await redisClient.del(...keys)
+          }
+        }
+      } catch (error) {
+        console.warn('[Cache] Redis pattern delete failed:', error)
+      }
+    } else if (process.env.NODE_ENV === 'production') {
+      throw new Error('[Cache] Redis is required in production. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
     }
   }
 

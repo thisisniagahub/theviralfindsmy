@@ -58,7 +58,13 @@ export function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
 
-  if (!url || !token) return null
+  if (!url || !token) {
+    // Fail fast in production - Redis is required
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('[Redis] UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required in production.')
+    }
+    return null
+  }
 
   redisClient = new Redis({ url, token })
   return redisClient
@@ -76,6 +82,10 @@ export async function get(key: string): Promise<string | null> {
   if (client) {
     return client.get(key) as Promise<string | null>
   }
+  // Production: already handled in getRedis()
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[Redis] get() called without Redis in production.')
+  }
   return getMemory().get(key)
 }
 
@@ -89,6 +99,10 @@ export async function set(key: string, value: string, ttl?: number): Promise<voi
     }
     return
   }
+  // Production: already handled in getRedis()
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[Redis] set() called without Redis in production.')
+  }
   return getMemory().set(key, value, ttl)
 }
 
@@ -98,6 +112,10 @@ export async function del(key: string): Promise<void> {
     await client.del(key)
     return
   }
+  // Production: already handled in getRedis()
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[Redis] del() called without Redis in production.')
+  }
   return getMemory().del(key)
 }
 
@@ -105,6 +123,10 @@ export async function incr(key: string): Promise<number> {
   const client = getRedis()
   if (client) {
     return client.incr(key) as Promise<number>
+  }
+  // Production: already handled in getRedis()
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[Redis] incr() called without Redis in production.')
   }
   return getMemory().incr(key)
 }
@@ -114,6 +136,10 @@ export async function expire(key: string, seconds: number): Promise<void> {
   if (client) {
     await client.expire(key, seconds)
     return
+  }
+  // Production: already handled in getRedis()
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[Redis] expire() called without Redis in production.')
   }
   return getMemory().expire(key, seconds)
 }

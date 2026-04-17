@@ -1,1 +1,0 @@
-- generic [ref=e2]: "{\"status\":\"degraded\",\"timestamp\":\"2026-04-12T08:30:57.744Z\",\"services\":{\"openclaw\":\"healthy\",\"openclawLatencyMs\":770,\"openclawDetail\":\"https://operator.gangniaga.my\",\"database\":\"degraded\",\"databaseLatencyMs\":797,\"notification\":\"unhealthy\"}}"

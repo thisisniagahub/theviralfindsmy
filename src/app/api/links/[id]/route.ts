@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { updateLinkSchema } from '@/lib/validations'
+import { sanitizeValidationError } from '@/lib/error-sanitizer'
+import { z } from 'zod'
 
 const DB_URL = process.env.DB_SERVICE_URL
 
@@ -72,16 +75,25 @@ export async function PUT(
   const { auth, error } = await requireAuth()
   if (error) return error
 
+  // Validate request body
+  let validated
+  try {
+    const body = await request.json()
+    validated = updateLinkSchema.parse(body)
+  } catch (error) {
+    const sanitized = sanitizeValidationError(error, 'Invalid request body')
+    return NextResponse.json(sanitized, { status: 400 })
+  }
+
   if (process.env.DEMO_MODE === 'true') {
     const { id } = await params
-    const body = await request.json()
     const now = new Date()
     return NextResponse.json({
       id,
-      name: body.name || 'Laneige Water Mask',
-      status: body.status || 'active',
-      campaignId: body.campaignId || 'camp-1',
-      expiresAt: body.expiresAt || null,
+      name: validated.name || 'Laneige Water Mask',
+      status: validated.status || 'active',
+      campaignId: validated.campaignId || 'camp-1',
+      expiresAt: validated.expiresAt || null,
       updatedAt: now.toISOString(),
     })
   }
@@ -90,11 +102,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
     const { id } = await params
-    const body = await request.json()
 
     const response = await authenticatedDbFetch(DB_URL, `/links/${encodeURIComponent(id)}`, auth!, {
       method: 'PUT',
-      body: JSON.stringify(body),
+      body: JSON.stringify(validated),
     })
     const link = await response.json()
 
