@@ -16,7 +16,7 @@ export const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   NEXTAUTH_SECRET: z.string().min(1).optional(),
   NEXTAUTH_URL: z.string().url().optional(),
-  ADMIN_EMAIL: z.string().email().optional().default('admin@theviralfinds.my'),
+  ADMIN_EMAIL: z.string().email().catch('admin@theviralfinds.my').default('admin@theviralfinds.my'),
   ADMIN_PASSWORD: z.string().min(1).optional(),
   DEMO_MODE: z.enum(['true', 'false']).default('false'),
   OPENCLAW_GATEWAY_URL: z.string().url().optional().default('https://operator.gangniaga.my'),
