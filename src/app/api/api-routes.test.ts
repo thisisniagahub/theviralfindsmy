@@ -4,6 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import packageJson from '../../../package.json'
 
 // Mock env module
 vi.mock('@/lib/env', () => ({
@@ -58,7 +59,7 @@ describe('Health API Route', () => {
     const body = await response.json()
 
     expect(body.status).toBe('healthy')
-    expect(body.version).toBe('8.0.0')
+    expect(body.version).toBe(packageJson.version)
     expect(body.services).toBeDefined()
     expect(body._demo).toBe(true)
   })

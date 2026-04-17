@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { startTransition, useEffect, useRef, useState } from 'react'
 import { OfficeToolbar } from './OfficeToolbar'
 import * as Phaser from 'phaser'
 import { OfficeScene, type AgentData } from './game/scenes/OfficeScene'
@@ -90,11 +90,16 @@ export default function PhaserGame({ agents, onStatusUpdate, onAgentSelected, cl
       }
 
     } catch (err) {
-      if (mounted) {
-        console.error('Failed to load Phaser:', err)
-        setLoadError('Failed to load game engine.')
-        setIsLoading(false)
-      }
+      console.error('Failed to load Phaser:', err)
+
+      queueMicrotask(() => {
+        if (!mounted) return
+
+        startTransition(() => {
+          setLoadError('Failed to load game engine.')
+          setIsLoading(false)
+        })
+      })
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

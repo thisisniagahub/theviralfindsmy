@@ -20,7 +20,7 @@ export function MemoPanel({ memo, isLoading }: { memo: MemoData | null, isLoadin
       <div className="flex justify-between items-start mb-6">
         <div className="space-y-1">
           <h3 className="text-xl font-black text-white tracking-tight">{memo.title.toUpperCase()}</h3>
-          <span className="text-[10px] font-mono text-zinc-500">{memo.date} // OPERATIONAL_CYCLE_04</span>
+          <span className="text-[10px] font-mono text-zinc-500">{memo.date} {' // '}OPERATIONAL_CYCLE_04</span>
         </div>
         <div className="px-3 py-1 bg-[#EE4D2D]/10 rounded-full border border-[#EE4D2D]/20">
            <span className="text-[9px] font-black text-[#EE4D2D] tracking-widest uppercase">Verified Report</span>

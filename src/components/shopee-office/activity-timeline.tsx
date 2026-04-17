@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Language } from './language-toggle'
 
@@ -17,33 +17,28 @@ export interface TimelineEvent {
 }
 
 interface ActivityTimelineProps {
-  agents: any[]
+  agents: Array<{
+    agentId?: string
+    name?: string
+    emoji?: string
+  }>
   language: Language
   isCompact?: boolean
 }
 
-const EVENT_STYLES: Record<string, { icon: string, color: string }> = {
-  status_change: { icon: 'sync', color: 'text-zinc-500' },
-  task_complete: { icon: 'check_circle', color: 'text-emerald-500' },
-  commission: { icon: 'payments', color: 'text-amber-500' },
-  error: { icon: 'error', color: 'text-red-500' },
-  sync: { icon: 'database', color: 'text-cyan-500' },
-  link_created: { icon: 'link', color: 'text-blue-500' },
-  campaign: { icon: 'campaign', color: 'text-purple-500' },
+function createInitialEvents(): TimelineEvent[] {
+  return [
+    { id: '1', agentId: 'product-scout', agentName: 'Product Scout', emoji: '🔍', type: 'sync', message: 'Syncing trend data with Shopee API...', timestamp: new Date().toISOString() },
+    { id: '2', agentId: 'content-writer', agentName: 'Content Writer', emoji: '✍️', type: 'task_complete', message: 'Completed 5 TikTok copy drafts.', timestamp: new Date(Date.now() - 5000).toISOString() },
+    { id: '3', agentId: 'seo-optimizer', agentName: 'SEO Optimizer', emoji: '🚀', type: 'commission', message: 'Generated RM 12.50 in estimated yield.', timestamp: new Date(Date.now() - 10000).toISOString() },
+  ]
 }
 
-export function ActivityTimeline({ agents, language, isCompact }: ActivityTimelineProps) {
-  const [events, setEvents] = useState<TimelineEvent[]>([])
+export function ActivityTimeline({ agents, language: _language, isCompact }: ActivityTimelineProps) {
+  const [events, setEvents] = useState<TimelineEvent[]>(createInitialEvents)
   
   // Simulation logic
   useEffect(() => {
-    const initialEvents: TimelineEvent[] = [
-      { id: '1', agentId: 'product-scout', agentName: 'Product Scout', emoji: '🔍', type: 'sync', message: 'Syncing trend data with Shopee API...', timestamp: new Date().toISOString() },
-      { id: '2', agentId: 'content-writer', agentName: 'Content Writer', emoji: '✍️', type: 'task_complete', message: 'Completed 5 TikTok copy drafts.', timestamp: new Date(Date.now() - 5000).toISOString() },
-      { id: '3', agentId: 'seo-optimizer', agentName: 'SEO Optimizer', emoji: '🚀', type: 'commission', message: 'Generated RM 12.50 in estimated yield.', timestamp: new Date(Date.now() - 10000).toISOString() },
-    ]
-    setEvents(initialEvents)
-
     const interval = setInterval(() => {
       const agent = agents[Math.floor(Math.random() * agents.length)] || { agentId: 'system', name: 'SYSTEM', emoji: '🤖' }
       const types: TimelineEvent['type'][] = ['status_change', 'task_complete', 'commission', 'link_created', 'campaign']
@@ -51,9 +46,9 @@ export function ActivityTimeline({ agents, language, isCompact }: ActivityTimeli
       
       const newEvent: TimelineEvent = {
         id: Date.now().toString(),
-        agentId: agent.agentId,
-        agentName: agent.name,
-        emoji: agent.emoji,
+        agentId: agent.agentId || 'system',
+        agentName: agent.name || 'SYSTEM',
+        emoji: agent.emoji || '🤖',
         type,
         message: type === 'commission' ? `Yield increased by RM ${(Math.random() * 5).toFixed(2)}` : `Operational status updated to ${type}`,
         timestamp: new Date().toISOString(),

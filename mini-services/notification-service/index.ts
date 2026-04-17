@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
-import { randomUUID } from 'crypto'
+import { randomUUID, randomInt } from 'crypto'
 
 const httpServer = createServer()
 const io = new Server(httpServer, {
@@ -15,6 +15,7 @@ const io = new Server(httpServer, {
 })
 
 // --- Mock notification data generators ---
+// WARNING: These are ONLY for demo mode and should NEVER run in production
 
 const PRODUCT_NAMES = [
   'Wireless TWS Earbuds',
@@ -50,19 +51,63 @@ interface MockNotification {
   timestamp: string
 }
 
+/**
+ * Generate notification ID using cryptographically secure randomUUID
+ * Never use Math.random() for IDs
+ */
 function generateId(): string {
-  return `notif_${Date.now()}_${randomUUID().slice(0, 7)}`
+  return `notif_${Date.now()}_${randomUUID()}`
 }
 
+/**
+ * Check if demo mode is enabled
+ * Demo mode should only be enabled in non-production environments
+ */
+function isDemoMode(): boolean {
+  // Strict check: only allow demo mode if explicitly enabled
+  if (process.env.DEMO_MODE !== 'true') {
+    return false
+  }
+
+  // Additional safety: never allow demo mode in production
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[SECURITY] Demo mode is disabled in production environment')
+    return false
+  }
+
+  // Check for Vercel production
+  if (process.env.VERCEL_ENV === 'production') {
+    console.error('[SECURITY] Demo mode is disabled in Vercel production')
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Pick a random item from array using crypto.randomInt
+ * Only for demo mode mock data generation
+ */
 function randomPick<T>(arr: T[]): T {
-  const index = Math.floor(Math.random() * arr.length)
+  const index = randomInt(0, arr.length)
   return arr[index]
 }
 
+/**
+ * Generate random number between min and max using crypto.randomInt
+ * Only for demo mode mock data generation
+ */
 function randomBetween(min: number, max: number): number {
-  return Math.round((Math.random() * (max - min) + min) * 100) / 100
+  const integer = randomInt(min, max + 1)
+  // Add decimal portion for realism
+  const decimals = randomInt(0, 100) / 100
+  return Math.round((integer + decimals) * 100) / 100
 }
 
+/**
+ * Generate mock notification for demo purposes
+ * This function ONLY runs when DEMO_MODE=true
+ */
 function generateMockNotification(): MockNotification {
   const type = randomPick<NotificationType>(['conversion', 'click', 'payout', 'milestone'])
   const timestamp = new Date().toISOString()
@@ -145,12 +190,18 @@ io.on('connection', (socket) => {
 })
 
 // --- Periodic mock notification broadcast ---
+// ONLY runs in demo mode - never in production
 
 function scheduleNextNotification() {
-  const randomBytes = new Uint8Array(4)
-  crypto.getRandomValues(randomBytes)
-  const randomValue = (randomBytes[0] << 24 | randomBytes[1] << 16 | randomBytes[2] << 8 | randomBytes[3]) >>> 0
-  const delay = (randomValue % 15000) + 15000 // 15-30 seconds
+  // Security check: only run in demo mode
+  if (!isDemoMode()) {
+    console.log('[Notification] Demo mode is disabled. Mock notifications will not be broadcast.')
+    return
+  }
+
+  // Use crypto.randomInt for secure random delay calculation
+  const delay = randomInt(15000, 30001) // 15-30 seconds
+
   setTimeout(() => {
     const notification = generateMockNotification()
     console.log(`[Notification] Broadcasting: [${notification.type}] ${notification.title}`)
@@ -162,7 +213,14 @@ function scheduleNextNotification() {
 const PORT = 3004
 httpServer.listen(PORT, () => {
   console.log(`[Notification] WebSocket notification server running on port ${PORT}`)
-  scheduleNextNotification()
+
+  // Only start mock notifications in demo mode
+  if (isDemoMode()) {
+    console.log('[Notification] Demo mode is enabled. Starting mock notification broadcasts.')
+    scheduleNextNotification()
+  } else {
+    console.log('[Notification] Demo mode is disabled. Mock notifications are disabled.')
+  }
 })
 
 // Graceful shutdown
