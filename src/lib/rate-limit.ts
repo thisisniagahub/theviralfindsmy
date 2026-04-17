@@ -135,7 +135,11 @@ export async function rateLimitByIP(ip: string, config?: Partial<RateLimitConfig
     }
   }
 
-  // Fall back to in-memory
+  // Fall back to in-memory (DEV ONLY)
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[RateLimit] Redis is required in production for rate limiting. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
+  }
+
   const cfg = { ...DEFAULT_IP_LIMIT, ...config }
   return checkLimit(ip, ipLimits, cfg)
 }
@@ -152,7 +156,11 @@ export async function rateLimitByUser(userId: string, config?: Partial<RateLimit
     }
   }
 
-  // Fall back to in-memory
+  // Fall back to in-memory (DEV ONLY)
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[RateLimit] Redis is required in production for rate limiting. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.')
+  }
+
   const cfg = { ...DEFAULT_USER_LIMIT, ...config }
   return checkLimit(userId, userLimits, cfg)
 }
