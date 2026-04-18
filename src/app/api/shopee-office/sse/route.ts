@@ -6,6 +6,7 @@
  */
 
 import { getAllAgents } from '@/lib/shopee-office-store'
+import { randomUUID } from 'crypto'
 
 export const dynamic = 'force-dynamic'
 
@@ -82,9 +83,32 @@ function stopSync() {
 }
 
 export async function GET() {
+  let pingInterval: ReturnType<typeof setInterval> | null = null
+  let subscriberId: string | null = null
+
+  const cleanup = () => {
+    if (pingInterval) {
+      clearInterval(pingInterval)
+      pingInterval = null
+    }
+
+    if (subscriberId) {
+      subscribers = subscribers.filter((s) => s.id !== subscriberId)
+      subscriberId = null
+    }
+
+    if (subscribers.length === 0) {
+      stopSync()
+    }
+  }
+
   const stream = new ReadableStream({
+    cancel() {
+      cleanup()
+    },
     start(controller) {
-      const subscriberId = `sub-${Date.now()}-${Math.random()}`
+      const currentSubscriberId = `sub-${Date.now()}-${randomUUID().slice(0, 8)}`
+      subscriberId = currentSubscriberId
 
       const send = (event: string, data: unknown) => {
         try {
@@ -107,24 +131,17 @@ export async function GET() {
       send('agents', { type: 'agents', agents: initialAgents })
 
       // Add subscriber and start sync if needed
-      subscribers.push({ id: subscriberId, send, close })
+      subscribers.push({ id: currentSubscriberId, send, close })
       startSync()
 
       // Keep-alive ping every 15s
-      const pingInterval = setInterval(() => {
+      pingInterval = setInterval(() => {
         try {
           controller.enqueue(new TextEncoder().encode(':ping\n\n'))
         } catch {
-          clearInterval(pingInterval)
+          cleanup()
         }
       }, 15000)
-
-      // Cleanup on close
-      return () => {
-        clearInterval(pingInterval)
-        subscribers = subscribers.filter((s) => s.id !== subscriberId)
-        if (subscribers.length === 0) stopSync()
-      }
     },
   })
 

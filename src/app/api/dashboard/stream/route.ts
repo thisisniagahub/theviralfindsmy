@@ -31,11 +31,34 @@ export async function GET(request: NextRequest) {
   const activityLimit = clampNumber(request.nextUrl.searchParams.get('activityLimit'), 20, 100)
   const linksLimit = clampNumber(request.nextUrl.searchParams.get('linksLimit'), 50, 200)
   const forecastDays = clampNumber(request.nextUrl.searchParams.get('forecastDays'), 30, 90)
+  let closed = false
+  let snapshotInterval: ReturnType<typeof setInterval> | null = null
+  let pingInterval: ReturnType<typeof setInterval> | null = null
+
+  const cleanup = () => {
+    if (closed) {
+      return
+    }
+
+    closed = true
+
+    if (snapshotInterval) {
+      clearInterval(snapshotInterval)
+      snapshotInterval = null
+    }
+
+    if (pingInterval) {
+      clearInterval(pingInterval)
+      pingInterval = null
+    }
+  }
 
   const stream = new ReadableStream({
+    cancel() {
+      cleanup()
+    },
     start(controller) {
       const encoder = new TextEncoder()
-      let closed = false
 
       const send = (event: string, data: unknown) => {
         if (closed) {
@@ -65,11 +88,11 @@ export async function GET(request: NextRequest) {
 
       void publishSnapshot()
 
-      const snapshotInterval = setInterval(() => {
+      snapshotInterval = setInterval(() => {
         void publishSnapshot()
       }, 20_000)
 
-      const pingInterval = setInterval(() => {
+      pingInterval = setInterval(() => {
         if (closed) {
           return
         }
@@ -77,11 +100,7 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(':ping\n\n'))
       }, 15_000)
 
-      return () => {
-        closed = true
-        clearInterval(snapshotInterval)
-        clearInterval(pingInterval)
-      }
+      request.signal.addEventListener('abort', cleanup, { once: true })
     },
   })
 
