@@ -160,12 +160,26 @@ export function createGoalRoutes(db: PrismaClient) {
     const userId = url.searchParams.get('userId')
     const where = userId ? { userId } : {}
     const goals = await db.earningGoal.findMany({ where, orderBy: { createdAt: 'desc' } })
+
+    let active = 0;
+    let achieved = 0;
+    let totalTarget = 0;
+    let totalCurrent = 0;
+
+    for (let i = 0; i < goals.length; i++) {
+      const g = goals[i];
+      if (g.status === 'active') active++;
+      else if (g.status === 'achieved') achieved++;
+      totalTarget += g.targetAmount;
+      totalCurrent += g.currentAmount;
+    }
+
     const summary = {
       total: goals.length,
-      active: goals.filter(g => g.status === 'active').length,
-      achieved: goals.filter(g => g.status === 'achieved').length,
-      totalTarget: goals.reduce((s, g) => s + g.targetAmount, 0),
-      totalCurrent: goals.reduce((s, g) => s + g.currentAmount, 0),
+      active,
+      achieved,
+      totalTarget,
+      totalCurrent,
     }
     return json({ goals, summary })
   }
