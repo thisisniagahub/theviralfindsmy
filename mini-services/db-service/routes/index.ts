@@ -214,16 +214,24 @@ export function createSettingsRoutes(db: PrismaClient) {
     const cleanBody = stripUserIdFromBody(rawBody)
     const body = validateBody(updateSettingsBody, (cleanBody as any).updates || [])
 
+    const operations = []
     for (const u of body) {
       if (u.key && u.value !== undefined) {
         const where = authenticatedUserId ? { userId: authenticatedUserId, key: u.key } : { key: u.key }
-        await db.appSetting.upsert({
-          where,
-          update: { value: u.value },
-          create: { key: u.key, value: u.value, userId: authenticatedUserId || '' },
-        })
+        operations.push(
+          db.appSetting.upsert({
+            where,
+            update: { value: u.value },
+            create: { key: u.key, value: u.value, userId: authenticatedUserId || '' },
+          })
+        )
       }
     }
+
+    if (operations.length > 0) {
+      await db.$transaction(operations)
+    }
+
     return json({ success: true })
   }
 
