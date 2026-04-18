@@ -142,7 +142,7 @@ export class Worker implements WorkerCtx {
     this.homeX = x
     this.homeY = y
 
-    // FIX: Add texture fallback to prevent "pink box" issues
+    // Add texture fallback to prevent "pink box" issues
     this.textureKey = scene.textures.exists(textureKey) ? textureKey : 'worker_male_1'
 
     // Create the sprite using the validated textureKey
