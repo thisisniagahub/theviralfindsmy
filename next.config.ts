@@ -56,6 +56,8 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false, // Pre-existing TypeScript errors (Phaser 4 API changes)
   },
+  cacheComponents: true,
+  reactCompiler: true,
   reactStrictMode: true,
   images: {
     formats: ["image/avif", "image/webp"],

@@ -34,6 +34,7 @@ export {
   runParallelPipeline,
   discoverAgents,
   spawnSubAgent,
+  AGENT_TOOL_CONFIG,
 } from './agents'
 
 export type {
@@ -49,6 +50,61 @@ export {
   removeCronJob,
   getWebhookRoutes,
 } from './automation'
+
+export {
+  llmTaskJSON,
+} from './llm-task'
+
+export type {
+  LLMTaskOptions,
+  LLMTaskResult,
+} from './llm-task'
+
+export {
+  runLobsterPipeline,
+  resumeLobsterWorkflow,
+} from './lobster'
+
+export type {
+  LobsterApprovalRequest,
+  LobsterResult,
+  LobsterRunOptions,
+} from './lobster'
+
+export {
+  createTaskFlow,
+  listTaskFlows,
+  getTaskFlow,
+  findLatestTaskFlow,
+  cancelTaskFlow,
+  runFlowTask,
+} from './taskflow'
+
+export type {
+  TaskFlow,
+  TaskFlowOptions,
+} from './taskflow'
+
+export {
+  AGENT_STANDING_ORDERS,
+  generateStandingOrdersMD,
+} from './standing-orders'
+
+export type {
+  StandingOrder,
+} from './standing-orders'
+
+export {
+  WEBHOOK_ROUTES,
+  generateWebhookConfig,
+  invokeWebhookRoute,
+  triggerWebhookFlow,
+} from './webhooks'
+
+export type {
+  WebhookPluginResponse,
+  WebhookRoute,
+} from './webhooks'
 
 export {
   getGatewayWS,

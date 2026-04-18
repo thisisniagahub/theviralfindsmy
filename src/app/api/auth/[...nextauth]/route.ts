@@ -1,71 +1,16 @@
-import NextAuth from 'next-auth'
+import NextAuth, { type NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
 import bcrypt from 'bcryptjs'
-import { getDbServiceUrl } from '@/lib/db-safe'
-import { redisRateLimiter } from '@/lib/rate-limit-redis'
-import { RATE_LIMITS } from '@/lib/rate-limit'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-
-// ─── Account Lockout ──────────────────────────────────────────────
-// Track failed login attempts per IP to prevent brute force attacks
-const failedAttempts = new Map<string, { count: number; lockedUntil: number | null }>()
-const MAX_FAILED_ATTEMPTS = 5
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000 // 15 minutes
-
-function checkAccountLockout(ip: string): { locked: boolean; retryAfter?: number } {
-  const attempt = failedAttempts.get(ip)
-  if (!attempt) return { locked: false }
-
-  if (attempt.lockedUntil && Date.now() < attempt.lockedUntil) {
-    const retryAfter = Math.ceil((attempt.lockedUntil - Date.now()) / 1000)
-    return { locked: true, retryAfter }
-  }
-
-  // Lockout expired, reset
-  if (attempt.lockedUntil && Date.now() >= attempt.lockedUntil) {
-    failedAttempts.delete(ip)
-  }
-
-  return { locked: false }
-}
-
-function recordFailedAttempt(ip: string) {
-  const attempt = failedAttempts.get(ip) || { count: 0, lockedUntil: null }
-  attempt.count += 1
-
-  if (attempt.count >= MAX_FAILED_ATTEMPTS) {
-    attempt.lockedUntil = Date.now() + LOCKOUT_DURATION_MS
-    console.warn(`[Auth] Account locked for IP: ${ip} after ${attempt.count} failed attempts`)
-  }
-
-  failedAttempts.set(ip, attempt)
-}
-
-function clearFailedAttempts(ip: string) {
-  failedAttempts.delete(ip)
-}
-
-function isLocalDemoPasswordEnabled() {
-  return process.env.NODE_ENV !== 'production' && process.env.DEMO_MODE === 'true'
-}
-
-// Cleanup expired lockouts every 5 minutes
-let lockoutCleanup: ReturnType<typeof setInterval> | null = null
-function ensureLockoutCleanup() {
-  if (lockoutCleanup) return
-  lockoutCleanup = setInterval(() => {
-    const now = Date.now()
-    for (const [ip, attempt] of failedAttempts) {
-      if (attempt.lockedUntil && now >= attempt.lockedUntil) {
-        failedAttempts.delete(ip)
-      }
-    }
-  }, 5 * 60_000)
-  if (lockoutCleanup.unref) lockoutCleanup.unref()
-}
+import { checkAccountLockout, clearFailedAttempts, recordFailedAttempt } from '@/lib/auth-lockout'
+import { buildDbServiceUrl } from '@/lib/db-safe'
+import {
+  getConfiguredAdminEmail,
+  getConfiguredAdminPassword,
+  getLocalDemoCredentials,
+  isLocalDemoAuthEnabled,
+} from '@/lib/local-demo-auth'
 
 // ─── OAuth Allowlist ──────────────────────────────────────────────
 // Only emails listed here (or matching the allowed domain) can sign
@@ -112,16 +57,15 @@ async function resolveDbUser(input: {
   name?: string | null
   image?: string | null
 }): Promise<ResolvedAuthUser | null> {
-  const dbServiceUrl = getDbServiceUrl()
   const dbServiceSecret = process.env.DB_SERVICE_SECRET
 
-  if (!dbServiceUrl || !dbServiceSecret) {
+  if (!dbServiceSecret) {
     console.error('[Auth] DB service is not configured for user resolution')
     return null
   }
 
   try {
-    const response = await fetch(`${dbServiceUrl.replace(/\/$/, '')}/users/upsert`, {
+    const response = await fetch(buildDbServiceUrl('/users/upsert'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -170,7 +114,7 @@ async function resolveDbUser(input: {
   }
 }
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -179,26 +123,25 @@ const handler = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, req) {
-        // Ensure lockout cleanup is running
-        ensureLockoutCleanup()
-
         // Get client IP for lockout tracking
         const ip = (req?.headers?.['x-forwarded-for'] as string) || 'unknown'
 
         // Check if IP is locked out
-        const lockout = checkAccountLockout(ip)
+        const lockout = await checkAccountLockout(ip)
         if (lockout.locked) {
           console.warn(`[Auth] Login blocked for locked IP: ${ip} (retry after ${lockout.retryAfter}s)`)
           return null
         }
 
         // Validate credentials against environment variables
-        const adminEmail = process.env.ADMIN_EMAIL
-        const adminPassword = process.env.ADMIN_PASSWORD
+        const localDemoCredentials = getLocalDemoCredentials()
+        const localDemoAuthEnabled = isLocalDemoAuthEnabled()
+        const adminEmail = getConfiguredAdminEmail() ?? localDemoCredentials?.email
+        const adminPassword = getConfiguredAdminPassword() ?? localDemoCredentials?.password
 
         if (!adminEmail || !adminPassword) {
           console.error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables must be set')
-          recordFailedAttempt(ip)
+          await recordFailedAttempt(ip)
           return null
         }
 
@@ -208,17 +151,17 @@ const handler = NextAuth({
             const isHashedPassword = adminPassword.startsWith('$2b$') || adminPassword.startsWith('$2a$')
             const isValid = isHashedPassword
               ? await bcrypt.compare(credentials.password, adminPassword)
-              : isLocalDemoPasswordEnabled() && credentials.password === adminPassword
+              : localDemoAuthEnabled && credentials.password === adminPassword
 
-            if (!isHashedPassword && !isLocalDemoPasswordEnabled()) {
+            if (!isHashedPassword && !localDemoAuthEnabled) {
               console.error('⚠️ [SECURITY] ADMIN_PASSWORD must be bcrypt hashed outside local demo mode.')
-              recordFailedAttempt(ip)
+              await recordFailedAttempt(ip)
               return null
             }
 
             if (isValid) {
               // Clear failed attempts on successful login
-              clearFailedAttempts(ip)
+              await clearFailedAttempts(ip)
 
               const user = await resolveDbUser({
                 email: adminEmail,
@@ -226,7 +169,7 @@ const handler = NextAuth({
                 image: null,
               })
 
-              if (!user && isLocalDemoPasswordEnabled()) {
+              if (!user && localDemoAuthEnabled) {
                 console.warn('[Auth] Falling back to local demo user because DB service is unavailable')
                 return createLocalDemoUser(adminEmail)
               }
@@ -234,15 +177,15 @@ const handler = NextAuth({
               return user
             } else {
               // Invalid password
-              recordFailedAttempt(ip)
+              await recordFailedAttempt(ip)
             }
           } catch (err) {
             console.error('[Auth] Bcrypt error:', err)
-            recordFailedAttempt(ip)
+            await recordFailedAttempt(ip)
           }
         } else if (credentials?.email) {
           // Wrong email attempted
-          recordFailedAttempt(ip)
+          await recordFailedAttempt(ip)
         }
 
         // Return null for invalid credentials
@@ -350,14 +293,8 @@ const handler = NextAuth({
   pages: { signIn: '/login' },
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
-})
-
-export const authOptions = {
-  providers: handler.providers,
-  callbacks: handler.callbacks,
-  pages: handler.pages,
-  secret: handler.secret,
-  session: handler.session,
 }
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }

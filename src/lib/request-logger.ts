@@ -3,6 +3,7 @@
  * Utilities for logging HTTP requests with timing
  */
 
+import { randomUUID } from 'node:crypto'
 import { logger } from './logger'
 
 interface RequestContext {
@@ -15,7 +16,7 @@ interface RequestContext {
  * Generate unique request ID
  */
 export function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+  return `req_${randomUUID()}`
 }
 
 /**

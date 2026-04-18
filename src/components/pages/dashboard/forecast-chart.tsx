@@ -16,25 +16,33 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 
-interface ForecastPoint {
-  date: string
-  value: number
-  confidence: number
+import type { ForecastResponse } from '@/lib/dashboard-types'
+
+async function fetchForecast(days: number) {
+  const response = await fetch(`/api/forecast/earnings?days=${days}`)
+  const payload = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    const message = payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
+      ? payload.error
+      : 'Failed to load forecast'
+    throw new Error(message)
+  }
+
+  return payload as ForecastResponse
 }
 
-interface ForecastData {
-  optimistic: ForecastPoint[]
-  expected: ForecastPoint[]
-  pessimistic: ForecastPoint[]
-  trend: 'up' | 'down' | 'stable'
-  growthRate: number
-  suggestedAction: string
-}
-
-export function ForecastChart({ days = 30 }: { days?: number }) {
-  const { data, isLoading, refetch } = useQuery<{ forecast: ForecastData }>({
+export function ForecastChart({
+  days = 30,
+  initialData,
+}: {
+  days?: number
+  initialData?: ForecastResponse | null
+}) {
+  const { data, isLoading, refetch } = useQuery<ForecastResponse>({
     queryKey: ['forecast', days],
-    queryFn: () => fetch(`/api/forecast/earnings?days=${days}`).then(r => r.json()),
+    queryFn: () => fetchForecast(days),
+    initialData: initialData ?? undefined,
     refetchInterval: 5 * 60_000, // Every 5 minutes
   })
 

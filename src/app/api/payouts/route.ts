@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { requireAuth, authenticatedDbFetch } from '@/lib/api-auth'
+import { demoRandom } from '@/lib/demo'
 import { createPayoutSchema } from '@/lib/validations'
 import { z } from 'zod'
 import { getServerSession } from 'next-auth'
@@ -19,7 +20,7 @@ export async function GET() {
     const monthlyEarnings = Array.from({ length: 12 }, (_, i) => {
       const d = new Date()
       d.setMonth(d.getMonth() - (11 - i))
-      return { month: d.toLocaleString('default', { month: 'short', year: '2-digit' }), earnings: Math.floor(Math.random() * 800 + 200) }
+      return { month: d.toLocaleString('default', { month: 'short', year: '2-digit' }), earnings: demoRandom.rangeInt(200, 1000) }
     })
     return NextResponse.json({
       payouts,

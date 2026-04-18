@@ -55,38 +55,47 @@ describe('Health API Route', () => {
   })
 
   it('should return healthy status in demo mode', async () => {
-    const response = await GET()
+    const request = new Request('http://localhost:3000/api/health') as unknown as Parameters<typeof GET>[0]
+    const response = await GET(request)
     const body = await response.json()
+    const payload = body.data
 
-    expect(body.status).toBe('healthy')
-    expect(body.version).toBe(packageJson.version)
-    expect(body.services).toBeDefined()
-    expect(body._demo).toBe(true)
+    expect(body.success).toBe(true)
+    expect(payload.status).toBe('healthy')
+    expect(payload.version).toBe(packageJson.version)
+    expect(payload.services).toBeDefined()
+    expect(payload._demo).toBe(true)
   })
 
   it('should include all required services', async () => {
-    const response = await GET()
+    const request = new Request('http://localhost:3000/api/health') as unknown as Parameters<typeof GET>[0]
+    const response = await GET(request)
     const body = await response.json()
+    const payload = body.data
 
-    expect(body.services.database).toBeDefined()
-    expect(body.services.openclaw).toBeDefined()
-    expect(body.services.notification).toBeDefined()
+    expect(payload.services.database).toBeDefined()
+    expect(payload.services.openclaw).toBeDefined()
+    expect(payload.services.notification).toBeDefined()
   })
 
   it('should include response time', async () => {
-    const response = await GET()
+    const request = new Request('http://localhost:3000/api/health') as unknown as Parameters<typeof GET>[0]
+    const response = await GET(request)
     const body = await response.json()
+    const payload = body.data
 
-    expect(body.responseTimeMs).toBeDefined()
-    expect(typeof body.responseTimeMs).toBe('number')
+    expect(payload.responseTimeMs).toBeDefined()
+    expect(typeof payload.responseTimeMs).toBe('number')
   })
 
   it('should include timestamp', async () => {
-    const response = await GET()
+    const request = new Request('http://localhost:3000/api/health') as unknown as Parameters<typeof GET>[0]
+    const response = await GET(request)
     const body = await response.json()
+    const payload = body.data
 
-    expect(body.timestamp).toBeDefined()
-    expect(new Date(body.timestamp).getTime()).toBeGreaterThan(0)
+    expect(payload.timestamp).toBeDefined()
+    expect(new Date(payload.timestamp).getTime()).toBeGreaterThan(0)
   })
 })
 

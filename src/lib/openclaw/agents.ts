@@ -4,6 +4,8 @@ import {
   openClawCompletion,
 } from './gateway-client'
 import { invokeGatewayTool } from './tools'
+import { getGatewayWS } from './ws-client'
+import { randomUUID } from 'crypto'
 
 export interface A2AAgentDefinition {
   id: string
@@ -33,6 +35,21 @@ export interface ChainedPipelineResult {
 interface AgentCache {
   agents: A2AAgentDefinition[]
   updatedAt: number
+}
+
+interface AgentRunAccepted {
+  runId?: string
+  acceptedAt?: string
+}
+
+interface AgentWaitResult {
+  status?: 'ok' | 'error' | 'timeout'
+  startedAt?: string
+  endedAt?: string
+  error?: string
+  payload?: unknown
+  result?: unknown
+  reply?: unknown
 }
 
 const AGENT_CACHE_TTL_MS = 5 * 60 * 1_000
@@ -120,6 +137,52 @@ const FALLBACK_AGENTS: A2AAgentDefinition[] = [
   },
 ]
 
+export const AGENT_TOOL_CONFIG: Record<string, {
+  tools: { allow?: string[]; deny?: string[] }
+  sandbox?: { mode: string; scope: string }
+}> = {
+  main: {
+    tools: { allow: ['*'] },
+  },
+  niagaresearch: {
+    tools: {
+      allow: ['web_search', 'web_fetch', 'read', 'llm-task', 'memory_search', 'sessions_history'],
+      deny: ['write', 'edit', 'apply_patch', 'exec', 'browser'],
+    },
+  },
+  niagamarketing: {
+    tools: {
+      allow: ['web_search', 'llm-task', 'read', 'memory_search', 'message'],
+      deny: ['exec', 'write', 'edit', 'browser', 'canvas'],
+    },
+  },
+  niagaops: {
+    tools: {
+      allow: ['exec', 'read', 'process', 'gateway', 'cron', 'message'],
+      deny: ['write', 'edit', 'browser', 'canvas', 'llm-task'],
+    },
+    sandbox: { mode: 'all', scope: 'agent' },
+  },
+  niagacomputer: {
+    tools: {
+      allow: ['llm-task', 'read', 'web_search', 'memory_search'],
+      deny: ['exec', 'write', 'edit', 'browser', 'message'],
+    },
+  },
+  niagareporter: {
+    tools: {
+      allow: ['read', 'llm-task', 'message', 'memory_search', 'sessions_history'],
+      deny: ['exec', 'write', 'edit', 'browser'],
+    },
+  },
+  niagaaggregator: {
+    tools: {
+      allow: ['read', 'llm-task', 'sessions_history'],
+      deny: ['exec', 'write', 'edit', 'browser'],
+    },
+  },
+}
+
 const agentCache: AgentCache = {
   agents: FALLBACK_AGENTS,
   updatedAt: 0,
@@ -163,6 +226,10 @@ function toOutputText(value: unknown): string {
   }
 
   if (isRecord(value)) {
+    if (typeof value.content === 'string') {
+      return value.content
+    }
+
     if (typeof value.output === 'string') {
       return value.output
     }
@@ -177,6 +244,142 @@ function toOutputText(value: unknown): string {
   }
 
   return extractMessageContent(value)
+}
+
+function getRunErrorMessage(waitResult: AgentWaitResult): string {
+  if (typeof waitResult.error === 'string' && waitResult.error.trim()) {
+    return waitResult.error
+  }
+
+  const payloadMessage = extractMessageContent(waitResult.payload)
+  if (payloadMessage && payloadMessage !== '{}') {
+    return payloadMessage
+  }
+
+  return 'Agent run failed'
+}
+
+function collectHistoryMessages(payload: unknown): unknown[] {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (!isRecord(payload)) {
+    return []
+  }
+
+  if (Array.isArray(payload.messages)) {
+    return payload.messages
+  }
+
+  if (Array.isArray(payload.items)) {
+    return payload.items
+  }
+
+  if (Array.isArray(payload.history)) {
+    return payload.history
+  }
+
+  return []
+}
+
+export function extractSessionReplyFromHistory(payload: unknown): string {
+  const messages = collectHistoryMessages(payload)
+  if (messages.length === 0) {
+    return toOutputText(payload)
+  }
+
+  const preferred = [...messages].reverse().find((message) => {
+    if (!isRecord(message)) {
+      return false
+    }
+
+    return message.role === 'assistant' || message.role === 'toolResult' || message.role === 'tool'
+  })
+
+  return preferred ? toOutputText(preferred) : toOutputText(payload)
+}
+
+function buildIsolatedSessionKey(agentId: string, label = 'subagent') {
+  return `${label}:${agentId}:${randomUUID()}`
+}
+
+async function waitForAgentReply(
+  agentId: string,
+  sessionKey: string,
+  runId: string,
+  timeoutMs = 60_000
+): Promise<string> {
+  const gatewayWS = getGatewayWS()
+  const waitResult = await gatewayWS.rpc<AgentWaitResult>('agent.wait', {
+    runId,
+    timeoutMs,
+  })
+
+  if (waitResult.status === 'timeout') {
+    throw new Error(`Timed out waiting for ${agentId}`)
+  }
+
+  if (waitResult.status === 'error') {
+    throw new Error(getRunErrorMessage(waitResult))
+  }
+
+  const inlineReply = toOutputText(waitResult.reply ?? waitResult.result ?? waitResult.payload)
+  if (inlineReply && inlineReply !== '{}' && inlineReply !== '[]') {
+    return inlineReply
+  }
+
+  const sessionCandidates = [
+    sessionKey,
+    `agent:${agentId}:${sessionKey}`,
+  ]
+
+  for (const candidate of sessionCandidates) {
+    try {
+      const history = await invokeGatewayTool('sessions_history', {
+        sessionKey: candidate,
+        limit: 40,
+        includeTools: true,
+      }, 'main')
+
+      const reply = extractSessionReplyFromHistory(history)
+      if (reply && reply !== '{}' && reply !== '[]') {
+        return reply
+      }
+    } catch {
+      // Try the next candidate key before falling back to the raw wait payload.
+    }
+  }
+
+  return inlineReply
+}
+
+async function runIsolatedAgentTask(
+  agentId: string,
+  message: string,
+  sessionKey?: string,
+  timeoutMs = 60_000
+): Promise<unknown> {
+  const isolatedSessionKey = sessionKey || buildIsolatedSessionKey(agentId)
+  const gatewayWS = getGatewayWS()
+
+  const accepted = await gatewayWS.rpc<AgentRunAccepted>('agent', {
+    agentId,
+    sessionKey: isolatedSessionKey,
+    message,
+    deliver: false,
+  })
+
+  if (!accepted.runId) {
+    throw new Error(`Agent run for ${agentId} was not accepted`)
+  }
+
+  const reply = await waitForAgentReply(agentId, isolatedSessionKey, accepted.runId, timeoutMs)
+  return {
+    runId: accepted.runId,
+    sessionKey: isolatedSessionKey,
+    reply,
+  }
 }
 
 async function runLegacyChainedPipeline(userQuery: string): Promise<ChainedPipelineResult> {
@@ -380,16 +583,19 @@ export async function discoverAgents(forceRefresh = false): Promise<A2AAgentDefi
 }
 
 export async function spawnSubAgent(agentId: string, message: string, sessionKey?: string): Promise<unknown> {
-  const derivedSessionKey = sessionKey || `pipeline-${agentId}-${Date.now()}`
+  try {
+    return await runIsolatedAgentTask(agentId, message, sessionKey)
+  } catch {
+    const derivedSessionKey = sessionKey || `pipeline-${agentId}-${Date.now()}`
 
-  return invokeGatewayTool('sessions_spawn', {
-    agentId,
-    task: message,
-    message,
-    sessionKey: derivedSessionKey,
-    timeoutSeconds: 60,
-    wait: true,
-  }, 'main')
+    return invokeGatewayTool('sessions_spawn', {
+      agentId,
+      task: message,
+      message,
+      sessionKey: derivedSessionKey,
+      timeoutSeconds: 60,
+    }, 'main')
+  }
 }
 
 export async function runChainedPipeline(userQuery: string): Promise<ChainedPipelineResult> {

@@ -6,40 +6,17 @@ import {
   Link2, Eye, Target, BarChart3, FileText, type LucideIcon,
 } from 'lucide-react'
 
+import type {
+  ActivityApiResponse,
+  DashboardData,
+} from '@/lib/dashboard-types'
+
+export type {
+  ActivityApiResponse,
+  DashboardData,
+} from '@/lib/dashboard-types'
+
 export const PIE_COLORS = ['#EE4D2D', '#FF6742', '#FFB347', '#22C55E', '#3B82F6', '#8B5CF6', '#EC4899']
-
-export interface DashboardData {
-  totalLinks: number
-  totalClicks: number
-  totalConversions: number
-  totalEarnings: number
-  conversionRate: number
-  earningsData: { date: string; earnings: number; clicks: number }[]
-  topLinks: {
-    id: string; name: string; productName: string; productImage: string | null; clicks: number; conversions: number; earnings: number; status: string; shortCode: string; category: string | null; campaign: { name: string } | null
-  }[]
-  recentConversions: {
-    id: string; orderId: string; amount: number; commission: number; status: string; createdAt: string
-    affiliateLink: { name: string; productName: string; shortCode: string } | null
-  }[]
-  countryData: { name: string; value: number }[]
-  period: string
-  performanceScore: number
-  performanceGrade: string
-  scoreBreakdown: Array<{ label: string; earned: number; max: number }>
-}
-
-export interface ActivityApiResponse {
-  id: string
-  type: 'conversion' | 'click' | 'payout' | 'campaign' | 'link' | 'system'
-  title: string
-  description: string
-  timestamp: string
-  icon: string
-  color: string
-  borderClass: string
-  time: string
-}
 
 export function formatRM(amount: number) {
   return `RM ${amount.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`

@@ -37,11 +37,6 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Development bypass
-  if (process.env.SKIP_AUTH === 'true') {
-    return NextResponse.next()
-  }
-
   // Allow public prefix routes (e.g. /profile/{slug} — shareable profiles)
   if (publicPrefixRoutes.some((prefix) => pathname.startsWith(prefix))) {
     return NextResponse.next()

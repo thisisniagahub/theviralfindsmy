@@ -1,21 +1,32 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Eye, MousePointerClick, TrendingUp, DollarSign,
   ChevronRight, Clock, Target, Plus, Calendar, AlertTriangle,
 } from 'lucide-react'
-import { RefreshCw } from 'lucide-react'
+import { AlertCircle, Radio, RefreshCw, Wifi, WifiOff } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
+import { useDashboardLive } from '@/hooks/use-dashboard-live'
+import type {
+  ActivityFeedResponse,
+  DashboardBootstrapData,
+  DashboardGoal,
+  DashboardLinkSummary,
+  GoalsResponse,
+  LinksResponse,
+} from '@/lib/dashboard-types'
 import {
-  type DashboardData, type ActivityApiResponse,
+  type DashboardData,
   formatRM, periodOptions,
 } from './dashboard-shared'
 import { WelcomeBanner } from './welcome-banner'
@@ -30,8 +41,28 @@ import { RecentActivity } from './recent-activity'
 import { ActivityFeed } from './activity-feed'
 import { ForecastChart } from './forecast-chart'
 
-export function DashboardPage() {
+async function fetchApiJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
+  const payload = await response.json().catch(() => null)
+
+  if (!response.ok) {
+    const message = payload && typeof payload === 'object' && 'error' in payload && typeof payload.error === 'string'
+      ? payload.error
+      : `Request failed (${response.status})`
+    throw new Error(message)
+  }
+
+  return payload as T
+}
+
+interface DashboardPageProps {
+  initialData?: DashboardBootstrapData | null
+}
+
+export function DashboardPage({ initialData }: DashboardPageProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const initialPeriod = initialData?.period || '30d'
 
   const navigatePage = useCallback((page: string) => {
     const pathMap: Record<string, string> = {
@@ -54,24 +85,25 @@ export function DashboardPage() {
     }
     router.push(pathMap[page] || `/${page}`)
   }, [router])
-  const [period, setPeriod] = useState('30d')
+  const [period, setPeriod] = useState(initialPeriod)
   const [activityOpen, setActivityOpen] = useState(false)
   // "last updated" timer (kept for future use)
   const [_lastUpdated] = useState('just now')
   const [minutesAgo, setMinutesAgo] = useState(0)
+  const initialErrors = initialData?.errors || []
 
-  const { data, isLoading } = useQuery<DashboardData>({
+  const { data, isLoading, error: dashboardError } = useQuery<DashboardData>({
     queryKey: ['dashboard', period],
-    queryFn: () => fetch(`/api/dashboard?period=${period}`).then((r) => r.json()),
+    queryFn: () => fetchApiJson<DashboardData>(`/api/dashboard?period=${period}`),
+    initialData: period === initialPeriod ? initialData?.dashboard ?? undefined : undefined,
+    refetchInterval: 60_000,
   })
 
-  const { data: activityData, isFetching: isActivityFetching, refetch: refetchActivity } = useQuery<{
-    activities: ActivityApiResponse[]
-    total: number
-  }>({
+  const { data: activityData, error: activityError, isFetching: isActivityFetching, refetch: refetchActivity } = useQuery<ActivityFeedResponse>({
     queryKey: ['activity'],
-    queryFn: () => fetch('/api/activity').then((r) => r.json()),
-    refetchInterval: 30000,
+    queryFn: () => fetchApiJson<ActivityFeedResponse>('/api/activity'),
+    initialData: initialData?.activity ?? undefined,
+    refetchInterval: 60_000,
   })
 
   const activityItems = useMemo(() => {
@@ -79,22 +111,63 @@ export function DashboardPage() {
     return activityData.activities.slice(0, 8)
   }, [activityData])
 
-  const { data: goalsData } = useQuery({
+  const { data: goalsData, error: goalsError } = useQuery<GoalsResponse>({
     queryKey: ['goals'],
-    queryFn: () => fetch('/api/goals').then((r) => r.json()),
+    queryFn: () => fetchApiJson<GoalsResponse>('/api/goals'),
+    initialData: initialData?.goals ?? undefined,
+    refetchInterval: 120_000,
   })
 
-  const { data: linksData } = useQuery({
+  const { data: linksData, error: linksError } = useQuery<LinksResponse>({
     queryKey: ['links-expiring'],
-    queryFn: () => fetch('/api/links?limit=50').then((r) => r.json()),
+    queryFn: () => fetchApiJson<LinksResponse>('/api/links?limit=50'),
+    initialData: initialData?.links ?? undefined,
+    refetchInterval: 120_000,
   })
 
   const expiringLinks = useMemo(() => {
     if (!linksData?.links) return []
-    return linksData.links.filter((l: { expiryStatus: string; expiresIn: number | null; isExpired: boolean }) =>
-      l.expiryStatus === 'expiring_soon' || l.isExpired
-    ).sort((a: { expiresIn: number | null }, b: { expiresIn: number | null }) => (a.expiresIn ?? 999) - (b.expiresIn ?? 999))
+    return linksData.links
+      .filter((link: DashboardLinkSummary) => link.expiryStatus === 'expiring_soon' || Boolean(link.isExpired))
+      .sort((left: DashboardLinkSummary, right: DashboardLinkSummary) => (left.expiresIn ?? 999) - (right.expiresIn ?? 999))
   }, [linksData])
+
+  const live = useDashboardLive({
+    period,
+    enabled: true,
+    onSnapshot: useCallback((snapshot: DashboardBootstrapData) => {
+      if (snapshot.dashboard) {
+        queryClient.setQueryData(['dashboard', snapshot.period], snapshot.dashboard)
+      }
+
+      if (snapshot.activity) {
+        queryClient.setQueryData(['activity'], snapshot.activity)
+      }
+
+      if (snapshot.goals) {
+        queryClient.setQueryData(['goals'], snapshot.goals)
+      }
+
+      if (snapshot.links) {
+        queryClient.setQueryData(['links-expiring'], snapshot.links)
+      }
+
+      if (snapshot.forecast) {
+        queryClient.setQueryData(['forecast', snapshot.forecastDays], snapshot.forecast)
+      }
+
+      setMinutesAgo(0)
+    }, [queryClient]),
+  })
+
+  const surfaceErrors = [
+    ...initialErrors,
+    dashboardError instanceof Error ? dashboardError.message : null,
+    activityError instanceof Error ? activityError.message : null,
+    goalsError instanceof Error ? goalsError.message : null,
+    linksError instanceof Error ? linksError.message : null,
+    live.error,
+  ].filter((value): value is string => Boolean(value))
 
   // Update "last updated" timer
   useEffect(() => {
@@ -103,6 +176,12 @@ export function DashboardPage() {
     }, 60000)
     return () => clearInterval(timer)
   }, [])
+
+  useEffect(() => {
+    if (live.lastEventAt) {
+      setMinutesAgo(0)
+    }
+  }, [live.lastEventAt])
 
   const todayStr = new Date().toLocaleDateString('en-MY', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
@@ -204,6 +283,21 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {surfaceErrors.length > 0 && (
+        <Alert className="border-amber-500/30 bg-amber-500/5">
+          <AlertCircle />
+          <AlertTitle>Partial data degradation detected</AlertTitle>
+          <AlertDescription className="flex flex-col gap-2">
+            <span>{surfaceErrors[0]}</span>
+            {!live.connected && (
+              <Button variant="outline" size="sm" className="w-fit" onClick={() => live.reconnect()}>
+                Retry live sync
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Welcome Banner */}
       <WelcomeBanner
         totalEarnings={data?.totalEarnings || 0}
@@ -211,6 +305,34 @@ export function DashboardPage() {
         onExportCSV={exportCSV}
         onExportPDF={exportPDF}
       />
+
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border/60 bg-card/70 px-4 py-3 shadow-sm backdrop-blur-sm">
+        <Badge variant="secondary" className={live.connected ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}>
+          {live.connected ? <Wifi className="mr-1 h-3 w-3" /> : <WifiOff className="mr-1 h-3 w-3" />}
+          {live.connected ? 'Live sync active' : 'Polling fallback'}
+        </Badge>
+        <span className="text-xs text-muted-foreground">
+          Updated {minutesAgo === 0 ? 'just now' : `${minutesAgo} minute${minutesAgo > 1 ? 's' : ''} ago`}
+        </span>
+        <Separator orientation="vertical" className="hidden h-4 sm:block" />
+        <span className="text-xs text-muted-foreground">
+          {activityData?.todayCount ?? activityItems.length} fresh signals today
+        </span>
+        <Separator orientation="vertical" className="hidden h-4 lg:block" />
+        <span className="text-xs text-muted-foreground">
+          {goalsData?.summary.activeGoals ?? 0} active goals
+        </span>
+        <Separator orientation="vertical" className="hidden h-4 lg:block" />
+        <span className="text-xs text-muted-foreground">
+          {expiringLinks.length} links need attention
+        </span>
+        {!live.connected && (
+          <Button variant="ghost" size="sm" className="ml-auto text-xs" onClick={() => live.reconnect()}>
+            <Radio className="mr-1 h-3 w-3" />
+            Reconnect
+          </Button>
+        )}
+      </div>
 
       {/* Stats Cards + Performance Score */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -260,7 +382,7 @@ export function DashboardPage() {
         <ClicksChart earningsData={data?.earningsData || []} />
 
         {/* Earnings Forecast */}
-        <ForecastChart days={30} />
+        <ForecastChart days={30} initialData={initialData?.forecast} />
       </div>
 
       {/* Goals Tracker Row */}
@@ -287,10 +409,7 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent className="pt-0">
             <div className="space-y-4">
-              {(goalsData?.goals || []).slice(0, 3).map((goal: {
-                id: string; name: string; targetAmount: number; currentAmount: number;
-                period: string; status: string; endDate: string | null
-              }, index: number) => {
+              {(goalsData?.goals || []).slice(0, 3).map((goal: DashboardGoal, index: number) => {
                 const pct = goal.targetAmount > 0
                   ? Math.min(Math.round((goal.currentAmount / goal.targetAmount) * 100), 100)
                   : 0
@@ -389,7 +508,7 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-2">
-                {expiringLinks.slice(0, 3).map((link: { id: string; name: string; productName: string | null; expiresIn: number | null; isExpired: boolean; earnings: number }, idx: number) => (
+                {expiringLinks.slice(0, 3).map((link: DashboardLinkSummary, idx: number) => (
                   <motion.div
                     key={link.id}
                     initial={{ opacity: 0, x: -10 }}
@@ -411,8 +530,8 @@ export function DashboardPage() {
                       {link.isExpired ? (
                         <Badge variant="secondary" className="text-[10px] bg-red-500/10 text-red-600 border-red-500/20">Expired</Badge>
                       ) : (
-                        <Badge variant="secondary" className={`text-[10px] px-2 py-0 ${link.expiresIn !== null && link.expiresIn <= 3 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 animate-pulse' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
-                          {link.expiresIn}d left
+                        <Badge variant="secondary" className={`text-[10px] px-2 py-0 ${typeof link.expiresIn === 'number' && link.expiresIn <= 3 ? 'bg-amber-500/10 text-amber-600 border-amber-500/20 animate-pulse' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                          {link.expiresIn ?? '?'}d left
                         </Badge>
                       )}
                     </div>

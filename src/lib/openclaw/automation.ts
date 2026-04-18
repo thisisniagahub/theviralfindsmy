@@ -1,6 +1,7 @@
 import { env } from '@/lib/env'
 import { gatewayFetch, getGatewayUrl } from './gateway-client'
 import { invokeGatewayTool } from './tools'
+import { WEBHOOK_ROUTES } from './webhooks'
 
 export interface AgentHookOptions {
   message: string
@@ -13,15 +14,6 @@ export interface AgentHookOptions {
   channel?: string
   to?: string
 }
-
-const KNOWN_WEBHOOK_ROUTES = [
-  {
-    id: 'shopee-lead',
-    path: '/webhook/shopee',
-    sessionKey: 'shopee-automation',
-    description: 'Inbound leads from Shopee Affiliate system',
-  },
-]
 
 function normalizeHooksBasePath(path: string): string {
   if (!path) {
@@ -94,7 +86,7 @@ export async function removeCronJob(jobId: string) {
 }
 
 export function getWebhookRoutes() {
-  return KNOWN_WEBHOOK_ROUTES
+  return WEBHOOK_ROUTES
 }
 
 export function getHooksBaseUrl() {

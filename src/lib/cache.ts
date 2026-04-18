@@ -18,6 +18,7 @@ class ResponseCache {
   private store = new Map<string, CacheEntry>()
   private defaultTTL = 30_000 // 30 seconds default
   private cleanupInterval: ReturnType<typeof setInterval> | null = null
+  private syncProductionWarningShown = false
 
   constructor() {
     // Only start in-memory cleanup in development
@@ -76,8 +77,10 @@ class ResponseCache {
     // In production, require Redis
     if (process.env.NODE_ENV === 'production') {
       this.isProductionRedisRequired()
-      // Async Redis get would require API changes, so we return null for now
-      // For sync Redis access in production, use cache-redis.ts (RedisBackedCache)
+      if (!this.syncProductionWarningShown) {
+        this.syncProductionWarningShown = true
+        console.warn('[Cache] Synchronous get() is not supported in production. Use getAsync() instead.')
+      }
       return null
     }
 

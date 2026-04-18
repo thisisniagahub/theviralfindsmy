@@ -1,4 +1,5 @@
 import { checkOpenClawHealth, gatewayFetch, getGatewayUrl, getSDK } from './gateway-client'
+import { llmTaskJSON } from './llm-task'
 import { getGatewayWS } from './ws-client'
 
 export interface MCPToolDefinition {
@@ -353,19 +354,127 @@ export async function executeMCPTool(
   }
 }
 
+type OpenClawSDKInstance = Awaited<ReturnType<typeof getSDK>>
+
+interface TrendingProduct {
+  rank: number
+  name: string
+  category: string
+  price: number
+  salesVolume: number
+  trendScore: number
+  velocity: string
+}
+
+interface KeywordResearchItem {
+  keyword: string
+  volume: number
+  competition: 'low' | 'medium' | 'high'
+  relevance: number
+}
+
+interface CompetitorAnalysisPayload {
+  competitor: string
+  analysis: {
+    totalProducts: number
+    avgRating: number
+    avgPrice: number
+    estimatedSales: number
+    strengths: string[]
+    weaknesses: string[]
+    strategies: string[]
+    threatLevel: 'Low' | 'Medium' | 'High'
+  }
+}
+
+interface PriceTrackerPayload {
+  products: Array<{
+    name: string
+    currentPrice: number
+    lowestPrice: number
+    highestPrice: number
+    trend: 'up' | 'down' | 'stable'
+    change: number
+    recommendation: 'Buy Now' | 'Wait' | 'Monitor'
+  }>
+  marketInsight: string
+}
+
+interface SmartSchedulerPayload {
+  bestTimes: Array<{
+    day: string
+    hour: string
+    platform: string
+    score: number
+  }>
+  worstTimes: Array<{
+    day: string
+    hour: string
+    platform: string
+  }>
+  tips: string[]
+  weeklyCalendar: Record<string, unknown>
+}
+
+interface AIInsightsPayload {
+  insights: Array<{
+    type: 'opportunity' | 'warning' | 'success' | 'tip'
+    message: string
+    impact: 'high' | 'medium' | 'low'
+  }>
+  recommendations: string[]
+}
+
+interface AIContentPayload {
+  content: string
+  hashtags: string[]
+}
+
+function normalizeSearchResults(results: unknown): SearchResult[] {
+  if (!Array.isArray(results)) {
+    return []
+  }
+
+  return results.map((result) => {
+    if (!isRecord(result)) {
+      return {}
+    }
+
+    return {
+      name: typeof result.name === 'string' ? result.name : undefined,
+      snippet: typeof result.snippet === 'string' ? result.snippet : undefined,
+    }
+  })
+}
+
+function buildSearchContext(results: SearchResult[]): string {
+  return results
+    .map((result, index) => `${index + 1}. ${result.name || 'Untitled'}: ${result.snippet || 'No snippet available'}`)
+    .join('\n')
+}
+
+async function runWebSearch(zai: OpenClawSDKInstance, query: string, num: number): Promise<SearchResult[]> {
+  const results = await zai.functions.invoke('web_search', { query, num })
+  return normalizeSearchResults(results)
+}
+
+function getStringParam(params: Record<string, unknown>, key: string, fallback = ''): string {
+  return typeof params[key] === 'string' ? params[key] as string : fallback
+}
+
 async function executeToolViaSDK(toolName: string, params: Record<string, unknown>): Promise<unknown> {
   const zai = await getSDK()
 
   switch (toolName) {
     case 'web_search': {
-      const query = typeof params.query === 'string' ? params.query : 'Shopee Malaysia trending products'
+      const query = getStringParam(params, 'query', 'Shopee Malaysia trending products')
       const num = typeof params.num === 'number' ? params.num : 8
-      const results = await zai.functions.invoke('web_search', { query, num }) as SearchResult[]
+      const results = await runWebSearch(zai, query, num)
       return { query, results, total: results.length }
     }
 
     case 'web_reader': {
-      const url = typeof params.url === 'string' ? params.url : ''
+      const url = getStringParam(params, 'url')
       if (!url) {
         throw new Error('URL is required for web_reader')
       }
@@ -397,7 +506,7 @@ async function executeToolViaSDK(toolName: string, params: Record<string, unknow
 
       const messages = inputMessages.length > 0
         ? inputMessages
-        : [{ role: 'user' as const, content: typeof params.prompt === 'string' ? params.prompt : 'Hello' }]
+        : [{ role: 'user' as const, content: getStringParam(params, 'prompt', 'Hello') }]
 
       const completion = await zai.chat.completions.create({
         messages,
@@ -414,271 +523,346 @@ async function executeToolViaSDK(toolName: string, params: Record<string, unknow
     }
 
     case 'image_generation': {
-      const prompt = typeof params.prompt === 'string' ? params.prompt : 'Shopee affiliate marketing banner'
-      const size = (typeof params.size === 'string' ? params.size : '1024x1024') as '1024x1024' | '768x1344' | '864x1152' | '1344x768' | '1152x864' | '1440x720' | '720x1440'
+      const prompt = getStringParam(params, 'prompt', 'Shopee affiliate marketing banner')
+      const size = (getStringParam(params, 'size', '1024x1024')) as '1024x1024' | '768x1344' | '864x1152' | '1344x768' | '1152x864' | '1440x720' | '720x1440'
       const result = await zai.images.generations.create({ prompt, size }) as { data?: unknown[] }
       return { prompt, size, images: result.data?.length || 0, generated: true }
     }
 
     case 'trending_scanner': {
-      const category = typeof params.category === 'string' ? params.category : 'all'
-      const region = typeof params.region === 'string' ? params.region : 'MY'
-      const searchResults = await zai.functions.invoke('web_search', {
-        query: `Shopee ${region} trending products ${category !== 'all' ? category : ''} best seller 2025`,
-        num: 8,
-      }) as SearchResult[]
+      const category = getStringParam(params, 'category', 'all')
+      const region = getStringParam(params, 'region', 'MY')
+      const searchResults = await runWebSearch(
+        zai,
+        `Shopee ${region} trending products ${category !== 'all' ? category : ''} best seller`,
+        8
+      )
 
-      const contextText = searchResults
-        .map((result, index) => `${index + 1}. ${result.name}: ${result.snippet}`)
-        .join('\n')
-
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Shopee trending products analyst. Generate a JSON array of trending products. Each product: {rank, name, category, price (number RM), salesVolume (number), trendScore (60-99), velocity (emoji + text)}. Generate exactly 8 products. Reply ONLY with the JSON array.',
+      const { data } = await llmTaskJSON<TrendingProduct[]>({
+        prompt: `Find the top 8 trending Shopee products for ${region} in ${category !== 'all' ? category : 'all categories'}. Return rank, name, category, price in RM, salesVolume, trendScore from 60-99, and a short velocity label.`,
+        input: {
+          category,
+          region,
+          searchResults,
+        },
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              rank: { type: 'number' },
+              name: { type: 'string' },
+              category: { type: 'string' },
+              price: { type: 'number' },
+              salesVolume: { type: 'number' },
+              trendScore: { type: 'number', minimum: 60, maximum: 99 },
+              velocity: { type: 'string' },
+            },
+            required: ['rank', 'name', 'category', 'price', 'salesVolume', 'trendScore', 'velocity'],
+            additionalProperties: false,
           },
-          {
-            role: 'user',
-            content: `Find trending Shopee products in ${category !== 'all' ? category : 'all categories'} for ${region}.\n\nWeb search results:\n${contextText}`,
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+        },
+        thinking: 'low',
+      })
 
-      const raw = completion.choices?.[0]?.message?.content || '[]'
-      const match = raw.match(/\[[\s\S]*\]/)
       return {
-        products: match ? JSON.parse(match[0]) as unknown[] : [],
+        products: data,
         category,
         region,
-        source: 'ai_web_search',
+        context: buildSearchContext(searchResults),
+        source: 'llm-task',
       }
     }
 
     case 'keyword_research': {
-      const seedKeyword = typeof params.seedKeyword === 'string'
-        ? params.seedKeyword
-        : typeof params.seed === 'string'
-          ? params.seed
-          : ''
-
+      const seedKeyword = getStringParam(params, 'seedKeyword') || getStringParam(params, 'seed')
       if (!seedKeyword) {
         throw new Error('Seed keyword required')
       }
 
-      const searchResults = await zai.functions.invoke('web_search', {
-        query: `shopee ${seedKeyword} keyword SEO Malaysia trending search 2025`,
-        num: 5,
-      }) as SearchResult[]
+      const searchResults = await runWebSearch(
+        zai,
+        `Shopee ${seedKeyword} keyword SEO Malaysia trending search`,
+        6
+      )
 
-      const contextText = searchResults
-        .map((result, index) => `${index + 1}. ${result.name}: ${result.snippet}`)
-        .join('\n')
-
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Shopee SEO expert. Generate keyword suggestions in JSON array. Each keyword: {keyword, volume (number), competition ("low"|"medium"|"high"), relevance (number 1-100)}. Generate 10 keywords. Reply ONLY with JSON array.',
+      const { data } = await llmTaskJSON<KeywordResearchItem[]>({
+        prompt: `Generate 10 Shopee Malaysia SEO keyword ideas from the provided search context for "${seedKeyword}". Return keyword, estimated search volume, competition, and relevance score from 1-100.`,
+        input: {
+          seedKeyword,
+          searchResults,
+        },
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              keyword: { type: 'string' },
+              volume: { type: 'number' },
+              competition: { type: 'string', enum: ['low', 'medium', 'high'] },
+              relevance: { type: 'number' },
+            },
+            required: ['keyword', 'volume', 'competition', 'relevance'],
+            additionalProperties: false,
           },
-          {
-            role: 'user',
-            content: `Seed keyword: "${seedKeyword}"\n\nWeb search context:\n${contextText}`,
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+        },
+        thinking: 'low',
+      })
 
-      const raw = completion.choices?.[0]?.message?.content || '[]'
-      const match = raw.match(/\[[\s\S]*\]/)
       return {
-        keywords: match ? JSON.parse(match[0]) as unknown[] : [],
+        keywords: data,
         seedKeyword,
-        source: 'ai_web_search',
+        context: buildSearchContext(searchResults),
+        source: 'llm-task',
       }
     }
 
     case 'competitor_analysis': {
-      const competitorShop = typeof params.competitorShop === 'string'
-        ? params.competitorShop
-        : typeof params.shop === 'string'
-          ? params.shop
-          : ''
-
+      const competitorShop = getStringParam(params, 'competitorShop') || getStringParam(params, 'shop')
       if (!competitorShop) {
         throw new Error('Competitor shop name required')
       }
 
-      const searchResults = await zai.functions.invoke('web_search', {
-        query: `Shopee Malaysia ${competitorShop} shop seller review ratings products`,
-        num: 5,
-      }) as SearchResult[]
+      const searchResults = await runWebSearch(
+        zai,
+        `Shopee Malaysia ${competitorShop} shop seller reviews ratings products`,
+        6
+      )
 
-      const contextText = searchResults
-        .map((result, index) => `${index + 1}. ${result.name}: ${result.snippet}`)
-        .join('\n')
-
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Shopee competitor analysis expert. Return JSON: {competitor, analysis:{totalProducts, avgRating, avgPrice, estimatedSales, strengths:[], weaknesses:[], strategies:[], threatLevel:"Low"|"Medium"|"High"}}. Reply ONLY with valid JSON.',
+      const { data } = await llmTaskJSON<CompetitorAnalysisPayload>({
+        prompt: `Analyze Shopee competitor "${competitorShop}" using the provided context. Estimate total products, rating, price positioning, sales, strengths, weaknesses, strategies, and threat level.`,
+        input: {
+          competitorShop,
+          searchResults,
+          metrics: params.metrics,
+        },
+        schema: {
+          type: 'object',
+          properties: {
+            competitor: { type: 'string' },
+            analysis: {
+              type: 'object',
+              properties: {
+                totalProducts: { type: 'number' },
+                avgRating: { type: 'number' },
+                avgPrice: { type: 'number' },
+                estimatedSales: { type: 'number' },
+                strengths: { type: 'array', items: { type: 'string' } },
+                weaknesses: { type: 'array', items: { type: 'string' } },
+                strategies: { type: 'array', items: { type: 'string' } },
+                threatLevel: { type: 'string', enum: ['Low', 'Medium', 'High'] },
+              },
+              required: ['totalProducts', 'avgRating', 'avgPrice', 'estimatedSales', 'strengths', 'weaknesses', 'strategies', 'threatLevel'],
+              additionalProperties: false,
+            },
           },
-          {
-            role: 'user',
-            content: `Analyze Shopee competitor shop "${competitorShop}".\n\nWeb search context:\n${contextText}`,
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+          required: ['competitor', 'analysis'],
+          additionalProperties: false,
+        },
+        thinking: 'medium',
+      })
 
-      const raw = completion.choices?.[0]?.message?.content || '{}'
-      const match = raw.match(/\{[\s\S]*\}/)
-      return match ? JSON.parse(match[0]) as unknown : { competitor: competitorShop, analysis: {} }
+      return data
     }
 
     case 'price_tracker': {
       const productNames = Array.isArray(params.productNames)
-        ? params.productNames.filter((name): name is string => typeof name === 'string')
+        ? params.productNames.filter((name): name is string => typeof name === 'string' && Boolean(name.trim()))
         : []
 
       if (productNames.length === 0) {
         throw new Error('Product names required')
       }
 
-      const query = productNames.slice(0, 3).join(' OR ')
-      const searchResults = await zai.functions.invoke('web_search', {
-        query: `Shopee Malaysia ${query} price review rating 2025`,
-        num: 8,
-      }) as SearchResult[]
+      const searchResults = await runWebSearch(
+        zai,
+        `Shopee Malaysia ${productNames.slice(0, 3).join(' OR ')} price review rating`,
+        8
+      )
 
-      const contextText = searchResults
-        .map((result, index) => `${index + 1}. ${result.name}: ${result.snippet}`)
-        .join('\n')
-
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a Shopee price analyst. Return JSON: {products:[{name, currentPrice, lowestPrice, highestPrice, trend ("up"|"down"|"stable"), change (number %), recommendation ("Buy Now"|"Wait"|"Monitor")}], marketInsight (string)}. Reply ONLY with valid JSON.',
+      const { data } = await llmTaskJSON<PriceTrackerPayload>({
+        prompt: `Track price movement for the provided Shopee products. Return the current price, range, direction, percentage change, recommendation, and one market insight.`,
+        input: {
+          productNames,
+          searchResults,
+        },
+        schema: {
+          type: 'object',
+          properties: {
+            products: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  currentPrice: { type: 'number' },
+                  lowestPrice: { type: 'number' },
+                  highestPrice: { type: 'number' },
+                  trend: { type: 'string', enum: ['up', 'down', 'stable'] },
+                  change: { type: 'number' },
+                  recommendation: { type: 'string', enum: ['Buy Now', 'Wait', 'Monitor'] },
+                },
+                required: ['name', 'currentPrice', 'lowestPrice', 'highestPrice', 'trend', 'change', 'recommendation'],
+                additionalProperties: false,
+              },
+            },
+            marketInsight: { type: 'string' },
           },
-          {
-            role: 'user',
-            content: `Track prices for these Shopee products: ${productNames.join(', ')}.\n\nWeb search results:\n${contextText}`,
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+          required: ['products', 'marketInsight'],
+          additionalProperties: false,
+        },
+        thinking: 'low',
+      })
 
-      const raw = completion.choices?.[0]?.message?.content || '{}'
-      const match = raw.match(/\{[\s\S]*\}/)
-      return match ? JSON.parse(match[0]) as unknown : { products: [] }
+      return data
     }
 
     case 'smart_scheduler': {
-      const platform = typeof params.platform === 'string' ? params.platform : 'all'
-      const niche = typeof params.niche === 'string' ? params.niche : 'affiliate marketing'
-      const searchResults = await zai.functions.invoke('web_search', {
-        query: `best time to post social media Malaysia ${platform} engagement rate 2025`,
-        num: 5,
-      }) as SearchResult[]
+      const platform = getStringParam(params, 'platform', 'all')
+      const niche = getStringParam(params, 'niche', 'affiliate marketing')
+      const contentType = getStringParam(params, 'contentType', 'all')
+      const searchResults = await runWebSearch(
+        zai,
+        `best time to post social media Malaysia ${platform} engagement rate`,
+        6
+      )
 
-      const contextText = searchResults
-        .map((result, index) => `${index + 1}. ${result.name}: ${result.snippet}`)
-        .join('\n')
-
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a social media scheduling expert for Malaysian Shopee affiliates. Return JSON: {bestTimes:[{day,hour,platform,score (1-100)}], worstTimes:[{day,hour,platform}], tips:[string], weeklyCalendar:{}}. Reply ONLY with valid JSON.',
+      const { data } = await llmTaskJSON<SmartSchedulerPayload>({
+        prompt: `Suggest the best and worst posting times for a Malaysian Shopee affiliate audience. Include actionable tips and a lightweight weekly calendar.`,
+        input: {
+          platform,
+          niche,
+          contentType,
+          searchResults,
+        },
+        schema: {
+          type: 'object',
+          properties: {
+            bestTimes: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  day: { type: 'string' },
+                  hour: { type: 'string' },
+                  platform: { type: 'string' },
+                  score: { type: 'number' },
+                },
+                required: ['day', 'hour', 'platform', 'score'],
+                additionalProperties: false,
+              },
+            },
+            worstTimes: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  day: { type: 'string' },
+                  hour: { type: 'string' },
+                  platform: { type: 'string' },
+                },
+                required: ['day', 'hour', 'platform'],
+                additionalProperties: false,
+              },
+            },
+            tips: {
+              type: 'array',
+              items: { type: 'string' },
+            },
+            weeklyCalendar: {
+              type: 'object',
+            },
           },
-          {
-            role: 'user',
-            content: `Suggest optimal posting schedule for ${platform} platform, in ${niche} niche.\n\nResearch context:\n${contextText}`,
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+          required: ['bestTimes', 'worstTimes', 'tips', 'weeklyCalendar'],
+          additionalProperties: false,
+        },
+        thinking: 'low',
+      })
 
-      const raw = completion.choices?.[0]?.message?.content || '{}'
-      const match = raw.match(/\{[\s\S]*\}/)
-      return match ? JSON.parse(match[0]) as unknown : { bestTimes: [], tips: [] }
+      return data
     }
 
     case 'ai_insights': {
       const metrics = params.metrics || params
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert affiliate marketing analyst for Shopee Malaysia. Generate 4 actionable insights and 3 recommendations. Reply ONLY with valid JSON: {"insights":[{"type":"opportunity"|"warning"|"success"|"tip","message":"...","impact":"high"|"medium"|"low"}],"recommendations":["..."]}. No other text.',
+      const { data } = await llmTaskJSON<AIInsightsPayload>({
+        prompt: 'Analyze the provided Shopee affiliate metrics and return four actionable insights plus three recommendations.',
+        input: metrics,
+        schema: {
+          type: 'object',
+          properties: {
+            insights: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  type: { type: 'string', enum: ['opportunity', 'warning', 'success', 'tip'] },
+                  message: { type: 'string' },
+                  impact: { type: 'string', enum: ['high', 'medium', 'low'] },
+                },
+                required: ['type', 'message', 'impact'],
+                additionalProperties: false,
+              },
+            },
+            recommendations: {
+              type: 'array',
+              items: { type: 'string' },
+            },
           },
-          {
-            role: 'user',
-            content: `Analyze this Shopee affiliate data and provide insights:\n${JSON.stringify(metrics, null, 2)}\nPeriod: Last 30 days`,
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+          required: ['insights', 'recommendations'],
+          additionalProperties: false,
+        },
+        thinking: 'medium',
+      })
 
-      const raw = completion.choices?.[0]?.message?.content || '{}'
-      const match = raw.match(/\{[\s\S]*\}/)
-      return match ? JSON.parse(match[0]) as unknown : { insights: [], recommendations: [] }
+      return data
     }
 
     case 'ai_content': {
-      const productName = typeof params.productName === 'string' ? params.productName : ''
-      const contentType = typeof params.contentType === 'string' ? params.contentType : 'social-post'
-      const tone = typeof params.tone === 'string' ? params.tone : 'casual'
-      const platform = typeof params.platform === 'string' ? params.platform : 'shopee'
+      const productName = getStringParam(params, 'productName')
+      const contentType = getStringParam(params, 'contentType', 'social-post')
+      const tone = getStringParam(params, 'tone', 'casual')
+      const platform = getStringParam(params, 'platform', 'shopee')
 
       if (!productName) {
         throw new Error('Product name required for ai_content')
       }
 
       const prompts: Record<string, string> = {
-        'product-description': `Write a compelling Shopee product description for "${productName}". Include features, benefits, and call-to-action. Under 200 words.`,
-        'social-post': `Write a viral social media post promoting "${productName}" on ${platform}. Make it engaging with emojis. Include CTA and hashtags. Under 150 words.`,
-        'blog-article': `Write a short blog article (300 words) reviewing "${productName}" for affiliate marketing. Include pros, cons, and CTA.`,
-        'email-subject': `Write 5 attention-grabbing email subject lines promoting "${productName}". Make them urgent and curiosity-driven.`,
-        'ad-copy': `Write 3 variations of ad copy for "${productName}" targeting Malaysian shoppers. Include headline, description, and CTA for each.`,
+        'product-description': `Write a compelling Shopee product description for "${productName}". Include features, benefits, and a call to action. Keep it under 200 words.`,
+        'social-post': `Write a viral social post promoting "${productName}" for ${platform}. Keep it engaging, concise, and CTA-focused.`,
+        'blog-article': `Write a short affiliate review of "${productName}" with pros, cons, and a call to action.`,
+        'email-subject': `Create five high-performing email subject lines for "${productName}".`,
+        'ad-copy': `Create three ad-copy variations for "${productName}" targeting Malaysian shoppers.`,
       }
 
-      const completion = await zai.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: `You are an expert Shopee Malaysia affiliate marketer. Write in ${tone} tone for ${platform}. Reply with the generated content only, no explanations. Include relevant hashtags.`,
+      const { data } = await llmTaskJSON<AIContentPayload>({
+        prompt: `Generate ${contentType} content in a ${tone} tone for ${platform}. Return the content body and extracted hashtags.`,
+        input: {
+          productName,
+          contentType,
+          tone,
+          platform,
+          prompt: prompts[contentType] || prompts['social-post'],
+        },
+        schema: {
+          type: 'object',
+          properties: {
+            content: { type: 'string' },
+            hashtags: {
+              type: 'array',
+              items: { type: 'string' },
+            },
           },
-          {
-            role: 'user',
-            content: prompts[contentType] || prompts['social-post'],
-          },
-        ],
-        thinking: { type: 'disabled' },
-      }) as {
-        choices?: Array<{ message?: { content?: string } }>
-      }
+          required: ['content', 'hashtags'],
+          additionalProperties: false,
+        },
+        thinking: 'low',
+      })
 
-      const content = completion.choices?.[0]?.message?.content || 'Content generation failed.'
       return {
-        content,
-        wordCount: content.split(/\s+/).length,
-        hashtags: content.match(/#\w+/g) || [],
+        content: data.content,
+        hashtags: data.hashtags,
+        wordCount: data.content.split(/\s+/).filter(Boolean).length,
         contentType,
         productName,
         tone,

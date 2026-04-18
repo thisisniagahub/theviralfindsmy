@@ -13,7 +13,7 @@ function preprocessEnv(env: Record<string, string | undefined>): Record<string, 
 }
 
 export const envSchema = z.object({
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: z.string().min(1).optional(),
   NEXTAUTH_SECRET: z.string().min(1).optional(),
   NEXTAUTH_URL: z.string().url().optional(),
   ADMIN_EMAIL: z.string().email().catch('admin@theviralfinds.my').default('admin@theviralfinds.my'),
@@ -21,9 +21,10 @@ export const envSchema = z.object({
   DEMO_MODE: z.enum(['true', 'false']).default('false'),
   OPENCLAW_GATEWAY_URL: z.string().url().optional().default('https://operator.gangniaga.my'),
   OPENCLAW_GATEWAY_TOKEN: z.string().optional(),
+  OPENCLAW_WEBHOOK_SECRET: z.string().optional(),
   NOTIFICATION_SERVICE_URL: z.string().url().default('http://127.0.0.1:3004'),
   DB_SERVICE_URL: z.string().url().default('http://127.0.0.1:3005'),
-  DB_SERVICE_SECRET: z.string().min(1, 'DB_SERVICE_SECRET is required for database service authentication'),
+  DB_SERVICE_SECRET: z.string().min(1, 'DB_SERVICE_SECRET is required for database service authentication').optional(),
   SHOPEE_API_KEY: z.string().optional(),
   SHOPEE_PARTNER_ID: z.string().optional(),
   SHOPEE_PARTNER_KEY: z.string().optional(),
@@ -41,20 +42,45 @@ export const envSchema = z.object({
   CDN_BASE_URL: z.string().url().optional(),
 })
 
+function isLocalDemoEnv(env: Record<string, string | undefined>): boolean {
+  return env.NODE_ENV !== 'production' && env.DEMO_MODE === 'true'
+}
+
+export function parseEnv(rawEnv: Record<string, string | undefined>) {
+  const processedEnv = preprocessEnv(rawEnv)
+
+  const result = envSchema.safeParse(processedEnv)
+  if (!result.success) {
+    const missingVars = result.error.issues
+      .map((e) => e.path.join('.'))
+      .filter((v) => v !== '')
+    console.error(`❌ Missing or invalid environment variables: ${missingVars.join(', ')}`)
+    console.error('Please check your .env file and ensure all required variables are set.')
+    throw new EnvValidationError(missingVars)
+  }
+
+  const missingRequiredVars: string[] = []
+  if (!result.data.DATABASE_URL && !isLocalDemoEnv(processedEnv)) {
+    missingRequiredVars.push('DATABASE_URL')
+  }
+
+  if (!result.data.DB_SERVICE_SECRET && !isLocalDemoEnv(processedEnv)) {
+    missingRequiredVars.push('DB_SERVICE_SECRET')
+  }
+
+  if (missingRequiredVars.length > 0) {
+    console.error(`❌ Missing or invalid environment variables: ${missingRequiredVars.join(', ')}`)
+    console.error('Please check your .env file and ensure all required variables are set.')
+    throw new EnvValidationError(missingRequiredVars)
+  }
+
+  return result.data
+}
+
 function validateEnv() {
   try {
-    // Preprocess env vars to convert empty strings to undefined
-    const processedEnv = preprocessEnv(process.env)
-    return envSchema.parse(processedEnv)
+    return parseEnv(process.env)
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      const missingVars = error.issues
-        .map((e) => e.path.join('.'))
-        .filter((v) => v !== '')
-      console.error(`❌ Missing or invalid environment variables: ${missingVars.join(', ')}`)
-      console.error('Please check your .env file and ensure all required variables are set.')
-      throw new EnvValidationError(missingVars)
-    }
     throw error
   }
 }
