@@ -11,7 +11,6 @@ const envSchema = z.object({
   // ─── Auth & Admin ──────────────────────────────────────────────
   ADMIN_PASSWORD: z.string().min(1).optional(),
   DEMO_MODE: z.enum(['true', 'false']).default('false'),
-  SKIP_AUTH: z.enum(['true', 'false']).default('false'),
 
   // ─── OpenClaw / AI ────────────────────────────────────────────
   OPENCLAW_GATEWAY_URL: z.string().url().default('https://operator.gangniaga.my'),
@@ -21,11 +20,12 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TWILIO_AUTH_TOKEN: z.string().optional(),
   SHOPEE_API_KEY: z.string().optional(),
-  OFFICE_JOIN_KEY: z.string().optional(),
+  OFFICE_JOIN_KEY: z.string().min(8, 'OFFICE_JOIN_KEY must be at least 8 characters'),
 
   // ─── Microservices (local dev only) ───────────────────────────
   NOTIFICATION_SERVICE_URL: z.string().url().optional().default('http://127.0.0.1:3004'),
   DB_SERVICE_URL: z.string().url().optional().default('http://127.0.0.1:3005'),
+  DB_SERVICE_API_KEY: z.string().min(1).default('tvf-internal-api-key-2024'),
 })
 
 let env: z.infer<typeof envSchema>

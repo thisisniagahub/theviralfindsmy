@@ -6,17 +6,34 @@ import { getToken } from 'next-auth/jwt'
 const publicRoutes = ['/login']
 const publicApiRoutes = ['/api/auth', '/api/redirect', '/api/products/search', '/api/route', '/api/health']
 
+// Security headers applied to all responses
+const securityHeaders = {
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'X-XSS-Protection': '1; mode=block',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes
   if (publicRoutes.some((route) => pathname === route)) {
-    return NextResponse.next()
+    const response = NextResponse.next()
+    Object.entries(securityHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value)
+    })
+    return response
   }
 
   // Allow public API routes
   if (publicApiRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.next()
+    const response = NextResponse.next()
+    Object.entries(securityHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value)
+    })
+    return response
   }
 
   // Allow static files and Next.js internals
@@ -30,10 +47,7 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // NOTE: SKIP_AUTH bypass has been intentionally removed.
-  // Authentication is always enforced regardless of the SKIP_AUTH env var.
-  // In demo mode, the login page auto-fills credentials instead.
-
+  // Authentication is ALWAYS enforced — no SKIP_AUTH bypass
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
 
   if (!token) {
@@ -50,7 +64,11 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value)
+  })
+  return response
 }
 
 export const config = {

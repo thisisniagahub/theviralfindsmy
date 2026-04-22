@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { updateLinkSchema } from '@/lib/validations'
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const { id } = await params
     const now = new Date()
     return NextResponse.json({
@@ -36,14 +36,8 @@ export async function GET(
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    const link = await fetch(`${DB_URL}/links/${encodeURIComponent(id)}`).then(r => {
-      if (!r.ok) throw new Error(`${r.status}`)
-      return r.json()
-    })
+    const link = await dbFetch(`/links/${encodeURIComponent(id)}`)
 
     return NextResponse.json(link)
   } catch (error) {
@@ -59,31 +53,38 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const validated = updateLinkSchema.safeParse(body)
+  if (!validated.success) {
+    return NextResponse.json({ error: 'Validation failed', details: validated.error.issues }, { status: 400 })
+  }
+
+  if (isDemoMode()) {
     const { id } = await params
-    const body = await request.json()
     const now = new Date()
     return NextResponse.json({
       id,
-      name: body.name || 'Laneige Water Mask',
-      status: body.status || 'active',
-      campaignId: body.campaignId || 'camp-1',
-      expiresAt: body.expiresAt || null,
+      name: validated.data.name || 'Laneige Water Mask',
+      status: validated.data.status || 'active',
+      campaignId: validated.data.campaignId || 'camp-1',
+      expiresAt: validated.data.expiresAt || null,
       updatedAt: now.toISOString(),
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    const body = await request.json()
 
-    const link = await fetch(`${DB_URL}/links/${encodeURIComponent(id)}`, {
+    const link = await dbFetch(`/links/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then(r => r.json())
+      body: JSON.stringify(validated.data),
+    })
 
     return NextResponse.json(link)
   } catch (error) {
@@ -96,15 +97,12 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({ success: true })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    await fetch(`${DB_URL}/links/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    await dbFetch(`/links/${encodeURIComponent(id)}`, { method: 'DELETE' })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Link DELETE error:', error)

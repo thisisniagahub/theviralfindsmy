@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PhaserGame, type AgentData } from '@/components/shopee-office'
+import dynamic from 'next/dynamic'
+import type { AgentData } from '@/components/shopee-office/phaser-game'
 import { ControlPanel } from '@/components/shopee-office/control-panel'
 import { AgentsPanel, type AgentInfo } from '@/components/shopee-office/agents-panel'
 import { MemoPanel, type MemoData } from '@/components/shopee-office/memo-panel'
@@ -22,6 +23,8 @@ import { MinimapOverlay } from '@/components/shopee-office/minimap-overlay'
 import { ThemeSelector, type OfficeTheme } from '@/components/shopee-office/theme-selector'
 import { AgentPerformance } from '@/components/shopee-office/agent-performance'
 import '@/components/shopee-office/shopee-office.css'
+
+const PhaserGame = dynamic(() => import('@/components/shopee-office/phaser-game').then(m => ({ default: m.PhaserGame })), { ssr: false })
 
 type AgentStatus = AgentData['status']
 type ViewMode = 'office' | 'isometric' | 'grid' | 'profile' | 'pipeline' | 'chat' | 'performance'

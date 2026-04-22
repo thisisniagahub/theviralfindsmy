@@ -188,9 +188,8 @@ function hexToColorString(hex: number): string {
 }
 
 // ===== Office Scene Class =====
-function createOfficeScene(agentsData: AgentData[], _onStatusUpdate?: (agentId: string, status: string) => void) {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Phaser = require('phaser')
+async function createOfficeScene(agentsData: AgentData[], _onStatusUpdate?: (agentId: string, status: string) => void) {
+  const Phaser = (await import('phaser')).default
 
   class OfficeScene extends Phaser.Scene {
     private agentSprites: Map<string, Phaser.GameObjects.Container> = new Map()
@@ -1385,7 +1384,7 @@ export default function PhaserGame({ agents, onStatusUpdate, className }: Phaser
 
         if (!mounted || !containerRef.current) return
 
-        const OfficeSceneClass = createOfficeScene(agents, onStatusUpdate)
+        const OfficeSceneClass = await createOfficeScene(agents, onStatusUpdate)
 
         const config: Phaser.Types.Core.GameConfig = {
           type: Phaser.AUTO,
@@ -1474,7 +1473,7 @@ export default function PhaserGame({ agents, onStatusUpdate, className }: Phaser
         sceneRef.current = null
       }
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const scene = sceneRef.current as { updateAgents?: (agents: AgentData[]) => void } | null

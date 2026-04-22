@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -59,12 +60,12 @@ export function DashboardPage() {
   const [_lastUpdated] = useState('just now')
   const [minutesAgo, setMinutesAgo] = useState(0)
 
-  const { data, isLoading } = useQuery<DashboardData>({
+  const { data, isLoading, error: dashboardError, refetch: refetchDashboard } = useQuery<DashboardData>({
     queryKey: ['dashboard', period],
     queryFn: () => fetch(`/api/dashboard?period=${period}`).then((r) => r.json()),
   })
 
-  const { data: activityData, isFetching: isActivityFetching, refetch: refetchActivity } = useQuery<{
+  const { data: activityData, isFetching: isActivityFetching, refetch: refetchActivity, error: activityError } = useQuery<{
     activities: ActivityApiResponse[]
     total: number
   }>({
@@ -78,15 +79,29 @@ export function DashboardPage() {
     return activityData.activities.slice(0, 8)
   }, [activityData])
 
-  const { data: goalsData } = useQuery({
+  const { data: goalsData, error: goalsError } = useQuery({
     queryKey: ['goals'],
     queryFn: () => fetch('/api/goals').then((r) => r.json()),
   })
 
-  const { data: linksData } = useQuery({
+  const { data: linksData, error: linksError } = useQuery({
     queryKey: ['links-expiring'],
     queryFn: () => fetch('/api/links?limit=50').then((r) => r.json()),
   })
+
+  // Error toasts for partial data failures
+  useEffect(() => {
+    if (dashboardError) toast.error('Failed to load dashboard stats')
+  }, [dashboardError])
+  useEffect(() => {
+    if (activityError) toast.error('Failed to load activity feed')
+  }, [activityError])
+  useEffect(() => {
+    if (goalsError) toast.error('Failed to load goals')
+  }, [goalsError])
+  useEffect(() => {
+    if (linksError) toast.error('Failed to load links data')
+  }, [linksError])
 
   const expiringLinks = useMemo(() => {
     if (!linksData?.links) return []
@@ -148,6 +163,17 @@ export function DashboardPage() {
           <Skeleton className="h-80 rounded-xl lg:col-span-2" />
           <Skeleton className="h-80 rounded-xl" />
         </div>
+      </div>
+    )
+  }
+
+  if (dashboardError && !data) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Card className="p-8 text-center">
+          <p className="text-muted-foreground">Failed to load dashboard data</p>
+          <Button variant="outline" className="mt-4" onClick={() => refetchDashboard()}>Retry</Button>
+        </Card>
       </div>
     )
   }

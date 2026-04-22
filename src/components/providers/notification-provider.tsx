@@ -10,6 +10,7 @@ import React, {
 } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { toast } from 'sonner'
+import { useSession } from 'next-auth/react'
 import type { NotificationEvent } from '@/lib/notification-types'
 
 interface NotificationContextValue {
@@ -48,6 +49,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     useState<NotificationEvent | null>(null)
   const [notifications, setNotifications] = useState<NotificationEvent[]>([])
   const socketRef = useRef<Socket | null>(null)
+  const { status } = useSession()
 
   const clearNotifications = useCallback(() => {
     setNotifications([])
@@ -55,12 +57,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   }, [])
 
   useEffect(() => {
+    // Only connect when user is authenticated
+    if (status !== 'authenticated') return
+
     // Connect to the notification mini-service through the Caddy gateway
     const socket: Socket = io('/?XTransformPort=3004', {
       transports: ['websocket', 'polling'],
       forceNew: true,
       reconnection: true,
-      reconnectionAttempts: Infinity,
+      reconnectionAttempts: 10,
       reconnectionDelay: 2000,
       reconnectionDelayMax: 30000,
       timeout: 15000,
@@ -117,7 +122,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       socket.disconnect()
       socketRef.current = null
     }
-  }, [])
+  }, [status])
 
   const value: NotificationContextValue = {
     isConnected,

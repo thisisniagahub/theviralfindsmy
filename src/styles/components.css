@@ -1309,7 +1309,7 @@
 }
 .dark .hover-lift-sm:hover {
   box-shadow: 0 4px 12px oklch(0 0 0 / 0.2);
-
+}
 
 .hover-lift-md {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -1610,6 +1610,7 @@
 .agent-avatar-syncing { background: rgba(59, 130, 246, 0.15); }
 .agent-avatar-error { background: rgba(239, 68, 68, 0.15); animation: error-pulse 1.5s ease-in-out infinite; }
 
+.agent-status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;

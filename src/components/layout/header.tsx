@@ -25,6 +25,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { useQuery } from '@tanstack/react-query'
+import { useSession, signOut } from 'next-auth/react'
 
 const pageNames: Record<string, string> = {
   '/': 'Dashboard',
@@ -52,6 +53,9 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [localSearchQuery, setLocalSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const { data: session } = useSession()
+  const userName = session?.user?.name || session?.user?.email || 'User'
+  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   const { data: notifData, refetch } = useQuery({
     queryKey: ['notifications-header'],
@@ -132,7 +136,7 @@ export function Header() {
           {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative h-9 w-9">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9" aria-label="Notifications">
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
                   <Badge className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 flex items-center justify-center bg-shopee text-white text-[10px] border-0 badge-pulse">
@@ -187,9 +191,9 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 gap-2 px-2">
                 <Avatar className="h-7 w-7">
-                  <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">AA</AvatarFallback>
+                  <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">{userInitials}</AvatarFallback>
                 </Avatar>
-                <span className="hidden sm:inline text-sm font-medium">Ahmad Ali</span>
+                <span className="hidden sm:inline text-sm font-medium">{userName}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
@@ -199,7 +203,7 @@ export function Header() {
               <DropdownMenuItem onClick={() => router.push('/earnings')}>Earnings</DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

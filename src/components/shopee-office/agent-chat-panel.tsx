@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Loader2, Zap, Users } from 'lucide-react'
+import { Send, Zap } from 'lucide-react'
 import type { Language } from './language-toggle'
 
 // ===== Types =====

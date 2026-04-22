@@ -111,7 +111,7 @@ export function OfficeHealthCard({ agents, isPaused, language }: OfficeHealthCar
   const onlineAgents = agents.filter((a) => a.authStatus !== 'offline')
   const activeAgents = agents.filter((a) => a.status !== 'idle' && a.status !== 'error')
   const errorAgents = agents.filter((a) => a.status === 'error')
-  const totalTasks = agents.reduce((sum, a) => sum + a.tasksCompleted, 0)
+  const _totalTasks = agents.reduce((sum, a) => sum + a.tasksCompleted, 0)
 
   const healthScore = Math.max(0, Math.min(100,
     100 - (errorAgents.length * 20) - (isPaused ? 30 : 0) + (activeAgents.length * 5)

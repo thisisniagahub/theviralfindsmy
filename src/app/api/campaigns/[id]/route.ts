@@ -1,38 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { createCampaignSchema } from '@/lib/validations'
 
-const DB_URL = process.env.DB_SERVICE_URL
+const updateCampaignSchema = createCampaignSchema.partial()
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const validated = updateCampaignSchema.safeParse(body)
+  if (!validated.success) {
+    return NextResponse.json({ error: 'Validation failed', details: validated.error.issues }, { status: 400 })
+  }
+
+  if (isDemoMode()) {
     const { id } = await params
-    const body = await request.json()
     const now = new Date()
     return NextResponse.json({
       id,
-      name: body.name || 'Beauty Week',
-      description: body.description || 'Weekly beauty deals campaign',
-      status: body.status || 'active',
-      budget: body.budget || 1500,
-      startDate: body.startDate ? new Date(body.startDate).toISOString() : null,
-      endDate: body.endDate ? new Date(body.endDate).toISOString() : null,
+      name: validated.data.name || 'Beauty Week',
+      description: validated.data.description || 'Weekly beauty deals campaign',
+      status: validated.data.status || 'active',
+      budget: validated.data.budget || 1500,
+      startDate: validated.data.startDate ? new Date(validated.data.startDate).toISOString() : null,
+      endDate: validated.data.endDate ? new Date(validated.data.endDate).toISOString() : null,
       updatedAt: now.toISOString(),
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    const body = await request.json()
 
-    const campaign = await fetch(`${DB_URL}/campaigns/${encodeURIComponent(id)}`, {
+    const campaign = await dbFetch(`/campaigns/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then(r => r.json())
+      body: JSON.stringify(validated.data),
+    })
 
     return NextResponse.json(campaign)
   } catch (error) {
@@ -45,15 +54,12 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({ success: true })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    await fetch(`${DB_URL}/campaigns/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    await dbFetch(`/campaigns/${encodeURIComponent(id)}`, { method: 'DELETE' })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Campaign DELETE error:', error)

@@ -8,7 +8,8 @@ export function isDemoMode(): boolean {
   return process.env.DEMO_MODE === 'true'
 }
 
-// Legacy export for existing consumers
+// Legacy export — captured at import time. Use isDemoMode() for runtime checks.
+// This is fine because DEMO_MODE doesn't change during a server process lifetime.
 export const isDemo = isDemoMode()
 
 /**

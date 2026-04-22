@@ -74,7 +74,7 @@ function generateMockNotification(): MockNotification {
         id: generateId(),
         type: 'conversion',
         title: 'New Conversion!',
-        message: `Someone purchased "${product}" via your link — you earned ₱${commission.toFixed(2)} commission.`,
+        message: `Someone purchased "${product}" via your link — you earned RM ${commission.toFixed(2)} commission.`,
         amount: commission,
         productName: product,
         timestamp,
@@ -98,7 +98,7 @@ function generateMockNotification(): MockNotification {
         id: generateId(),
         type: 'payout',
         title: 'Payout Received',
-        message: `₱${amount.toFixed(2)} has been credited to your Shopee Pay wallet.`,
+        message: `RM ${amount.toFixed(2)} has been credited to your Shopee Pay wallet.`,
         amount,
         timestamp,
       }
@@ -106,7 +106,7 @@ function generateMockNotification(): MockNotification {
     case 'milestone': {
       const milestones = [
         { title: '100 Conversions!', message: 'Congratulations! You have reached 100 total conversions this month.' },
-        { title: '₱10,000 Earned!', message: 'You have earned over ₱10,000 in commissions this month. Keep going!' },
+        { title: 'RM 10,000 Earned!', message: 'You have earned over RM 10,000 in commissions this month. Keep going!' },
         { title: '500 Clicks Today!', message: 'Your links generated over 500 clicks today. Great traffic!' },
         { title: 'Top 10% Affiliate!', message: 'You are now in the top 10% of Shopee affiliates this week.' },
       ]

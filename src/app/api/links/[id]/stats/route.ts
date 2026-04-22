@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const { id } = await params
     const chartDays = 30
     const chartData = Array.from({ length: chartDays }, (_, i) => {
@@ -41,14 +40,8 @@ export async function GET(
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    const data = await fetch(`${DB_URL}/links/${encodeURIComponent(id)}/stats`).then(r => {
-      if (!r.ok) throw new Error(`${r.status}`)
-      return r.json()
-    })
+    const data = await dbFetch(`/links/${encodeURIComponent(id)}/stats`)
     return NextResponse.json(data)
   } catch (error) {
     console.error('Link stats error:', error)

@@ -7,6 +7,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ──────────────────────────────────────────────────────
+
+enum LinkStatus {
+  active
+  paused
+  expired
+}
+
+enum CampaignStatus {
+  active
+  paused
+  completed
+}
+
+enum ConversionStatus {
+  pending
+  confirmed
+  rejected
+  paid
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum GoalStatus {
+  active
+  achieved
+  failed
+}
+
+enum GoalPeriod {
+  monthly
+  weekly
+  yearly
+  custom
+}
+
+// ─── Models ─────────────────────────────────────────────────────
+
 model AffiliateLink {
   id                String        @id @default(cuid())
   name              String
@@ -15,14 +58,14 @@ model AffiliateLink {
   productId         String?
   productName       String?
   productImage      String?
-  productPrice      Float?
-  commission        Float?
+  productPrice      Decimal?      @db.Decimal(10,2)
+  commission        Decimal?      @db.Decimal(10,2)
   category          String?
   campaignId        String?
   clicks            Int           @default(0)
   conversions       Int           @default(0)
-  earnings          Float         @default(0)
-  status            String        @default("active") // active, paused, expired
+  earnings          Decimal       @default(0) @db.Decimal(12,2)
+  status            LinkStatus    @default(active)
   shortCode         String        @unique
   expiresAt         DateTime?
   campaign          Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
@@ -35,20 +78,26 @@ model AffiliateLink {
   @@index([campaignId])
   @@index([category])
   @@index([createdAt])
+  @@index([status, campaignId])
+  @@index([status, category])
+  @@map("affiliate_links")
 }
 
 model Campaign {
   id          String          @id @default(cuid())
   name        String
   description String?
-  status      String          @default("active") // active, paused, completed
-  budget      Float?
-  spent       Float           @default(0)
+  status      CampaignStatus  @default(active)
+  budget      Decimal?        @db.Decimal(12,2)
+  spent       Decimal         @default(0) @db.Decimal(12,2)
   startDate   DateTime?
   endDate     DateTime?
   links       AffiliateLink[]
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  @@index([status])
+  @@map("campaigns")
 }
 
 model ClickRecord {
@@ -61,65 +110,78 @@ model ClickRecord {
   device        String?
   converted     Boolean       @default(false)
   createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([linkId])
   @@index([createdAt])
   @@index([device])
+  @@index([linkId, createdAt])
+  @@map("click_records")
 }
 
 model Conversion {
-  id            String        @id @default(cuid())
+  id            String          @id @default(cuid())
   linkId        String
-  affiliateLink AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  affiliateLink AffiliateLink   @relation(fields: [linkId], references: [id], onDelete: Cascade)
   orderId       String?
-  amount        Float
-  commission    Float
-  status        String        @default("pending") // pending, confirmed, rejected, paid
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  amount        Decimal         @db.Decimal(12,2)
+  commission    Decimal         @db.Decimal(12,2)
+  status        ConversionStatus @default(pending)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([linkId])
   @@index([status])
   @@index([createdAt])
+  @@index([linkId, createdAt])
+  @@index([linkId, status])
+  @@map("conversions")
 }
 
 model Payout {
-  id          String    @id @default(cuid())
-  method      String    @default("bank_transfer")
-  amount      Float
-  status      String    @default("pending") // pending, processing, completed, failed
+  id          String       @id @default(cuid())
+  method      String       @default("bank_transfer")
+  amount      Decimal      @db.Decimal(12,2)
+  status      PayoutStatus @default(pending)
   bankName    String?
   accountNo   String?
   accountName String?
-  requestedAt DateTime  @default(now())
+  requestedAt DateTime     @default(now())
   processedAt DateTime?
   note        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([status])
   @@index([requestedAt])
+  @@map("payouts")
 }
 
 model AppSetting {
   id        String   @id @default(cuid())
   key       String   @unique
   value     String
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("app_settings")
 }
 
 model EarningGoal {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   name          String
-  targetAmount  Float
-  currentAmount Float     @default(0)
-  period        String
-  startDate     DateTime  @default(now())
+  targetAmount  Decimal     @db.Decimal(12,2)
+  currentAmount Decimal     @default(0) @db.Decimal(12,2)
+  period        GoalPeriod
+  startDate     DateTime    @default(now())
   endDate       DateTime?
-  status        String    @default("active")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  status        GoalStatus  @default(active)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([status])
   @@index([period])
+  @@map("earning_goals")
 }
 
 model Notification {
@@ -129,22 +191,27 @@ model Notification {
   description String
   read        Boolean  @default(false)
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([read])
   @@index([createdAt])
   @@index([type])
+  @@map("notifications")
 }
 
 model AgentMemory {
   id        String   @id @default(cuid())
   agentId   String
   sessionId String?
-  role      String // 'user' | 'assistant' | 'system'
+  role      String
   content   String
-  metadata  String? // JSON string for extra data
+  metadata  Json?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([agentId])
   @@index([sessionId])
   @@index([createdAt])
+  @@index([agentId, createdAt])
+  @@map("agent_memories")
 }

@@ -1,38 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { createGoalSchema } from '@/lib/validations'
 
-const DB_URL = process.env.DB_SERVICE_URL
+const updateGoalSchema = createGoalSchema.partial()
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const validated = updateGoalSchema.safeParse(body)
+  if (!validated.success) {
+    return NextResponse.json({ error: 'Validation failed', details: validated.error.issues }, { status: 400 })
+  }
+
+  if (isDemoMode()) {
     const { id } = await params
-    const body = await request.json()
     const now = new Date()
     return NextResponse.json({
       id,
-      name: body.name || 'Monthly Earnings Target',
-      targetAmount: body.targetAmount || 2000,
+      name: validated.data.name || 'Monthly Earnings Target',
+      targetAmount: validated.data.targetAmount || 2000,
       currentAmount: 1450,
       period: 'monthly',
-      endDate: body.endDate || null,
+      endDate: validated.data.endDate || null,
       status: 'active',
       updatedAt: now.toISOString(),
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    const body = await request.json()
 
-    const goal = await fetch(`${DB_URL}/goals/${encodeURIComponent(id)}`, {
+    const goal = await dbFetch(`/goals/${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    }).then(r => r.json())
+      body: JSON.stringify(validated.data),
+    })
 
     return NextResponse.json(goal)
   } catch (error) {
@@ -45,15 +54,12 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({ success: true })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
-    await fetch(`${DB_URL}/goals/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    await dbFetch(`/goals/${encodeURIComponent(id)}`, { method: 'DELETE' })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting goal:', error)

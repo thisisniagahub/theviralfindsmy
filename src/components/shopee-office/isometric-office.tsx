@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useCallback, useRef } from 'react'
+import { motion } from 'framer-motion'
 import type { Language } from './language-toggle'
 
 // ===== Types =====

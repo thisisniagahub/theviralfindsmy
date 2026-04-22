@@ -49,7 +49,12 @@ export const createGoalSchema = z.object({
   endDate: z.string().datetime().optional(),
 })
 
-export const updateSettingsSchema = z.record(z.string(), z.string().max(500))
+export const updateSettingsSchema = z.object({
+  updates: z.array(z.object({
+    key: z.enum(['api_key', 'default_commission_rate', 'shopee_username', 'notification_email', 'auto_pause_expired_links', 'theme', 'currency', 'language']),
+    value: z.string().max(500),
+  })).min(1),
+})
 
 export const bulkActionSchema = z.object({
   action: z.enum(['activate', 'pause', 'expire']),

@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { createPayoutSchema } from '@/lib/validations'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL
-
 export async function GET() {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const now = new Date()
     const payouts = [
       { id: 'pay-1', method: 'bank_transfer', amount: 500.00, status: 'completed', bankName: 'Maybank', accountNo: '****4521', accountName: 'Ahmad Demo', note: null, requestedAt: new Date(now.getTime() - 15 * 86400000).toISOString(), processedAt: new Date(now.getTime() - 12 * 86400000).toISOString() },
@@ -30,10 +29,7 @@ export async function GET() {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-    const data = await fetch(`${DB_URL}/payouts`).then(r => r.json())
+    const data = await dbFetch('/payouts')
 
     return NextResponse.json(data)
   } catch (error) {
@@ -57,7 +53,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const now = new Date()
     return NextResponse.json({
       id: `pay-demo-${Date.now()}`,
@@ -73,15 +69,11 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-
-    const payout = await fetch(`${DB_URL}/payouts`, {
+    const payout = await dbFetch('/payouts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
 
     return NextResponse.json(payout, { status: 201 })
   } catch (error) {

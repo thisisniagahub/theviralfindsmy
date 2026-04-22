@@ -74,7 +74,7 @@ export interface ApproveRequest {
 
 const AUTO_IDLE_MS = 300_000 // 300 seconds
 
-const DEFAULT_JOIN_KEY = process.env.OFFICE_JOIN_KEY || 'theviralfinds2024'
+const DEFAULT_JOIN_KEY = process.env.OFFICE_JOIN_KEY
 const MAX_CONCURRENT_GUESTS = 3
 
 // ─── Initial Data ────────────────────────────────────────────────────────────
@@ -275,7 +275,7 @@ export function joinOffice(req: JoinRequest): {
   checkAutoIdle()
 
   // Validate join key
-  if (req.joinKey !== DEFAULT_JOIN_KEY) {
+  if (!DEFAULT_JOIN_KEY || req.joinKey !== DEFAULT_JOIN_KEY) {
     return { ok: false, error: 'Invalid join key' }
   }
 

@@ -1,12 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Vercel handles output automatically - do not use "standalone"
   typescript: {
-    // TODO: Set ignoreBuildErrors to false after fixing noImplicitAny violations across the codebase
+    // TODO: Fix remaining TS errors and set to false
     ignoreBuildErrors: true,
   },
-  reactStrictMode: false,
+  reactStrictMode: true,
   images: {
     formats: ["image/avif", "image/webp"],
   },

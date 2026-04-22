@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { createLinkSchema } from '@/lib/validations'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL
-
 export async function GET(request: NextRequest) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -60,9 +59,6 @@ export async function GET(request: NextRequest) {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { searchParams } = new URL(request.url)
     const page = searchParams.get('page') || '1'
     const limit = searchParams.get('limit') || '10'
@@ -71,7 +67,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
 
     const params = new URLSearchParams({ page, limit, status, campaignId, search })
-    const data = await fetch(`${DB_URL}/links?${params.toString()}`).then(r => r.json())
+    const data = await dbFetch(`/links?${params.toString()}`)
 
     return NextResponse.json(data)
   } catch (error) {
@@ -95,7 +91,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const now = new Date()
     return NextResponse.json({
       id: `link-demo-${Date.now()}`,
@@ -119,15 +115,11 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-
-    const link = await fetch(`${DB_URL}/links`, {
+    const link = await dbFetch('/links', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
 
     return NextResponse.json(link, { status: 201 })
   } catch (error) {

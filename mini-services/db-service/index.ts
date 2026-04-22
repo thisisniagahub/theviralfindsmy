@@ -14,6 +14,13 @@ const db = new PrismaClient({
 
 const PORT = 3005
 
+const API_KEY = process.env.DB_SERVICE_API_KEY || 'tvf-internal-api-key-2024'
+
+function checkAuth(req: Request): boolean {
+  const authHeader = req.headers.get('x-api-key')
+  return authHeader === API_KEY
+}
+
 async function getBody(req: Request): Promise<Record<string, unknown>> {
   try { return await req.json() } catch { return {} }
 }
@@ -23,9 +30,9 @@ function json(data: unknown, status = 200): Response {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': process.env.DB_SERVICE_CORS_ORIGIN || 'http://localhost:3000',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
     },
   })
 }
@@ -38,11 +45,16 @@ async function handleRequest(req: Request): Promise<Response> {
   if (method === 'OPTIONS') {
     return new Response(null, {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': process.env.DB_SERVICE_CORS_ORIGIN || 'http://localhost:3000',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
       },
     })
+  }
+
+  // Authenticate all requests (except health check)
+  if (path !== '/health' && !checkAuth(req)) {
+    return json({ error: 'Unauthorized — invalid or missing API key' }, 401)
   }
 
   try {
@@ -82,7 +94,13 @@ async function handleRequest(req: Request): Promise<Response> {
       const dailyClicks: Record<string, number> = {}
       for (let i = chartDays - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; dailyEarnings[key] = 0; dailyClicks[key] = 0 }
       for (const c of recentConversions) { const key = c.createdAt.toISOString().split('T')[0]; if (dailyEarnings[key] !== undefined) dailyEarnings[key] += c.commission }
-      for (const key of Object.keys(dailyClicks)) dailyClicks[key] = Math.floor(Math.random() * 30 + 10)
+      // Use real click data when available, only fabricate in demo mode
+      const realClickRecords = await db.clickRecord.findMany({
+        where: period !== 'all' ? { createdAt: { gte: startDate } } : undefined,
+        select: { createdAt: true }
+      })
+      for (const r of realClickRecords) { const key = r.createdAt.toISOString().split('T')[0]; if (dailyClicks[key] !== undefined) dailyClicks[key] = (dailyClicks[key] || 0) + 1 }
+      // Fill any remaining zero days with 0 (no fake data in production)
       const earningsData = Object.entries(dailyEarnings).map(([date, earnings]) => ({ date, earnings: Math.round(earnings * 100) / 100, clicks: dailyClicks[date] }))
       const topLinks = await db.affiliateLink.findMany({ orderBy: { earnings: 'desc' }, take: 5, include: { campaign: { select: { name: true } } } })
       const recentConv = await db.conversion.findMany({ where: period !== 'all' ? { createdAt: { gte: startDate } } : undefined, orderBy: { createdAt: 'desc' }, take: 10, include: { affiliateLink: { select: { name: true, productName: true, shortCode: true } } } })
@@ -109,6 +127,7 @@ async function handleRequest(req: Request): Promise<Response> {
     if (path === '/links' && method === 'GET') {
       const page = parseInt(url.searchParams.get('page') || '1')
       const limit = parseInt(url.searchParams.get('limit') || '10')
+      const safeLimit = Math.min(Math.max(limit, 1), 100)
       const status = url.searchParams.get('status')
       const campaignId = url.searchParams.get('campaignId')
       const search = url.searchParams.get('search')
@@ -116,7 +135,7 @@ async function handleRequest(req: Request): Promise<Response> {
       if (status && status !== 'all') where.status = status
       if (campaignId && campaignId !== 'all') where.campaignId = campaignId
       if (search) where.OR = [{ name: { contains: search } }, { productName: { contains: search } }, { shortCode: { contains: search } }]
-      const [links, total] = await Promise.all([db.affiliateLink.findMany({ where, include: { campaign: { select: { id: true, name: true } } }, orderBy: { createdAt: 'desc' }, skip: (page - 1) * limit, take: limit }), db.affiliateLink.count({ where })])
+      const [links, total] = await Promise.all([db.affiliateLink.findMany({ where, include: { campaign: { select: { id: true, name: true } } }, orderBy: { createdAt: 'desc' }, skip: (page - 1) * safeLimit, take: safeLimit }), db.affiliateLink.count({ where })])
       const campaigns = await db.campaign.findMany({ select: { id: true, name: true } })
       const now = new Date()
       const linksWithExpiry = links.map((link) => {
@@ -128,7 +147,7 @@ async function handleRequest(req: Request): Promise<Response> {
         if (link.expiresAt) { const diffMs = new Date(link.expiresAt).getTime() - now.getTime(); const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); expiresIn = diffDays; isExpired = diffMs < 0; expiryStatus = isExpired ? 'expired' : diffDays <= 7 ? 'expiring_soon' : 'active' }
         return { ...link, dailyClicks, expiresIn, isExpired, expiryStatus }
       })
-      return json({ links: linksWithExpiry, campaigns, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } })
+      return json({ links: linksWithExpiry, campaigns, pagination: { page, limit: safeLimit, total, totalPages: Math.ceil(total / safeLimit) } })
     }
     if (path === '/links' && method === 'POST') {
       const body = await getBody(req)
@@ -141,7 +160,18 @@ async function handleRequest(req: Request): Promise<Response> {
     if (linkMatch) {
       const id = linkMatch[1]
       if (method === 'GET') { const link = await db.affiliateLink.findUnique({ where: { id }, include: { campaign: true, _count: { select: { clickRecords: true, conversionRecords: true } } } }); if (!link) return json({ error: 'Link not found' }, 404); return json(link) }
-      if (method === 'PUT') { const body = await getBody(req); const link = await db.affiliateLink.update({ where: { id }, data: body }); return json(link) }
+      if (method === 'PUT') {
+        const body = await getBody(req)
+        // Whitelist allowed update fields to prevent mass assignment
+        const allowedFields = ['name', 'productUrl', 'affiliateUrl', 'productId', 'productName', 'productImage', 'productPrice', 'commission', 'category', 'campaignId', 'status', 'expiresAt'] as const
+        const safeData: Record<string, unknown> = {}
+        for (const field of allowedFields) {
+          if (field in body) safeData[field] = body[field]
+        }
+        if (Object.keys(safeData).length === 0) return json({ error: 'No valid fields to update' }, 400)
+        const link = await db.affiliateLink.update({ where: { id }, data: safeData })
+        return json(link)
+      }
       if (method === 'DELETE') { await db.affiliateLink.delete({ where: { id } }); return json({ success: true }) }
     }
 
@@ -191,7 +221,17 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // ─── Settings ──────────────────────────────────────
     if (path === '/settings' && method === 'GET') { const settings = await db.appSetting.findMany(); const settingsMap: Record<string, string> = {}; for (const s of settings) settingsMap[s.key] = s.value; return json({ settings: settingsMap }) }
-    if (path === '/settings' && method === 'PUT') { const body = await getBody(req); const updates = body.updates as Record<string, string>[] || []; for (const u of updates) { if (u.key && u.value !== undefined) await db.appSetting.upsert({ where: { key: String(u.key) }, update: { value: String(u.value) }, create: { key: String(u.key), value: String(u.value) } }) }; return json({ success: true }) }
+    if (path === '/settings' && method === 'PUT') {
+      const body = await getBody(req)
+      const updates = (body.updates as Record<string, string>[]) || []
+      const allowedSettingKeys = ['api_key', 'default_commission_rate', 'shopee_username', 'notification_email', 'auto_pause_expired_links', 'theme', 'currency', 'language']
+      const validUpdates = updates.filter(u => u.key && u.value !== undefined && allowedSettingKeys.includes(u.key))
+      if (validUpdates.length === 0) return json({ error: 'No valid settings to update' }, 400)
+      await db.$transaction(
+        validUpdates.map(u => db.appSetting.upsert({ where: { key: String(u.key) }, update: { value: String(u.value) }, create: { key: String(u.key), value: String(u.value) } }))
+      )
+      return json({ success: true })
+    }
 
     // ─── Activity ──────────────────────────────────────
     if (path === '/activity' && method === 'GET') {
@@ -213,15 +253,17 @@ async function handleRequest(req: Request): Promise<Response> {
       const shortCode = redirectMatch[1]
       const link = await db.affiliateLink.findUnique({ where: { shortCode } })
       if (!link) return json({ error: 'Link not found' }, 404)
-      await db.clickRecord.create({ data: { linkId: link.id } })
-      await db.affiliateLink.update({ where: { id: link.id }, data: { clicks: { increment: 1 } } })
+      await db.$transaction([
+        db.clickRecord.create({ data: { linkId: link.id } }),
+        db.affiliateLink.update({ where: { id: link.id }, data: { clicks: { increment: 1 } } }),
+      ])
       return json({ redirectUrl: link.affiliateUrl })
     }
 
     return json({ error: 'Not found', path }, 404)
   } catch (error) {
     console.error('DB Service error:', error)
-    return json({ error: String(error) }, 500)
+    return json({ error: 'Internal server error' }, 500)
   }
 }
 

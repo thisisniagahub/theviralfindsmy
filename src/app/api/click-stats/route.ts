@@ -1,9 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { NextResponse } from 'next/server'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
 export async function GET() {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({
       totalClicks: 6112,
       todayClicks: 187,
@@ -41,10 +40,7 @@ export async function GET() {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-    const data = await fetch(`${DB_URL}/click-stats`).then(r => r.json())
+    const data = await dbFetch('/click-stats')
     return NextResponse.json(data)
   } catch (error) {
     console.error('Click stats error:', error)

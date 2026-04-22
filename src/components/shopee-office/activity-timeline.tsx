@@ -96,7 +96,7 @@ const EVENT_STYLES: Record<string, { color: string; icon: string; bg: string }> 
 // ===== Component =====
 export function ActivityTimeline({ agents, language }: ActivityTimelineProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([])
-  const [isLive, setIsLive] = useState(true)
+  const [isLive, _setIsLive] = useState(true)
   const prevStatusRef = useRef<Record<string, string>>({})
   const prevTasksRef = useRef<Record<string, number>>({})
   const containerRef = useRef<HTMLDivElement>(null)

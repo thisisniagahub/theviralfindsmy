@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { updateSettingsSchema } from '@/lib/validations'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL
-
 export async function GET() {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({
       siteName: 'The Viral Finds',
       currency: 'MYR',
@@ -18,10 +17,7 @@ export async function GET() {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-    const settings = await fetch(`${DB_URL}/settings`).then(r => r.json())
+    const settings = await dbFetch('/settings')
     return NextResponse.json(settings)
   } catch (error) {
     console.error('Settings GET error:', error)
@@ -33,17 +29,14 @@ export async function PUT(request: NextRequest) {
   const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
   if (rateLimited) return rateLimited
 
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({ success: true })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const body = await request.json()
     const validated = updateSettingsSchema.parse(body)
 
-    await fetch(`${DB_URL}/settings`, {
+    await dbFetch('/settings', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),

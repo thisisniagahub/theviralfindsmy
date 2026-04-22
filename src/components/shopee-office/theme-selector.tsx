@@ -114,7 +114,6 @@ export function ThemeSelector({ currentTheme, onThemeChange }: ThemeSelectorProp
       onThemeChange(saved)
       applyThemeCSS(saved)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const effective = getEffectiveTheme(currentTheme)

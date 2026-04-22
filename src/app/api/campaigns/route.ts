@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { createCampaignSchema } from '@/lib/validations'
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL
-
 export async function GET() {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const now = new Date()
     const campaigns = [
       { id: 'camp-1', name: 'Beauty Week', description: 'Weekly beauty deals campaign', status: 'active', budget: 1500, spent: 890, startDate: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), endDate: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString(), createdAt: new Date(now.getTime() - 30 * 86400000).toISOString(), updatedAt: now.toISOString(), totalClicks: 957, totalConversions: 69, totalEarnings: 922.10, linkCount: 7, links: [{ clicks: 456, conversions: 34, earnings: 456.80 }, { clicks: 267, conversions: 19, earnings: 267.30 }, { clicks: 234, conversions: 16, earnings: 198.00 }], _count: { links: 7 } },
@@ -16,10 +15,7 @@ export async function GET() {
     return NextResponse.json(campaigns)
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-    const data = await fetch(`${DB_URL}/campaigns`).then(r => r.json())
+    const data = await dbFetch('/campaigns')
     return NextResponse.json(data)
   } catch (error) {
     console.error('Campaigns GET error:', error)
@@ -42,7 +38,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const now = new Date()
     return NextResponse.json({
       id: `camp-demo-${Date.now()}`,
@@ -58,15 +54,11 @@ export async function POST(request: NextRequest) {
     }, { status: 201 })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
-
-    const campaign = await fetch(`${DB_URL}/campaigns`, {
+    const campaign = await dbFetch('/campaigns', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
-    }).then(r => r.json())
+    })
 
     return NextResponse.json(campaign, { status: 201 })
   } catch (error) {

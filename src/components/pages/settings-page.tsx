@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -27,6 +27,13 @@ export function SettingsPage() {
   })
 
   const [formData, setFormData] = useState<Record<string, string>>({})
+
+  // Sync formData from settings when they load from the API
+  useEffect(() => {
+    if (settings && Object.keys(formData).length === 0) {
+      queueMicrotask(() => setFormData(settings))
+    }
+  }, [settings])
 
   // Sync data when loaded
   const currentSettings = settings || formData

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
 export async function GET(request: NextRequest) {
   const rateLimited = withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const now = new Date()
     const notifications = [
       { id: 'notif-1', type: 'conversion', title: 'New Sale!', description: 'Laneige Water Sleeping Mask — RM 12.50 commission', read: false, timestamp: new Date(now.getTime() - 1800000).toISOString() },
@@ -28,13 +27,10 @@ export async function GET(request: NextRequest) {
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') || 'all'
 
-    const data = await fetch(`${DB_URL}/notifications?filter=${encodeURIComponent(filter)}`).then(r => r.json())
+    const data = await dbFetch(`/notifications?filter=${encodeURIComponent(filter)}`)
 
     return NextResponse.json(data)
   } catch (error) {
@@ -48,13 +44,10 @@ export async function GET(request: NextRequest) {
 
 // PUT: Mark all notifications as read (idempotent — no request body expected)
 export async function PUT(request: NextRequest) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.json({ success: true, message: 'All notifications marked as read' })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     // Ensure no unexpected payload is sent; this endpoint is idempotent
     const contentType = request.headers.get('content-type')
     if (contentType && contentType.includes('application/json')) {
@@ -67,7 +60,7 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    await fetch(`${DB_URL}/notifications`, { method: 'PUT' })
+    await dbFetch('/notifications', { method: 'PUT' })
 
     return NextResponse.json({ success: true, message: 'All notifications marked as read' })
   } catch (error) {

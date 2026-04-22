@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const { id } = await params
     const body = await request.json()
     const now = new Date()
@@ -22,17 +21,14 @@ export async function PUT(
     })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { id } = await params
     const body = await request.json()
 
-    const goal = await fetch(`${DB_URL}/goals/${encodeURIComponent(id)}/update-progress`, {
+    const goal = await dbFetch(`/goals/${encodeURIComponent(id)}/update-progress`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
-    }).then(r => r.json())
+    })
 
     return NextResponse.json(goal)
   } catch (error) {

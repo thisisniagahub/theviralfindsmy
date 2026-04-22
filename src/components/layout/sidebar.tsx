@@ -34,6 +34,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import { Menu } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useQuery } from '@tanstack/react-query'
+import { useSession, signOut } from 'next-auth/react'
 
 const navItems = [
   { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -41,7 +42,7 @@ const navItems = [
   { id: 'links', path: '/links', label: 'Affiliate Links', icon: Link2 },
   { id: 'analytics', path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { id: 'calculator', path: '/calculator', label: 'Calculator', icon: Calculator },
-  { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: Megaphone, badge: '3' },
+  { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: Megaphone },
   { id: 'leaderboard', path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
   { id: 'agent-office', path: '/agent-office', label: 'Agent Office', icon: Building2 },
   { id: 'achievements', path: '/achievements', label: 'Achievements', icon: Award },
@@ -57,6 +58,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { sidebarOpen, setSidebarOpen } = useAppStore()
   const { setTheme, resolvedTheme, theme } = useTheme()
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const userName = session?.user?.name || session?.user?.email || 'User'
+  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
   const { data: notifData } = useQuery({
     queryKey: ['notifications-count'],
@@ -154,17 +158,17 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         <div className={cn('flex items-center gap-3 px-2 py-2', !sidebarOpen && 'justify-center')}>
           <div className="relative">
             <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">AA</AvatarFallback>
+              <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">{userInitials}</AvatarFallback>
             </Avatar>
           </div>
           {sidebarOpen && (
             <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-sm font-medium truncate">Ahmad Ali</span>
-              <span className="text-[10px] text-shopee font-medium">RM 2,847.50 earned</span>
+              <span className="text-sm font-medium truncate">{userName}</span>
+              <span className="text-[10px] text-muted-foreground">Shopee Affiliate</span>
             </div>
           )}
           {sidebarOpen && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Log out" onClick={() => signOut()}>
               <LogOut className="w-4 h-4 text-muted-foreground" />
             </Button>
           )}

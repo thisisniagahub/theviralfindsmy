@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
 export async function GET(request: NextRequest) {
   const rateLimited = withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     const days = 30
     const performanceData = Array.from({ length: days }, (_, i) => {
       const d = new Date()
@@ -71,13 +70,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ performanceData, topProducts, sourceData, deviceData, categoryData, funnelData, heatmap })
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'
 
-    const data = await fetch(`${DB_URL}/analytics?period=${encodeURIComponent(period)}`).then(r => r.json())
+    const data = await dbFetch(`/analytics?period=${encodeURIComponent(period)}`)
     return NextResponse.json(data)
   } catch (error) {
     console.error('Analytics error:', error)

@@ -13,6 +13,20 @@ export async function POST(request: NextRequest) {
 
     if (!url) return NextResponse.json({ error: 'URL is required' }, { status: 400 })
 
+    // Validate URL — block internal/private addresses
+    try {
+      const parsed = new URL(url)
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return NextResponse.json({ error: 'Only HTTP/HTTPS URLs are allowed' }, { status: 400 })
+      }
+      const hostname = parsed.hostname.toLowerCase()
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('169.254.')) {
+        return NextResponse.json({ error: 'Internal URLs are not allowed' }, { status: 400 })
+      }
+    } catch {
+      return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
+    }
+
     // Try OpenClaw gateway first
     if (source === 'openclaw' || source === 'auto') {
       try {

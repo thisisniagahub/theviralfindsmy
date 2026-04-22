@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-const DB_URL = process.env.DB_SERVICE_URL
+import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
 // Whitelisted Shopee domains for redirect security
 const ALLOWED_DOMAINS = [
@@ -25,20 +24,13 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ shortCode: string }> }
 ) {
-  if (process.env.DEMO_MODE === 'true') {
+  if (isDemoMode()) {
     return NextResponse.redirect('https://shopee.com.my', 307)
   }
   try {
-    if (!DB_URL) {
-      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
-    }
     const { shortCode } = await params
 
-    const res = await fetch(`${DB_URL}/redirect/${encodeURIComponent(shortCode)}`)
-    if (!res.ok) {
-      throw new Error(`${res.status}`)
-    }
-    const data = await res.json() as { redirectUrl: string; status?: string; expiresAt?: string | null }
+    const data = await dbFetch<{ redirectUrl: string; status?: string; expiresAt?: string | null }>(`/redirect/${encodeURIComponent(shortCode)}`)
 
     const redirectUrl = data.redirectUrl
 
