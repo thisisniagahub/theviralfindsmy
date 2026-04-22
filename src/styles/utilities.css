@@ -1,0 +1,442 @@
+/* ═══ Utilities ═══ */
+/* Active nav item glow */
+.nav-glow {
+  box-shadow: 0 0 12px oklch(0.637 0.237 25.331 / 0.25), 
+              0 0 4px oklch(0.637 0.237 25.331 / 0.15);
+}
+.dark .nav-glow {
+  box-shadow: 0 0 12px oklch(0.637 0.237 25.331 / 0.35), 
+              0 0 4px oklch(0.637 0.237 25.331 / 0.2);
+}
+
+/* Stat card hover lift */
+.stat-card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px oklch(0 0 0 / 0.08);
+}
+.dark .stat-card-lift:hover {
+  box-shadow: 0 8px 25px oklch(0 0 0 / 0.25);
+}
+
+/* Table row hover highlight */
+.table-row-hover {
+  transition: background-color 0.15s ease;
+}
+.table-row-hover:hover {
+  background-color: oklch(0.97 0.005 90) !important;
+}
+.dark .table-row-hover:hover {
+  background-color: oklch(0.22 0.01 25) !important;
+}
+
+/* Nav item slide hover */
+.nav-item-slide {
+  transition: transform 0.15s ease, background-color 0.2s ease;
+}
+.nav-item-slide:hover {
+  transform: translateX(4px);
+}
+
+/* Mobile floating hamburger */
+.mobile-menu-btn {
+  position: fixed;
+  top: 0.55rem;
+  left: 0.55rem;
+  z-index: 50;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: oklch(1 0 0);
+  border: 1px solid oklch(0.91 0.005 90);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.06);
+}
+.dark .mobile-menu-btn {
+  background-color: oklch(0.18 0.005 25);
+  border-color: oklch(0.28 0.005 25);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.3);
+}
+
+/* Horizontal scrollable table on mobile */
+.table-scroll-mobile {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll-mobile > table > thead > tr > th:first-child,
+.table-scroll-mobile > table > tbody > tr > td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: oklch(1 0 0);
+}
+.dark .table-scroll-mobile > table > thead > tr > th:first-child,
+.dark .table-scroll-mobile > table > tbody > tr > td:first-child {
+  background-color: oklch(0.985 0.005 25);
+}
+
+/* Notification type borders */
+.notification-border-conversion { border-left: 3px solid #22C55E; }
+.notification-border-payout { border-left: 3px solid #3B82F6; }
+.notification-border-campaign { border-left: 3px solid #F59E0B; }
+.notification-border-alert { border-left: 3px solid #EF4444; }
+.notification-border-system { border-left: 3px solid #8B5CF6; }
+
+/* ========== Metric Utility Classes ========== */
+.metric-positive { color: #16A34A; }
+.dark .metric-positive { color: #4ADE80; }
+.metric-negative { color: #DC2626; }
+.dark .metric-negative { color: #F87171; }
+.metric-money { color: #EE4D2D; }
+.dark .metric-money { color: #FF7B5C; }
+.metric-highlight { font-weight: 700; font-size: 1.05em; }
+
+/* ========== Section Header ========== */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+.section-header-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: oklch(0.145 0 0);
+}
+.dark .section-header-title { color: oklch(0.97 0.005 90); }
+.section-header-desc {
+  font-size: 13px;
+  color: oklch(0.5 0.01 90);
+}
+.section-divider {
+  border-bottom: 1px solid oklch(0.94 0.005 90);
+  padding-top: 2px;
+}
+.dark .section-divider { border-color: oklch(0.25 0.005 25); }
+
+/* ========== Mobile Overrides ========== */
+@media (max-width: 640px) {
+  .mobile-hide { display: none !important; }
+  .mobile-stat-card .stat-value { font-size: 1.25rem !important; }
+  .mobile-stat-card .stat-label { font-size: 0.75rem !important; }
+  .mobile-stat-card .stat-icon { width: 1.75rem; height: 1.75rem; padding: 0.5rem; }
+  .mobile-stat-card .stat-trend { font-size: 0.65rem !important; }
+  .mobile-padding { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* ========================================================================
+   PHASE 4: Enhanced CSS Utilities
+   ======================================================================== */
+
+/* ========== 1. Glassmorphism Effects ========== */
+
+.glass-card {
+  background: oklch(1 0 0 / 0.65);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid oklch(0.91 0.005 90 / 0.45);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.04);
+}
+.dark .glass-card {
+  background: oklch(0.2 0.005 25 / 0.55);
+  border-color: oklch(0.35 0.005 25 / 0.4);
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.18);
+}
+
+.glass-sidebar {
+  background: oklch(1 0 0 / 0.72);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-right: 1px solid oklch(0.91 0.005 90 / 0.35);
+  box-shadow: 4px 0 24px oklch(0 0 0 / 0.04);
+}
+.dark .glass-sidebar {
+  background: oklch(0.16 0.005 25 / 0.65);
+  border-right-color: oklch(0.3 0.005 25 / 0.35);
+  box-shadow: 4px 0 24px oklch(0 0 0 / 0.2);
+}
+
+.glass-header {
+  background: oklch(1 0 0 / 0.7);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid oklch(0.91 0.005 90 / 0.3);
+}
+.dark .glass-header {
+  background: oklch(0.13 0.005 25 / 0.7);
+  border-bottom-color: oklch(0.28 0.005 25 / 0.35);
+}
+
+.glass-badge {
+  background: oklch(1 0 0 / 0.75);
+  backdrop-filter: blur(10px) saturate(1.3);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  border: 1px solid oklch(0.91 0.005 90 / 0.4);
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.06);
+}
+.dark .glass-badge {
+  background: oklch(0.22 0.005 25 / 0.65);
+  border-color: oklch(0.35 0.005 25 / 0.35);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.2);
+}
+
+.glass-tooltip {
+  background: oklch(1 0 0 / 0.85);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid oklch(0.91 0.005 90 / 0.5);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.08);
+  pointer-events: none;
+}
+.dark .glass-tooltip {
+  background: oklch(0.18 0.005 25 / 0.8);
+  border-color: oklch(0.32 0.005 25 / 0.45);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 0.3);
+}
+
+/* ========== Shadow Shopee ========== */
+.shadow-shopee {
+  box-shadow: 0 4px 14px oklch(0.637 0.237 25.331 / 0.3);
+}
+
+/* ========== Smooth Number Transitions ========== */
+.number-transition {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== Sonner Toast Customization ========== */
+[data-sonner-toast] {
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px oklch(0 0 0 / 0.1) !important;
+}
+.dark [data-sonner-toast] {
+  box-shadow: 0 10px 25px oklch(0 0 0 / 0.3) !important;
+}
+[data-sonner-toast][data-type="success"] {
+  border-left: 3px solid #22C55E !important;
+}
+[data-sonner-toast][data-type="error"] {
+  border-left: 3px solid #EF4444 !important;
+}
+
+/* ========== Safe Area Padding for iOS Devices ========== */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ========== 14. Text Gradient Utilities ========== */
+.text-gradient-shopee {
+  background: linear-gradient(135deg, #EE4D2D, #FF6742, #FFB347);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-success {
+  background: linear-gradient(135deg, #22C55E, #4ADE80);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-gold {
+  background: linear-gradient(135deg, #F59E0B, #FFB347, #FBBF24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-purple {
+  background: linear-gradient(135deg, #8B5CF6, #A78BFA, #C4B5FD);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-ocean {
+  background: linear-gradient(135deg, #06B6D4, #22D3EE, #67E8F9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ========== 16. Glow Utilities ========== */
+.glow-shopee {
+  box-shadow: 0 0 15px oklch(0.637 0.237 25.331 / 0.4), 0 0 45px oklch(0.637 0.237 25.331 / 0.15);
+}
+.glow-success {
+  box-shadow: 0 0 15px oklch(0.723 0.219 149.579 / 0.4), 0 0 45px oklch(0.723 0.219 149.579 / 0.15);
+}
+.glow-warning {
+  box-shadow: 0 0 15px oklch(0.795 0.184 86.047 / 0.4), 0 0 45px oklch(0.795 0.184 86.047 / 0.15);
+}
+.glow-purple {
+  box-shadow: 0 0 15px oklch(0.541 0.281 293.009 / 0.4), 0 0 45px oklch(0.541 0.281 293.009 / 0.15);
+}
+
+/* ========== 17. Enhanced Input Focus ========== */
+.input-shopee {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+.input-shopee:focus {
+  border-color: oklch(0.637 0.237 25.331);
+  box-shadow: 0 0 0 3px oklch(0.637 0.237 25.331 / 0.15);
+  outline: none;
+}
+.dark .input-shopee:focus {
+  box-shadow: 0 0 0 3px oklch(0.637 0.237 25.331 / 0.25);
+}
+
+/* ========== 21. Gradient Background Variants ========== */
+.bg-gradient-shopee-subtle {
+  background: linear-gradient(135deg, oklch(0.985 0.003 25 / 0.3) 0%, oklch(1 0 0 / 0) 100%);
+}
+.dark .bg-gradient-shopee-subtle {
+  background: linear-gradient(135deg, oklch(0.18 0.005 25 / 0.4) 0%, oklch(0.13 0.005 25 / 0) 100%);
+}
+.bg-gradient-mesh {
+  background:
+    radial-gradient(at 20% 80%, oklch(0.637 0.237 25.331 / 0.08) 0%, transparent 50%),
+    radial-gradient(at 80% 20%, oklch(0.7 0.2 40 / 0.06) 0%, transparent 50%),
+    radial-gradient(at 50% 50%, oklch(0.8 0.12 70 / 0.04) 0%, transparent 70%);
+}
+.dark .bg-gradient-mesh {
+  background:
+    radial-gradient(at 20% 80%, oklch(0.637 0.237 25.331 / 0.15) 0%, transparent 50%),
+    radial-gradient(at 80% 20%, oklch(0.7 0.2 40 / 0.1) 0%, transparent 50%),
+    radial-gradient(at 50% 50%, oklch(0.8 0.12 70 / 0.06) 0%, transparent 70%);
+}
+
+/* ========== 22. Enhanced Mobile Bottom Nav ========== */
+.mobile-nav-active {
+  position: relative;
+}
+.mobile-nav-active::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: linear-gradient(90deg, #EE4D2D, #FF6742);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ========== 23. Leaderboard Specific Styles ========== */
+.rank-1 { background: linear-gradient(135deg, oklch(0.96 0.02 85) 0%, oklch(1 0 0) 100%); }
+.rank-2 { background: linear-gradient(135deg, oklch(0.97 0.005 70) 0%, oklch(1 0 0) 100%); }
+.rank-3 { background: linear-gradient(135deg, oklch(0.95 0.02 55) 0%, oklch(1 0 0) 100%); }
+.dark .rank-1 { background: linear-gradient(135deg, oklch(0.22 0.02 85 / 0.5) 0%, oklch(0.18 0.005 25) 100%); }
+.dark .rank-2 { background: linear-gradient(135deg, oklch(0.22 0.005 70 / 0.4) 0%, oklch(0.18 0.005 25) 100%); }
+.dark .rank-3 { background: linear-gradient(135deg, oklch(0.22 0.02 55 / 0.3) 0%, oklch(0.18 0.005 25) 100%); }
+
+.rank-badge-1 {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #fff;
+  box-shadow: 0 2px 8px oklch(0.85 0.12 85 / 0.5);
+}
+.rank-badge-2 {
+  background: linear-gradient(135deg, #C0C0C0, #A0A0A0);
+  color: #fff;
+  box-shadow: 0 2px 8px oklch(0.8 0 0 / 0.3);
+}
+.rank-badge-3 {
+  background: linear-gradient(135deg, #CD7F32, #A0522D);
+  color: #fff;
+  box-shadow: 0 2px 8px oklch(0.55 0.12 55 / 0.4);
+}
+
+/* ========== 8. Gradient Text Backgrounds ========== */
+
+.text-gradient-rose {
+  background: linear-gradient(135deg, #F43F5E, #FB7185, #FDA4AF);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #10B981, #34D399, #6EE7B7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-amber {
+  background: linear-gradient(135deg, #F59E0B, #FBBF24, #FDE68A);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-sky {
+  background: linear-gradient(135deg, #0EA5E9, #38BDF8, #7DD3FC);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ========== 15. Enhanced Mobile Styles ========== */
+
+@media (max-width: 640px) {
+  .mobile-card-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .mobile-card-stack > * + * {
+    border-top: 1px solid oklch(0.91 0.005 90);
+    padding-top: 0.75rem;
+  }
+  .dark .mobile-card-stack > * + * {
+    border-top-color: oklch(0.28 0.005 25);
+  }
+
+  .mobile-full-width {
+    width: 100% !important;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .mobile-horizontal-scroll {
+    display: flex;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+  }
+  .mobile-horizontal-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .mobile-horizontal-scroll > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+
+  .mobile-sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 40;
+    background: oklch(1 0 0);
+    border-top: 1px solid oklch(0.91 0.005 90);
+    padding: 0.75rem 1rem;
+    box-shadow: 0 -4px 12px oklch(0 0 0 / 0.06);
+  }
+  .dark .mobile-sticky-bottom {
+    background: oklch(0.18 0.005 25);
+    border-top-color: oklch(0.28 0.005 25);
+    box-shadow: 0 -4px 12px oklch(0 0 0 / 0.2);
+  }
+}

@@ -204,7 +204,7 @@ export function AgentOfficePage() {
     }
   }, [])
 
-  const handleSetAgentStatus = useCallback(async (agentId: string, status: AgentStatus) => {
+  const handleSetAgentStatus = useCallback(async (agentId: string, status: string) => {
     try {
       const res = await fetch(`/api/shopee-office/agents/${agentId}`, {
         method: 'POST',

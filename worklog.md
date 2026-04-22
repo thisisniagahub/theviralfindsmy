@@ -143,3 +143,149 @@ Stage Summary:
 - Agent Office page now has 7 view modes with full integration
 - Version badge updated from v6.0 to v7.0
 - All new code passes lint with zero errors
+
+---
+Task ID: 17
+Agent: Sub Agent
+Task: Sprint 4 - Testing infrastructure (Vitest setup)
+
+Work Log:
+- Installed Vitest 4.1.4 and testing dependencies: @vitejs/plugin-react, @testing-library/react, @testing-library/jest-dom, jsdom
+- Created vitest.config.ts with React plugin, jsdom environment, globals, setup file, path alias (@/ → src/), and v8 coverage config
+- Created src/__tests__/setup.ts importing @testing-library/jest-dom/vitest
+- Created 3 test files covering core lib modules:
+  1. src/__tests__/lib/cache.test.ts — 5 tests: store/retrieve, missing keys, TTL expiry, pattern invalidation, clear all
+  2. src/__tests__/lib/rate-limit.test.ts — 3 tests: allow under limit, block over limit, separate identifier tracking
+  3. src/__tests__/lib/validations.test.ts — 8 tests: createLinkSchema (valid/empty name/invalid URL), loginSchema (valid/invalid email/short password), calculatorEstimateSchema (valid/commission over 100)
+- Added test scripts to package.json: test (vitest run), test:watch (vitest), test:coverage (vitest run --coverage)
+- All 16 tests pass across 3 test files (825ms total)
+
+Stage Summary:
+- Vitest testing infrastructure fully configured and operational
+- 16 tests passing across cache, rate-limit, and validations modules
+- Test commands: bun run test, bun run test:watch, bun run test:coverage
+- Coverage configured for src/lib/**/*.ts with v8 provider
+
+---
+Task ID: 9
+Agent: Sub Agent
+Task: Sprint 2 - Prompt 9/11: Apply Zod validation + rate limiting to more API routes
+
+Work Log:
+- Read existing utilities: src/lib/rate-limit.ts (RATE_LIMITS configs), src/lib/api-utils.ts (withRateLimit, getClientIp), src/lib/validations.ts (7 Zod schemas)
+- Read all 10 API route files to understand current structure (demo mode + production fetch patterns)
+- Applied withRateLimit to 10 API route handlers across 10 files:
+  1. links/route.ts — POST with RATE_LIMITS.mutation + Zod createLinkSchema validation
+  2. links/bulk/route.ts — PUT with RATE_LIMITS.mutation + Zod bulkActionSchema; DELETE with RATE_LIMITS.mutation + Zod bulkDeleteSchema
+  3. campaigns/route.ts — POST with RATE_LIMITS.mutation + Zod createCampaignSchema validation
+  4. payouts/route.ts — POST with RATE_LIMITS.mutation + Zod createPayoutSchema validation
+  5. goals/route.ts — POST with RATE_LIMITS.mutation + Zod createGoalSchema validation
+  6. settings/route.ts — PUT with RATE_LIMITS.mutation + Zod updateSettingsSchema validation
+  7. notifications/route.ts — GET with RATE_LIMITS.api
+  8. conversions/route.ts — GET with RATE_LIMITS.api
+  9. analytics/route.ts — GET with RATE_LIMITS.api
+  10. dashboard/route.ts — GET with RATE_LIMITS.api
+- Replaced all inline validation checks with proper Zod schema .parse() calls
+- Restructured mutation handlers to parse+validate body before demo mode branch (single parse point)
+- Used error.issues (Zod v4 compatible) instead of error.errors for ZodError detail responses
+- TypeScript compilation: 0 new errors from modified files (5 pre-existing errors in unrelated files)
+- Previously only openclaw/stream/route.ts had withRateLimit; now 11 route handlers have it
+
+Stage Summary:
+- Rate limiting applied to 10 additional API routes (11 total with openclaw/stream)
+- Zod validation replacing inline checks in 6 mutation routes
+- All mutation routes use RATE_LIMITS.mutation (30 req/min), all read routes use RATE_LIMITS.api (60 req/min)
+- No new TypeScript errors introduced
+
+---
+Task ID: 7
+Agent: Sub Agent
+Task: Sprint 2 - Prompts 7 & 8: TypeScript strict mode and ESLint rules
+
+Work Log:
+- Changed tsconfig.json: `"noImplicitAny": false` → `"noImplicitAny": true`
+- Updated eslint.config.mjs with 5 rules changed from "off" to "warn":
+  - `@typescript-eslint/no-explicit-any`: "warn"
+  - `@typescript-eslint/no-unused-vars`: ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
+  - `prefer-const`: "warn"
+  - `no-console`: ["warn", { "allow": ["warn", "error"] }]
+  - `no-debugger`: "warn"
+- Added TODO comment in next.config.ts about ignoreBuildErrors (kept true for now)
+- Fixed TypeScript compilation errors caused by noImplicitAny:
+  1. src/lib/openclaw.ts — Created `extractContent()` helper to replace 7 instances of `(data as Record<string, unknown>).choices?.[0]?.message?.content` pattern that failed with TS7053 (number index on string-keyed Record). Helper uses localized `any` with eslint-disable block.
+  2. src/lib/env.ts — Changed `error.errors` → `error.issues` (Zod v4 uses `.issues` not `.errors`) and typed the map callback as `z.ZodIssue`
+  3. src/lib/api-utils.ts — Added re-export of `RATE_LIMITS` and `RateLimitConfig` (was imported but not re-exported, causing TS2459 in stream/route.ts)
+  4. src/store/app-store.ts — Added `activePage: string` and `setActivePage: (page: string) => void` to AppState (was missing, causing TS2339 in app-layout.tsx)
+  5. src/components/pages/agent-office-page.tsx — Changed `handleSetAgentStatus` parameter type from `AgentStatus` to `string` (AgentCommandPanel expects `string`, not the narrower `AgentStatus` union type)
+  6. src/app/api/openclaw/a2a-proxy/route.ts — Used `as any` with explicit `: string` type annotation for deep property access (same TS7053 pattern)
+  7. src/__tests__/lib/cache.test.ts — Added `<void>` type parameter to `new Promise()` (TS2794: Expected 1 arguments)
+- TypeScript: 0 errors in src/ (only pre-existing errors in mini-services/ and skills/ which are outside scope)
+- ESLint: 0 errors, 26 warnings (all intentional — no-console in mini-services, no-unused-vars in components, no-explicit-any in API response extraction)
+
+Stage Summary:
+- TypeScript strict mode (noImplicitAny) enabled and all src/ compilation errors fixed
+- 5 important ESLint rules re-enabled as warnings (developers get feedback without breaking builds)
+- 7 files fixed for noImplicitAny compliance
+- Project still compiles and lints successfully
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Sprint 1 - Prompt 2: Update env.ts with missing environment variables
+
+Work Log:
+- Updated src/lib/env.ts with additional env vars: NODE_ENV, TELEGRAM_BOT_TOKEN, TWILIO_AUTH_TOKEN, OFFICE_JOIN_KEY
+- Changed NOTIFICATION_SERVICE_URL and DB_SERVICE_URL to optional with defaults
+- Added dev-mode fallback: allows startup with warnings in development, crashes in production
+- Better error messages with path: message format
+
+Stage Summary:
+- env.ts now validates all project environment variables
+- Dev-friendly fallbacks for local development
+- Production crash on missing required vars
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Sprint 1 - Prompt 3: Remove SKIP_AUTH bypass from proxy.ts
+
+Work Log:
+- Removed TODO comment about rate limiting (already implemented separately)
+- Added /icons to static file allowlist (for PWA icons)
+- Added explicit comment explaining SKIP_AUTH bypass removal
+- Authentication is now always enforced regardless of SKIP_AUTH env var
+
+Stage Summary:
+- proxy.ts no longer has SKIP_AUTH bypass
+- Auth always enforced; demo mode handles credentials at login page level
+
+---
+Task ID: 16
+Agent: Main Agent
+Task: Sprint 4 - Prompt 16: PWA - Generate missing icon files
+
+Work Log:
+- Created /home/z/my-project/public/icons/ directory
+- Created SVG app icon (Shopee orange with bar chart design)
+- Generated icon-192.png and icon-512.png using sharp from SVG
+- Icons match manifest.json references
+
+Stage Summary:
+- PWA icons generated at public/icons/icon-192.png and icon-512.png
+- manifest.json no longer references missing files
+
+---
+Task ID: review-1
+Agent: Main Agent
+Task: Full codebase review of TheViralFinds project
+
+Work Log:
+- Launched 4 parallel review agents covering: DB/Prisma, API/Security, Frontend/UI, Config/Build
+- Each agent performed deep analysis of all relevant files
+- Compiled comprehensive findings across all 4 domains
+- Identified 15 Critical, 23 High, 37 Medium, and 18 Low severity issues
+
+Stage Summary:
+- Critical issues: Float for money, SKIP_AUTH bypass, IDOR, SSRF, mass assignment, CSS broken brace, Phaser bundle, Tailwind v3/v4 conflict, ignoreBuildErrors
+- High issues: Missing composite indexes, no RBAC, plaintext password, rate limiter ineffective, hardcoded credentials, no error states, dead code (app-layout.tsx)
+- Full report delivered to user with prioritized remediation plan

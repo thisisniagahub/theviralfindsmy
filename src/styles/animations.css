@@ -1,0 +1,979 @@
+/* ═══ Animations ═══ */
+/* Pulsing animation for notification badge */
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+.badge-pulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* ========== 2. Shimmer Loading Effect ========== */
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    oklch(0 0 0 / 0) 0%,
+    oklch(0 0 0 / 0.06) 40%,
+    oklch(0 0 0 / 0.1) 50%,
+    oklch(0 0 0 / 0.06) 60%,
+    oklch(0 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+.dark .shimmer::after {
+  background: linear-gradient(
+    90deg,
+    oklch(1 0 0 / 0) 0%,
+    oklch(1 0 0 / 0.04) 40%,
+    oklch(1 0 0 / 0.08) 50%,
+    oklch(1 0 0 / 0.04) 60%,
+    oklch(1 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+/* ========== 3. Animated Gradient Border ========== */
+
+@keyframes gradientBorderRotate {
+  0% { --gradient-angle: 0deg; }
+  100% { --gradient-angle: 360deg; }
+}
+
+@property --gradient-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.gradient-border {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--gradient-angle),
+    #EE4D2D,
+    #FF6742,
+    #FFB347,
+    #FF6742,
+    #EE4D2D
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradientBorderRotate 3s linear infinite;
+  pointer-events: none;
+}
+.dark .gradient-border::before {
+  background: conic-gradient(
+    from var(--gradient-angle),
+    oklch(0.637 0.237 25.331),
+    oklch(0.7 0.2 40),
+    oklch(0.8 0.12 70),
+    oklch(0.7 0.2 40),
+    oklch(0.637 0.237 25.331)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradientBorderRotate 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes btnShine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ========== 7. Subtle Floating Animation ========== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ========== 8. Progress Bar Animation ========== */
+
+@keyframes progressFill {
+  from { width: 0%; }
+}
+
+@keyframes progressStripe {
+  0% { background-position: 1rem 0; }
+  100% { background-position: 0 0; }
+}
+
+/* ========== 12. Page Transition & Stagger Animation ========== */
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.98) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.page-enter {
+  animation: pageEnter 0.35s ease-out forwards;
+}
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.30s; }
+
+/* Stagger children: make them invisible initially so the animation reveals them */
+.stagger-1, .stagger-2, .stagger-3, .stagger-4, .stagger-5, .stagger-6 {
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+/* ========== Enhanced Skeleton Shimmer ========== */
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.965 0.003 90) 25%,
+    oklch(0.985 0 0) 37%,
+    oklch(0.965 0.003 90) 63%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.22 0.005 25) 25%,
+    oklch(0.28 0.005 25) 37%,
+    oklch(0.22 0.005 25) 63%
+  );
+  background-size: 200% 100%;
+}
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ========== 18. Enhanced Dropdown Menu ========== */
+.dropdown-modern {
+  border: 1px solid oklch(0.91 0.005 90);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 38px -10px oklch(0 0 0 / 0.15), 0 10px 20px -15px oklch(0 0 0 / 0.1);
+  padding: 0.25rem;
+  animation: dropdownEnter 0.15s ease-out;
+}
+.dark .dropdown-modern {
+  border-color: oklch(0.35 0.005 25);
+  box-shadow: 0 10px 38px -10px oklch(0 0 0 / 0.4), 0 10px 20px -15px oklch(0 0 0 / 0.25);
+}
+@keyframes dropdownEnter {
+  0% { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ========== 19. Animated Ring Pulse ========== */
+@keyframes ringPulse {
+  0% { box-shadow: 0 0 0 0 oklch(0.637 0.237 25.331 / 0.5); }
+  70% { box-shadow: 0 0 0 10px oklch(0.637 0.237 25.331 / 0); }
+  100% { box-shadow: 0 0 0 0 oklch(0.637 0.237 25.331 / 0); }
+}
+.ring-pulse {
+  animation: ringPulse 2s ease-out infinite;
+}
+
+/* ========== 20. Hover Scale Micro-interaction ========== */
+.hover-scale-sm {
+  transition: transform 0.15s ease;
+}
+.hover-scale-sm:hover {
+  transform: scale(1.03);
+}
+.hover-scale-md {
+  transition: transform 0.2s ease;
+}
+.hover-scale-md:hover {
+  transform: scale(1.06);
+}
+.hover-scale-lg {
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.hover-scale-lg:hover {
+  transform: scale(1.1);
+}
+
+/* ========== 24. Achievement Badge Styles ========== */
+.achievement-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 24px;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease;
+}
+.achievement-badge:hover {
+  transform: scale(1.15);
+}
+.achievement-badge.locked {
+  filter: grayscale(1) opacity(0.4);
+}
+.achievement-badge.unlocked {
+  animation: badgeUnlock 0.6s ease-out;
+}
+@keyframes badgeUnlock {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.achievement-glow-gold {
+  box-shadow: 0 0 20px oklch(0.85 0.12 85 / 0.5), 0 4px 12px oklch(0 0 0 / 0.1);
+}
+.achievement-glow-shopee {
+  box-shadow: 0 0 20px oklch(0.637 0.237 25.331 / 0.5), 0 4px 12px oklch(0 0 0 / 0.1);
+}
+.achievement-glow-purple {
+  box-shadow: 0 0 20px oklch(0.541 0.281 293.009 / 0.5), 0 4px 12px oklch(0 0 0 / 0.1);
+}
+.achievement-glow-green {
+  box-shadow: 0 0 20px oklch(0.723 0.219 149.579 / 0.5), 0 4px 12px oklch(0 0 0 / 0.1);
+}
+
+/* Achievement progress ring */
+.achievement-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: #EE4D2D;
+  border-right-color: #FF6742;
+}
+.achievement-ring.completed {
+  border: 3px solid #22C55E;
+  animation: ringPulse 3s ease-out infinite;
+}
+
+/* ========== 25. Enhanced Scroll Shadow (top/bottom fade) ========== */
+.scroll-shadow-y {
+  mask-image: linear-gradient(to bottom, transparent, black 12px, black calc(100% - 12px), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 12px, black calc(100% - 12px), transparent);
+}
+
+/* ========== 26. Animated Dots Loading ========== */
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+.loading-dots span {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: oklch(0.637 0.237 25.331);
+  margin: 0 2px;
+  animation: dotBounce 1.4s ease-in-out infinite;
+}
+.loading-dots span:nth-child(2) { animation-delay: 0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+/* ========== 27. Notification Live Indicator ========== */
+@keyframes livePulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #22C55E;
+}
+.live-indicator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22C55E;
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+/* ========== 28. Card Grid Pattern Background ========== */
+.card-pattern {
+  background-image: radial-gradient(oklch(0.637 0.237 25.331 / 0.06) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.dark .card-pattern {
+  background-image: radial-gradient(oklch(0.637 0.237 25.331 / 0.1) 1px, transparent 1px);
+}
+
+/* ========== 29. Status Indicator Dot ========== */
+.status-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0.3;
+}
+.status-dot-online { background: #22C55E; color: #22C55E; }
+.status-dot-away { background: #F59E0B; color: #F59E0B; }
+.status-dot-offline { background: oklch(0.7 0 0); color: oklch(0.7 0 0); }
+
+/* ========== 30. Enhanced Tab Styling ========== */
+.tab-shopee {
+  position: relative;
+  color: oklch(0.5 0.01 90);
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.tab-shopee::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #EE4D2D, #FF6742);
+  border-radius: 1px;
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+.tab-shopee:hover {
+  color: oklch(0.205 0 0);
+}
+.dark .tab-shopee:hover {
+  color: oklch(0.97 0.005 90);
+}
+.tab-shopee.active {
+  color: #EE4D2D;
+  font-weight: 600;
+}
+.tab-shopee.active::after {
+  transform: scaleX(1);
+}
+
+/* ========== Reduced Motion Preference ========== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .sidebar-gradient {
+    animation: none !important;
+    background-position: 0% 0% !important;
+  }
+  .shimmer::after {
+    animation: none !important;
+    display: none !important;
+  }
+  .gradient-border::before {
+    animation: none !important;
+  }
+  .badge-pulse {
+    animation: none !important;
+  }
+  .float-animation {
+    animation: none !important;
+  }
+  .badge-dot::after {
+    animation: none !important;
+  }
+  .progress-bar-striped > .progress-fill {
+    animation: none !important;
+  }
+  .btn-shine::after {
+    animation: none !important;
+  }
+  .page-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .stagger-1, .stagger-2, .stagger-3, .stagger-4, .stagger-5, .stagger-6 {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .card-elevated:hover,
+  .card-glass:hover,
+  .card-accent:hover,
+  .card-spotlight:hover,
+  .card-shine:hover,
+  .btn-shopee:hover,
+  .btn-shopee-outline:hover,
+  .btn-glass:hover,
+  .btn-shine:hover {
+    transform: none !important;
+  }
+  .card-shine::before {
+    transition: none !important;
+    transform: none !important;
+    display: none !important;
+  }
+  .skeleton-shimmer {
+    animation: none !important;
+  }
+  .card-tilt:hover {
+    transform: none !important;
+  }
+  .achievement-badge.unlocked {
+    animation: none !important;
+  }
+  .ring-pulse {
+    animation: none !important;
+  }
+  .loading-dots span {
+    animation: none !important;
+  }
+  .live-indicator::before {
+    animation: none !important;
+  }
+  .tab-shopee::after {
+    transition: none !important;
+  }
+}
+
+/* ========================================================================
+   PHASE 7: Command Palette Styles
+   ======================================================================== */
+
+/* ========== Command Palette Dialog Overlay ========== */
+[data-state="open"] > [data-radix-popper-content-wrapper] {
+  z-index: 100 !important;
+}
+
+/* Command palette dialog content glassmorphism */
+.command-palette-dialog {
+  background: oklch(1 0 0 / 0.88);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid oklch(0.91 0.005 90 / 0.5);
+  box-shadow: 0 24px 80px oklch(0 0 0 / 0.12),
+              0 8px 32px oklch(0 0 0 / 0.06),
+              0 0 0 1px oklch(0.637 0.237 25.331 / 0.05);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+.dark .command-palette-dialog {
+  background: oklch(0.16 0.005 25 / 0.92);
+  border-color: oklch(0.35 0.005 25 / 0.5);
+  box-shadow: 0 24px 80px oklch(0 0 0 / 0.4),
+              0 8px 32px oklch(0 0 0 / 0.2),
+              0 0 0 1px oklch(0.637 0.237 25.331 / 0.1);
+}
+
+/* Command palette search input */
+.command-palette-input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Command palette item selected state */
+.command-palette-item {
+  transition: background-color 0.1s ease, color 0.1s ease;
+  border-radius: 0.5rem;
+}
+.command-palette-item[data-selected="true"] {
+  background-color: oklch(0.637 0.237 25.331 / 0.08);
+  color: oklch(0.637 0.237 25.331);
+}
+.dark .command-palette-item[data-selected="true"] {
+  background-color: oklch(0.637 0.237 25.331 / 0.12);
+  color: oklch(0.85 0.15 25);
+}
+
+/* Command palette group heading */
+.command-palette-heading {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: oklch(0.55 0.01 90);
+  padding: 0.5rem 0.75rem 0.25rem;
+}
+.dark .command-palette-heading {
+  color: oklch(0.65 0.01 90);
+}
+
+/* Command palette shortcut badge */
+.command-palette-shortcut {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: oklch(0.6 0.01 90);
+  background: oklch(0.965 0.003 90);
+  border: 1px solid oklch(0.91 0.005 90 / 0.6);
+  border-radius: 4px;
+  padding: 1px 5px;
+  line-height: 1.4;
+}
+.dark .command-palette-shortcut {
+  color: oklch(0.65 0.01 90);
+  background: oklch(0.25 0.005 25);
+  border-color: oklch(0.35 0.005 25 / 0.5);
+}
+
+/* Command palette footer */
+.command-palette-footer {
+  border-top: 1px solid oklch(0.91 0.005 90 / 0.4);
+  background: oklch(0.97 0.003 90 / 0.5);
+}
+.dark .command-palette-footer {
+  border-top-color: oklch(0.28 0.005 25 / 0.4);
+  background: oklch(0.15 0.005 25 / 0.5);
+}
+
+/* Command palette empty state icon pulse */
+@keyframes commandPaletteIconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.command-palette-empty-icon {
+  animation: commandPaletteIconPulse 2s ease-in-out infinite;
+}
+
+/* prefers-reduced-motion override for command palette */
+@media (prefers-reduced-motion: reduce) {
+  .command-palette-empty-icon {
+    animation: none;
+  }
+  .command-palette-item {
+    transition: none;
+  }
+}
+
+/* ========================================================================
+   Phase 7: Advanced CSS Utilities
+   ======================================================================== */
+
+/* ========== 1. Enhanced Skeleton Loading System ========== */
+
+.skeleton-card {
+  border-radius: var(--radius-lg);
+  background: oklch(0.965 0.003 90);
+  overflow: hidden;
+  position: relative;
+}
+.dark .skeleton-card {
+  background: oklch(0.25 0.005 25);
+}
+.skeleton-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    oklch(0 0 0 / 0) 0%,
+    oklch(0 0 0 / 0.04) 40%,
+    oklch(0 0 0 / 0.08) 50%,
+    oklch(0 0 0 / 0.04) 60%,
+    oklch(0 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: skeletonCardShimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .skeleton-card::after {
+  background: linear-gradient(
+    90deg,
+    oklch(1 0 0 / 0) 0%,
+    oklch(1 0 0 / 0.03) 40%,
+    oklch(1 0 0 / 0.06) 50%,
+    oklch(1 0 0 / 0.03) 60%,
+    oklch(1 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+}
+@keyframes skeletonCardShimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-text {
+  height: 14px;
+  border-radius: 4px;
+  background: oklch(0.965 0.003 90);
+  overflow: hidden;
+  position: relative;
+}
+.dark .skeleton-text {
+  background: oklch(0.25 0.005 25);
+}
+.skeleton-text::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    oklch(0 0 0 / 0) 0%,
+    oklch(0 0 0 / 0.04) 40%,
+    oklch(0 0 0 / 0.08) 50%,
+    oklch(0 0 0 / 0.04) 60%,
+    oklch(0 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: skeletonCardShimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .skeleton-text::after {
+  background: linear-gradient(
+    90deg,
+    oklch(1 0 0 / 0) 0%,
+    oklch(1 0 0 / 0.03) 40%,
+    oklch(1 0 0 / 0.06) 50%,
+    oklch(1 0 0 / 0.03) 60%,
+    oklch(1 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+  background: oklch(0.965 0.003 90);
+  overflow: hidden;
+  position: relative;
+}
+.dark .skeleton-circle {
+  background: oklch(0.25 0.005 25);
+}
+.skeleton-circle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    oklch(0 0 0 / 0) 0%,
+    oklch(0 0 0 / 0.04) 40%,
+    oklch(0 0 0 / 0.08) 50%,
+    oklch(0 0 0 / 0.04) 60%,
+    oklch(0 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: skeletonCardShimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .skeleton-circle::after {
+  background: linear-gradient(
+    90deg,
+    oklch(1 0 0 / 0) 0%,
+    oklch(1 0 0 / 0.03) 40%,
+    oklch(1 0 0 / 0.06) 50%,
+    oklch(1 0 0 / 0.03) 60%,
+    oklch(1 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+}
+
+.skeleton-chart {
+  border-radius: var(--radius-md);
+  background: oklch(0.965 0.003 90);
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+}
+.dark .skeleton-chart {
+  background: oklch(0.25 0.005 25);
+}
+.skeleton-chart::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    oklch(0 0 0 / 0) 0%,
+    oklch(0 0 0 / 0.04) 40%,
+    oklch(0 0 0 / 0.08) 50%,
+    oklch(0 0 0 / 0.04) 60%,
+    oklch(0 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+  animation: skeletonCardShimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .skeleton-chart::after {
+  background: linear-gradient(
+    90deg,
+    oklch(1 0 0 / 0) 0%,
+    oklch(1 0 0 / 0.03) 40%,
+    oklch(1 0 0 / 0.06) 50%,
+    oklch(1 0 0 / 0.03) 60%,
+    oklch(1 0 0 / 0) 100%
+  );
+  background-size: 400px 100%;
+}
+
+/* ========== 2. Animated Counters ========== */
+
+@keyframes counterFadeIn {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.counter-animate {
+  display: inline-block;
+  animation: counterFadeIn 0.4s ease-out forwards;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes counterBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.15); }
+  50% { transform: scale(0.95); }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.counter-bounce {
+  display: inline-block;
+  animation: counterBounce 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes scrollIndicatorBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(6px); opacity: 1; }
+}
+.scroll-indicator {
+  position: relative;
+}
+.scroll-indicator::after {
+  content: "↓";
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: oklch(0.45 0.01 90);
+  animation: scrollIndicatorBounce 1.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+.dark .scroll-indicator::after {
+  color: oklch(0.65 0.01 90);
+}
+
+/* ========== 7. Pulse Ring Animations ========== */
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+.pulse-ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pulse-ring::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid oklch(0.637 0.237 25.331);
+  animation: pulseRing 1.5s ease-out infinite;
+  pointer-events: none;
+}
+.dark .pulse-ring::before {
+  border-color: oklch(0.7 0.2 40);
+}
+
+.pulse-ring-success {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pulse-ring-success::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #22C55E;
+  animation: pulseRing 1.5s ease-out infinite;
+  pointer-events: none;
+}
+.dark .pulse-ring-success::before {
+  border-color: #4ADE80;
+}
+
+.pulse-ring-shopee {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pulse-ring-shopee::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #EE4D2D;
+  animation: pulseRing 1.5s ease-out infinite;
+  pointer-events: none;
+}
+.dark .pulse-ring-shopee::before {
+  border-color: #FF7B5C;
+}
+
+/* ========== 16. prefers-reduced-motion Overrides (Phase 7) ========== */
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-card::after,
+  .skeleton-text::after,
+  .skeleton-circle::after,
+  .skeleton-chart::after {
+    animation: none !important;
+    display: none !important;
+  }
+  .counter-animate {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .counter-bounce {
+    animation: none !important;
+    transform: none !important;
+  }
+  .pulse-ring::before,
+  .pulse-ring-success::before,
+  .pulse-ring-shopee::before {
+    animation: none !important;
+    display: none !important;
+  }
+  .scroll-indicator::after {
+    animation: none !important;
+  }
+  .tooltip-delayed::before,
+  .tooltip-delayed::after {
+    transition-delay: 0s !important;
+  }
+  .tooltip-arrow::before,
+  .tooltip-arrow::after,
+  .tooltip-shopee::before,
+  .tooltip-shopee::after,
+  .tooltip-delayed::before,
+  .tooltip-delayed::after {
+    transition: none !important;
+  }
+  .animated-underline::after,
+  .animated-underline-shopee::after,
+  .animated-underline-center::after {
+    transition: none !important;
+  }
+  .hover-glow,
+  .hover-border-color,
+  .hover-bg-subtle,
+  .hover-lift-sm,
+  .hover-lift-md,
+  .hover-lift-lg {
+    transition: none !important;
+  }
+  .hover-lift-sm:hover,
+  .hover-lift-md:hover,
+  .hover-lift-lg:hover {
+    transform: none !important;
+  }
+  .tag-shopee,
+  .tag-success,
+  .tag-warning,
+  .tag-error,
+  .tag-info,
+  .tag-outline,
+  .tag-glow {
+    transition: none !important;
+  }
+  .tag-shopee:hover,
+  .tag-success:hover,
+  .tag-warning:hover,
+  .tag-error:hover,
+  .tag-info:hover,
+  .tag-outline:hover,
+  .tag-glow:hover {
+    transform: none !important;
+  }
+  .timeline-card {
+    transition: none !important;
+  }
+  .focus-ring,
+  .focus-ring-shopee,
+  .focus-ring-glow {
+    transition: none !important;
+  }
+  .status-card {
+    transition: none !important;
+  }
+}
+
+@keyframes error-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Agent office reduced-motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .agent-avatar-error { animation: none; }
+  .agent-status-dot-error { animation: none; }
+  .activity-entry { animation: none; }
+  .agent-card:hover { transform: none; }
+}

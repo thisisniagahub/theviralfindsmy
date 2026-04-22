@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET(request: NextRequest) {
+  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  if (rateLimited) return rateLimited
+
   if (process.env.DEMO_MODE === 'true') {
     const now = new Date()
     const notifications = [
@@ -24,6 +28,9 @@ export async function GET(request: NextRequest) {
     })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get('filter') || 'all'
 
@@ -45,6 +52,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'All notifications marked as read' })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     // Ensure no unexpected payload is sent; this endpoint is idempotent
     const contentType = request.headers.get('content-type')
     if (contentType && contentType.includes('application/json')) {

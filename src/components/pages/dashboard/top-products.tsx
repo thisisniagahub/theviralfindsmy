@@ -10,10 +10,10 @@ import { formatRM, type DashboardData } from './dashboard-shared'
 
 interface TopProductsProps {
   topLinks: DashboardData['topLinks']
-  onSetPage: (page: string) => void
+  onNavigate: (page: string) => void
 }
 
-export function TopProducts({ topLinks, onSetPage }: TopProductsProps) {
+export function TopProducts({ topLinks, onNavigate }: TopProductsProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -30,7 +30,7 @@ export function TopProducts({ topLinks, onSetPage }: TopProductsProps) {
               variant="ghost"
               size="sm"
               className="text-xs text-shopee hover:text-shopee-dark"
-              onClick={() => onSetPage('analytics')}
+              onClick={() => onNavigate('analytics')}
             >
               View All <ChevronRight className="w-3 h-3 ml-0.5" />
             </Button>

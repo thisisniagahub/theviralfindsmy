@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAppStore } from '@/store/app-store'
 import { Bell, Search, X, CheckCheck } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -26,23 +27,28 @@ import {
 import { useQuery } from '@tanstack/react-query'
 
 const pageNames: Record<string, string> = {
-  dashboard: 'Dashboard',
-  products: 'Product Discovery',
-  links: 'Affiliate Links',
-  analytics: 'Analytics',
-  calculator: 'Commission Calculator',
-  campaigns: 'Campaigns',
-  leaderboard: 'Leaderboard',
-  'agent-office': 'Agent Office',
-  achievements: 'Achievements',
-  activity: 'Activity Feed',
-  earnings: 'Earnings & Payouts',
-  settings: 'Settings',
-  notifications: 'Notifications',
+  '/': 'Dashboard',
+  '/products': 'Product Discovery',
+  '/links': 'Affiliate Links',
+  '/analytics': 'Analytics',
+  '/calculator': 'Commission Calculator',
+  '/campaigns': 'Campaigns',
+  '/leaderboard': 'Leaderboard',
+  '/agent-office': 'Agent Office',
+  '/achievements': 'Achievements',
+  '/activity': 'Activity Feed',
+  '/earnings': 'Earnings & Payouts',
+  '/settings': 'Settings',
+  '/notifications': 'Notifications',
+  '/referral': 'Referral',
+  '/shopee-integration': 'Shopee Integration',
+  '/openclaw': 'OpenClaw AI',
 }
 
 export function Header() {
-  const { activePage, setActivePage, setSearchQuery: setGlobalSearchQuery } = useAppStore()
+  const pathname = usePathname()
+  const router = useRouter()
+  const { setSearchQuery: setGlobalSearchQuery } = useAppStore()
   const [searchOpen, setSearchOpen] = useState(false)
   const [localSearchQuery, setLocalSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -65,7 +71,7 @@ export function Header() {
     e.preventDefault()
     if (localSearchQuery.trim()) {
       setGlobalSearchQuery(localSearchQuery.trim())
-      setActivePage('links')
+      router.push('/links')
       setSearchOpen(false)
       setLocalSearchQuery('')
     }
@@ -75,6 +81,8 @@ export function Header() {
     await fetch('/api/notifications', { method: 'PUT' })
     refetch()
   }
+
+  const currentPageName = pageNames[pathname] || 'Dashboard'
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/80 dark:bg-card/80 backdrop-blur-md safe-area-inset-top">
@@ -93,14 +101,14 @@ export function Header() {
           <Breadcrumb className="hidden sm:flex">
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbLink href="#" className="text-muted-foreground">
+                <BreadcrumbLink href="/" className="text-muted-foreground">
                   Home
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbPage className="font-medium">
-                  {pageNames[activePage] || 'Dashboard'}
+                  {currentPageName}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
@@ -168,7 +176,7 @@ export function Header() {
                 ))
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="justify-center text-shopee text-sm font-medium" onClick={() => setActivePage('notifications')}>
+              <DropdownMenuItem className="justify-center text-shopee text-sm font-medium" onClick={() => router.push('/notifications')}>
                 View all notifications
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -188,8 +196,8 @@ export function Header() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActivePage('earnings')}>Earnings</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActivePage('settings')}>Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/earnings')}>Earnings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/settings')}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>Log out</DropdownMenuItem>
             </DropdownMenuContent>

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 // Demo data for when Prisma is unavailable or in demo mode
 function getDemoDashboard(period: string) {
@@ -64,12 +65,18 @@ function getDemoDashboard(period: string) {
 }
 
 export async function GET(request: NextRequest) {
+  const rateLimited = withRateLimit(request, RATE_LIMITS.api)
+  if (rateLimited) return rateLimited
+
   if (process.env.DEMO_MODE === 'true') {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'
     return NextResponse.json(getDemoDashboard(period))
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const { searchParams } = new URL(request.url)
     const period = searchParams.get('period') || '30d'
 

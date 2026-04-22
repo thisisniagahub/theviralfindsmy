@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { createGoalSchema } from '@/lib/validations'
+import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET() {
   if (process.env.DEMO_MODE === 'true') {
@@ -23,6 +26,9 @@ export async function GET() {
     })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const data = await fetch(`${DB_URL}/goals`).then(r => r.json())
 
     return NextResponse.json(data)
@@ -43,37 +49,44 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (process.env.DEMO_MODE === 'true') {
+  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  if (rateLimited) return rateLimited
+
+  let validated
+  try {
     const body = await request.json()
+    validated = createGoalSchema.parse(body)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 })
+    }
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  if (process.env.DEMO_MODE === 'true') {
     const now = new Date()
     return NextResponse.json({
       id: `goal-demo-${Date.now()}`,
-      name: body.name || 'New Goal',
-      targetAmount: body.targetAmount || 1000,
+      name: validated.name || 'New Goal',
+      targetAmount: validated.targetAmount || 1000,
       currentAmount: 0,
-      period: body.period || 'monthly',
+      period: validated.period || 'monthly',
       startDate: now.toISOString(),
-      endDate: body.endDate || null,
+      endDate: validated.endDate || null,
       status: 'active',
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     }, { status: 201 })
   }
   try {
-    const body = await request.json()
-
-    // Basic inline validation
-    if (!body.name || typeof body.name !== 'string') {
-      return NextResponse.json({ error: 'Validation failed', details: [{ message: 'name is required', path: ['name'] }] }, { status: 400 })
-    }
-    if (!body.targetAmount || typeof body.targetAmount !== 'number' || body.targetAmount <= 0) {
-      return NextResponse.json({ error: 'Validation failed', details: [{ message: 'targetAmount must be a positive number', path: ['targetAmount'] }] }, { status: 400 })
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
     const goal = await fetch(`${DB_URL}/goals`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(validated),
     }).then(r => r.json())
 
     return NextResponse.json(goal, { status: 201 })

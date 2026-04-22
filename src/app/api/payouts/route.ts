@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { createPayoutSchema } from '@/lib/validations'
+import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET() {
   if (process.env.DEMO_MODE === 'true') {
@@ -27,6 +30,9 @@ export async function GET() {
     })
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const data = await fetch(`${DB_URL}/payouts`).then(r => r.json())
 
     return NextResponse.json(data)
@@ -37,37 +43,44 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (process.env.DEMO_MODE === 'true') {
+  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  if (rateLimited) return rateLimited
+
+  let validated
+  try {
     const body = await request.json()
+    validated = createPayoutSchema.parse(body)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 })
+    }
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  if (process.env.DEMO_MODE === 'true') {
     const now = new Date()
     return NextResponse.json({
       id: `pay-demo-${Date.now()}`,
-      method: body.method || 'bank_transfer',
-      amount: body.amount || 100,
+      method: validated.method || 'bank_transfer',
+      amount: validated.amount || 100,
       status: 'pending',
-      bankName: body.bankName || 'Maybank',
-      accountNo: body.accountNo || '****0000',
-      accountName: body.accountName || 'Demo User',
-      note: body.note || null,
+      bankName: validated.bankName || 'Maybank',
+      accountNo: validated.accountNo || '****0000',
+      accountName: validated.accountName || 'Demo User',
+      note: validated.note || null,
       requestedAt: now.toISOString(),
       processedAt: null,
     }, { status: 201 })
   }
   try {
-    const body = await request.json()
-
-    // Basic inline validation
-    if (!body.method || typeof body.method !== 'string') {
-      return NextResponse.json({ error: 'Validation failed', details: [{ message: 'method is required', path: ['method'] }] }, { status: 400 })
-    }
-    if (!body.amount || typeof body.amount !== 'number' || body.amount <= 0) {
-      return NextResponse.json({ error: 'Validation failed', details: [{ message: 'amount must be a positive number', path: ['amount'] }] }, { status: 400 })
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
     const payout = await fetch(`${DB_URL}/payouts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(validated),
     }).then(r => r.json())
 
     return NextResponse.json(payout, { status: 201 })

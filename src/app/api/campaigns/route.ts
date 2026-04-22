@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
+import { createCampaignSchema } from '@/lib/validations'
+import { z } from 'zod'
 
-const DB_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+const DB_URL = process.env.DB_SERVICE_URL
 
 export async function GET() {
   if (process.env.DEMO_MODE === 'true') {
@@ -13,6 +16,9 @@ export async function GET() {
     return NextResponse.json(campaigns)
   }
   try {
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
+    }
     const data = await fetch(`${DB_URL}/campaigns`).then(r => r.json())
     return NextResponse.json(data)
   } catch (error) {
@@ -22,34 +28,44 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (process.env.DEMO_MODE === 'true') {
+  const rateLimited = withRateLimit(request, RATE_LIMITS.mutation)
+  if (rateLimited) return rateLimited
+
+  let validated
+  try {
     const body = await request.json()
+    validated = createCampaignSchema.parse(body)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 })
+    }
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  if (process.env.DEMO_MODE === 'true') {
     const now = new Date()
     return NextResponse.json({
       id: `camp-demo-${Date.now()}`,
-      name: body.name || 'New Campaign',
-      description: body.description || '',
-      status: body.status || 'active',
-      budget: body.budget || 0,
-      startDate: body.startDate ? new Date(body.startDate).toISOString() : null,
-      endDate: body.endDate ? new Date(body.endDate).toISOString() : null,
+      name: validated.name || 'New Campaign',
+      description: validated.description || '',
+      status: validated.status || 'active',
+      budget: validated.budget || 0,
+      startDate: validated.startDate ? new Date(validated.startDate).toISOString() : null,
+      endDate: validated.endDate ? new Date(validated.endDate).toISOString() : null,
       spent: 0,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     }, { status: 201 })
   }
   try {
-    const body = await request.json()
-
-    // Basic inline validation
-    if (!body.name || typeof body.name !== 'string') {
-      return NextResponse.json({ error: 'Validation failed', details: [{ message: 'name is required', path: ['name'] }] }, { status: 400 })
+    if (!DB_URL) {
+      return NextResponse.json({ error: 'Database service not configured' }, { status: 503 })
     }
 
     const campaign = await fetch(`${DB_URL}/campaigns`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(validated),
     }).then(r => r.json())
 
     return NextResponse.json(campaign, { status: 201 })

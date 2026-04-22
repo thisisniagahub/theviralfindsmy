@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useAppStore } from '@/store/app-store'
 import { useTheme } from 'next-themes'
@@ -34,26 +36,27 @@ import { Badge } from '@/components/ui/badge'
 import { useQuery } from '@tanstack/react-query'
 
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'products', label: 'Products', icon: ShoppingBag },
-  { id: 'links', label: 'Affiliate Links', icon: Link2 },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'calculator', label: 'Calculator', icon: Calculator },
-  { id: 'campaigns', label: 'Campaigns', icon: Megaphone, badge: '3' },
-  { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-  { id: 'agent-office', label: 'Agent Office', icon: Building2 },
-  { id: 'achievements', label: 'Achievements', icon: Award },
-  { id: 'activity', label: 'Activity', icon: Activity },
-  { id: 'shopee-integration', label: 'Shopee Integration', icon: Plug },
-  { id: 'openclaw', label: 'OpenClaw AI', icon: Zap, badge: 'AI' },
-  { id: 'notifications', label: 'Notifications', icon: Bell, isNotification: true },
-  { id: 'earnings', label: 'Earnings', icon: Wallet },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'products', path: '/products', label: 'Products', icon: ShoppingBag },
+  { id: 'links', path: '/links', label: 'Affiliate Links', icon: Link2 },
+  { id: 'analytics', path: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'calculator', path: '/calculator', label: 'Calculator', icon: Calculator },
+  { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: Megaphone, badge: '3' },
+  { id: 'leaderboard', path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { id: 'agent-office', path: '/agent-office', label: 'Agent Office', icon: Building2 },
+  { id: 'achievements', path: '/achievements', label: 'Achievements', icon: Award },
+  { id: 'activity', path: '/activity', label: 'Activity', icon: Activity },
+  { id: 'shopee-integration', path: '/shopee-integration', label: 'Shopee Integration', icon: Plug },
+  { id: 'openclaw', path: '/openclaw', label: 'OpenClaw AI', icon: Zap, badge: 'AI' },
+  { id: 'notifications', path: '/notifications', label: 'Notifications', icon: Bell, isNotification: true },
+  { id: 'earnings', path: '/earnings', label: 'Earnings', icon: Wallet },
+  { id: 'settings', path: '/settings', label: 'Settings', icon: Settings },
 ]
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { activePage, setActivePage, sidebarOpen, setSidebarOpen } = useAppStore()
+  const { sidebarOpen, setSidebarOpen } = useAppStore()
   const { setTheme, resolvedTheme, theme } = useTheme()
+  const pathname = usePathname()
 
   const { data: notifData } = useQuery({
     queryKey: ['notifications-count'],
@@ -81,14 +84,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => {
           const Icon = item.icon
-          const isActive = activePage === item.id
+          const isActive = item.path === '/'
+            ? pathname === '/'
+            : pathname === item.path || pathname.startsWith(item.path + '/')
           return (
-            <button
+            <Link
               key={item.id}
-              onClick={() => {
-                setActivePage(item.id)
-                onNavigate?.()
-              }}
+              href={item.path}
+              onClick={() => onNavigate?.()}
               className={cn(
                 'flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 nav-item-slide relative',
                 isActive
@@ -111,7 +114,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               {!sidebarOpen && item.isNotification && unreadCount > 0 && (
                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-shopee badge-pulse" />
               )}
-            </button>
+            </Link>
           )
         })}
       </nav>

@@ -8,8 +8,10 @@
 // to prevent the large SDK bundle from crashing the Next.js dev server on initial compile.
 
 // ─── Configuration ────────────────────────────────────────────────
-const OPENCLAW_GATEWAY = process.env.OPENCLAW_GATEWAY_URL || 'https://operator.gangniaga.my'
-const OPENCLAW_API_KEY = process.env.OPENCLAW_GATEWAY_TOKEN || process.env.OPENCLAW_API_KEY || ''
+import { env } from '@/lib/env'
+
+const OPENCLAW_GATEWAY = env.OPENCLAW_GATEWAY_URL
+const OPENCLAW_API_KEY = env.OPENCLAW_GATEWAY_TOKEN || ''
 const GATEWAY_TIMEOUT = 15_000 // 15s default timeout
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -82,6 +84,17 @@ export interface OpenClawModel {
   provider: string
   category: string
 }
+
+// ─── Deep property extraction helper ────────────────────────────────
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const extractContent = (data: unknown): string => {
+  if (typeof data === 'object' && data !== null) {
+    const obj = data as any
+    return obj.choices?.[0]?.message?.content || JSON.stringify(data)
+  }
+  return String(data)
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ─── Gateway HTTP helpers ─────────────────────────────────────────
 
@@ -545,9 +558,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
       ],
       thinking: { type: 'disabled' },
     })
-    researchOutput = typeof researchResult === 'object' && researchResult !== null
-      ? (researchResult as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(researchResult)
-      : String(researchResult)
+    researchOutput = extractContent(researchResult)
   } catch (err) {
     researchOutput = `Research phase encountered an error: ${String(err)}. Proceeding with available context.`
   }
@@ -565,9 +576,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
       ],
       thinking: { type: 'disabled' },
     })
-    marketingOutput = typeof marketingResult === 'object' && marketingResult !== null
-      ? (marketingResult as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(marketingResult)
-      : String(marketingResult)
+    marketingOutput = extractContent(marketingResult)
   } catch (err) {
     marketingOutput = `Marketing phase encountered an error: ${String(err)}. Proceeding with available context.`
   }
@@ -585,9 +594,7 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
       ],
       thinking: { type: 'disabled' },
     })
-    computerOutput = typeof computerResult === 'object' && computerResult !== null
-      ? (computerResult as Record<string, unknown>).choices?.[0]?.message?.content || JSON.stringify(computerResult)
-      : String(computerResult)
+    computerOutput = extractContent(computerResult)
   } catch (err) {
     computerOutput = `Computation phase encountered an error: ${String(err)}.`
   }
@@ -608,6 +615,143 @@ export async function runChainedPipeline(userQuery: string): Promise<ChainedPipe
     finalOutput,
     totalDurationMs: Date.now() - pipelineStart,
     _source: 'sdk-fallback', // Will be 'gateway' when gateway is available
+  }
+}
+
+// ─── Streaming AI Completion ──────────────────────────────────────
+
+export async function streamOpenClawCompletion(
+  request: OpenClawCompletionRequest,
+  onChunk: (chunk: string) => void
+): Promise<string> {
+  try {
+    const res = await gatewayFetch('/v1/chat/completions', {
+      method: 'POST',
+      body: JSON.stringify({
+        model: request.model || 'niaga-default',
+        messages: request.messages,
+        temperature: request.temperature,
+        max_tokens: request.max_tokens,
+        stream: true,
+      }),
+    })
+
+    if (!res.ok || !res.body) {
+      const data = await openClawCompletion(request)
+      const content = extractContent(data)
+      onChunk(content)
+      return content
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let fullText = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      const text = decoder.decode(value, { stream: true })
+      const lines = text.split('\n').filter(line => line.startsWith('data: '))
+
+      for (const line of lines) {
+        const data = line.slice(6)
+        if (data === '[DONE]') continue
+        try {
+          const parsed = JSON.parse(data)
+          const delta = parsed.choices?.[0]?.delta?.content || ''
+          if (delta) {
+            fullText += delta
+            onChunk(delta)
+          }
+        } catch {
+          // Skip unparseable chunks
+        }
+      }
+    }
+
+    return fullText
+  } catch {
+    const result = await openClawCompletion(request)
+    const content = extractContent(result)
+    onChunk(content)
+    return content
+  }
+}
+
+// ─── Parallel A2A Pipeline ──────────────────────────────────────
+
+export async function runParallelPipeline(userQuery: string): Promise<ChainedPipelineResult> {
+  const pipelineStart = Date.now()
+
+  const [researchResult, marketingResult, computerResult] = await Promise.allSettled([
+    openClawCompletion({
+      model: 'niagaresearch',
+      messages: [
+        { role: 'system', content: 'You are NiagaResearch. Analyze trends, gather data, identify opportunities for Shopee Malaysia affiliates.' },
+        { role: 'user', content: userQuery },
+      ],
+    }),
+    openClawCompletion({
+      model: 'niagamarketing',
+      messages: [
+        { role: 'system', content: 'You are NiagaMarketing. Develop marketing strategies, content plans, and audience targeting for Shopee Malaysia affiliates.' },
+        { role: 'user', content: userQuery },
+      ],
+    }),
+    openClawCompletion({
+      model: 'niagacomputer',
+      messages: [
+        { role: 'system', content: 'You are NiagaComputer. Calculate ROI projections, budget allocations, and performance metrics for Shopee Malaysia affiliates.' },
+        { role: 'user', content: userQuery },
+      ],
+    }),
+  ])
+
+  const extractOutput = (result: PromiseSettledResult<unknown>, agent: string) => {
+    if (result.status === 'fulfilled') {
+      const data = result.value as Record<string, unknown>
+      return {
+        agent,
+        status: 'success' as const,
+        output: extractContent(data),
+        durationMs: 0,
+      }
+    }
+    return {
+      agent,
+      status: 'error' as const,
+      output: `Error: ${result.reason}`,
+      durationMs: 0,
+    }
+  }
+
+  const pipeline = [
+    extractOutput(researchResult, 'niagaresearch'),
+    extractOutput(marketingResult, 'niagamarketing'),
+    extractOutput(computerResult, 'niagacomputer'),
+  ]
+
+  // Fan-in: aggregate results with niagaaggregator
+  const aggregatorResult = await openClawCompletion({
+    model: 'niagaaggregator',
+    messages: [
+      { role: 'system', content: 'You are NiagaAggregator. Consolidate outputs from multiple agents into a unified, actionable report. Resolve conflicts and prioritize recommendations.' },
+      { role: 'user', content: `Consolidate these agent outputs for query: "${userQuery}"\n\nResearch:\n${pipeline[0].output}\n\nMarketing:\n${pipeline[1].output}\n\nComputation:\n${pipeline[2].output}` },
+    ],
+  })
+
+  const aggregatorOutput = extractContent(aggregatorResult) || ''
+  pipeline.push({ agent: 'niagaaggregator', status: 'success', output: aggregatorOutput, durationMs: 0 })
+
+  const hasErrors = pipeline.some(p => p.status === 'error')
+  return {
+    status: hasErrors ? 'partial' : 'completed',
+    query: userQuery,
+    pipeline,
+    finalOutput: aggregatorOutput || pipeline.map(p => p.output).join('\n\n---\n\n'),
+    totalDurationMs: Date.now() - pipelineStart,
+    _source: 'gateway',
   }
 }
 

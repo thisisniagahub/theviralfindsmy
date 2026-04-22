@@ -8,7 +8,9 @@
  * API routes call this service via HTTP fetch instead of importing Prisma directly.
  */
 
-const DB_SERVICE_URL = process.env.DB_SERVICE_URL || 'http://127.0.0.1:3005'
+import { env } from '@/lib/env'
+
+const DB_SERVICE_URL = env.DB_SERVICE_URL
 
 /** Check if demo mode is active */
 export function isDemoMode(): boolean {
@@ -28,6 +30,9 @@ export async function dbFetch<T = unknown>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
+  if (!DB_SERVICE_URL) {
+    throw new Error('Database service not configured: DB_SERVICE_URL is not set')
+  }
   const url = `${DB_SERVICE_URL}${path}`
   const res = await fetch(url, {
     ...options,

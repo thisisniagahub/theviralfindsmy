@@ -6,11 +6,11 @@ import { Link2, BarChart3, FileText, Wallet } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface QuickActionsProps {
-  onSetPage: (page: string) => void
+  onNavigate: (page: string) => void
   onExportCSV: () => void
 }
 
-export function QuickActions({ onSetPage, onExportCSV }: QuickActionsProps) {
+export function QuickActions({ onNavigate, onExportCSV }: QuickActionsProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -40,7 +40,7 @@ export function QuickActions({ onSetPage, onExportCSV }: QuickActionsProps) {
                     if (item.action === 'report') {
                       onExportCSV()
                     } else {
-                      onSetPage(page)
+                      onNavigate(page)
                     }
                   }}
                 >

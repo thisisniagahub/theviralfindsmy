@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import {
   CommandDialog,
   CommandGroup,
@@ -8,7 +9,6 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command'
-import { useAppStore } from '@/store/app-store'
 import { cn } from '@/lib/utils'
 import { AnimatePresence } from 'framer-motion'
 import {
@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 
 interface PageDef {
   id: string
+  path: string
   label: string
   icon: React.ComponentType<{ className?: string }>
   shortcut?: string
@@ -30,17 +31,17 @@ interface PageDef {
 }
 
 const PAGES: PageDef[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, shortcut: '⌘1', keywords: ['home', 'overview', 'stats', 'summary'] },
-  { id: 'products', label: 'Products', icon: ShoppingBag, shortcut: '⌘2', keywords: ['shop', 'search', 'browse', 'find', 'catalog'] },
-  { id: 'links', label: 'Affiliate Links', icon: Link2, shortcut: '⌘3', keywords: ['manage', 'short', 'url', 'affiliate'] },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3, shortcut: '⌘4', keywords: ['reports', 'data', 'charts', 'performance', 'traffic'] },
-  { id: 'calculator', label: 'Commission Calculator', icon: Calculator, shortcut: '⌘5', keywords: ['calc', 'estimate', 'commission', 'earnings calculator'] },
-  { id: 'campaigns', label: 'Campaigns', icon: Megaphone, keywords: ['marketing', 'promo', 'promotion', 'sale'] },
-  { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, keywords: ['ranking', 'rank', 'top', 'competitors', 'affiliates'] },
-  { id: 'achievements', label: 'Achievements', icon: Award, keywords: ['badges', 'rewards', 'unlocked', 'milestones'] },
-  { id: 'earnings', label: 'Earnings & Payouts', icon: DollarSign, shortcut: '⌘E', keywords: ['money', 'payout', 'withdraw', 'bank', 'income', 'wallet'] },
-  { id: 'settings', label: 'Settings', icon: Settings, shortcut: '⌘,', keywords: ['config', 'preferences', 'profile', 'api key', 'account'] },
-  { id: 'notifications', label: 'Notifications', icon: Bell, keywords: ['alerts', 'inbox', 'messages', 'updates'] },
+  { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard, shortcut: '⌘1', keywords: ['home', 'overview', 'stats', 'summary'] },
+  { id: 'products', path: '/products', label: 'Products', icon: ShoppingBag, shortcut: '⌘2', keywords: ['shop', 'search', 'browse', 'find', 'catalog'] },
+  { id: 'links', path: '/links', label: 'Affiliate Links', icon: Link2, shortcut: '⌘3', keywords: ['manage', 'short', 'url', 'affiliate'] },
+  { id: 'analytics', path: '/analytics', label: 'Analytics', icon: BarChart3, shortcut: '⌘4', keywords: ['reports', 'data', 'charts', 'performance', 'traffic'] },
+  { id: 'calculator', path: '/calculator', label: 'Commission Calculator', icon: Calculator, shortcut: '⌘5', keywords: ['calc', 'estimate', 'commission', 'earnings calculator'] },
+  { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: Megaphone, keywords: ['marketing', 'promo', 'promotion', 'sale'] },
+  { id: 'leaderboard', path: '/leaderboard', label: 'Leaderboard', icon: Trophy, keywords: ['ranking', 'rank', 'top', 'competitors', 'affiliates'] },
+  { id: 'achievements', path: '/achievements', label: 'Achievements', icon: Award, keywords: ['badges', 'rewards', 'unlocked', 'milestones'] },
+  { id: 'earnings', path: '/earnings', label: 'Earnings & Payouts', icon: DollarSign, shortcut: '⌘E', keywords: ['money', 'payout', 'withdraw', 'bank', 'income', 'wallet'] },
+  { id: 'settings', path: '/settings', label: 'Settings', icon: Settings, shortcut: '⌘,', keywords: ['config', 'preferences', 'profile', 'api key', 'account'] },
+  { id: 'notifications', path: '/notifications', label: 'Notifications', icon: Bell, keywords: ['alerts', 'inbox', 'messages', 'updates'] },
 ]
 
 // ── Quick Actions ─────────────────────────────────────────────────────────────
@@ -99,14 +100,15 @@ export function CommandPalette() {
   const [searchLinks, setSearchLinks] = useState<LinkResult[]>([])
   const [isSearchingLinks, setIsSearchingLinks] = useState(false)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const { activePage, setActivePage } = useAppStore()
+  const pathname = usePathname()
+  const router = useRouter()
 
   // Track recently visited pages
   useEffect(() => {
-    if (activePage) {
-      addRecentPage(activePage)
+    if (pathname) {
+      addRecentPage(pathname)
     }
-  }, [activePage])
+  }, [pathname])
 
   // ── Keyboard shortcut: Cmd+K / Ctrl+K ─────────────────────────────────────
   useEffect(() => {
@@ -179,13 +181,22 @@ export function CommandPalette() {
 
   // ── Navigation handler ─────────────────────────────────────────────────────
   const navigateTo = useCallback(
-    (pageId: string) => {
-      setActivePage(pageId)
+    (pagePath: string) => {
+      router.push(pagePath)
       setOpen(false)
       setQuery('')
       setSearchLinks([])
     },
-    [setActivePage]
+    [router]
+  )
+
+  // Helper to check if a page is active
+  const isPageActive = useCallback(
+    (pagePath: string) => {
+      if (pagePath === '/') return pathname === '/'
+      return pathname === pagePath || pathname.startsWith(pagePath + '/')
+    },
+    [pathname]
   )
 
   // ── Quick actions ──────────────────────────────────────────────────────────
@@ -197,7 +208,7 @@ export function CommandPalette() {
       shortcut: '⌘N',
       keywords: ['new', 'add', 'create', 'generate'],
       action: () => {
-        navigateTo('links')
+        navigateTo('/links')
         // Small delay so the page loads first
         setTimeout(() => toast.info('Create Link', { description: 'Click "Add Link" to create a new affiliate link.' }), 400)
       },
@@ -207,21 +218,21 @@ export function CommandPalette() {
       label: 'View Earnings',
       icon: Wallet,
       keywords: ['money', 'payout', 'income', 'balance'],
-      action: () => navigateTo('earnings'),
+      action: () => navigateTo('/earnings'),
     },
     {
       id: 'view-analytics',
       label: 'Open Analytics',
       icon: BarChart3,
       keywords: ['reports', 'performance', 'stats', 'charts'],
-      action: () => navigateTo('analytics'),
+      action: () => navigateTo('/analytics'),
     },
     {
       id: 'search-products',
       label: 'Search Products',
       icon: Search,
       keywords: ['shop', 'find', 'browse', 'catalog'],
-      action: () => navigateTo('products'),
+      action: () => navigateTo('/products'),
     },
     {
       id: 'export-report',
@@ -229,7 +240,7 @@ export function CommandPalette() {
       icon: FileText,
       keywords: ['csv', 'pdf', 'download', 'export'],
       action: () => {
-        navigateTo('dashboard')
+        navigateTo('/')
         setTimeout(() => toast.info('Export', { description: 'Use the export buttons on the dashboard to download reports.' }), 400)
       },
     },
@@ -245,7 +256,7 @@ export function CommandPalette() {
   // ── Link selection handler ─────────────────────────────────────────────────
   const handleLinkSelect = useCallback(
     (link: LinkResult) => {
-      navigateTo('links')
+      navigateTo('/links')
       setTimeout(() => {
         toast('Link Found', {
           description: `${link.productName} — ${link.shortCode}`,
@@ -257,7 +268,7 @@ export function CommandPalette() {
 
   // ── Recent pages ───────────────────────────────────────────────────────────
   const recentPages = getRecentPages()
-    .map((id) => PAGES.find((p) => p.id === id))
+    .map((path) => PAGES.find((p) => p.path === path))
     .filter(Boolean) as PageDef[]
 
   const shouldShowRecent = !query && recentPages.length > 0
@@ -354,12 +365,12 @@ export function CommandPalette() {
                 <CommandGroup heading="Recently Viewed" className="px-2 py-1">
                   {recentPages.map((page) => {
                     const Icon = page.icon
-                    const isActive = activePage === page.id
+                    const isActive = isPageActive(page.path)
                     return (
                       <CommandItem
                         key={`recent-${page.id}`}
                         value={`recent-${page.id} ${page.label} ${page.keywords.join(' ')}`}
-                        onSelect={() => navigateTo(page.id)}
+                        onSelect={() => navigateTo(page.path)}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors',
                           'data-[selected=true]:bg-shopee/10 data-[selected=true]:text-shopee',
@@ -401,12 +412,12 @@ export function CommandPalette() {
                 <CommandGroup heading="Pages" className="px-2 py-1">
                   {PAGES.map((page) => {
                     const Icon = page.icon
-                    const isActive = activePage === page.id
+                    const isActive = isPageActive(page.path)
                     return (
                       <CommandItem
                         key={page.id}
                         value={`${page.label} ${page.keywords.join(' ')}`}
-                        onSelect={() => navigateTo(page.id)}
+                        onSelect={() => navigateTo(page.path)}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors',
                           'data-[selected=true]:bg-shopee/10 data-[selected=true]:text-shopee',
@@ -526,12 +537,12 @@ export function CommandPalette() {
                       )
                     }).map((page) => {
                       const Icon = page.icon
-                      const isActive = activePage === page.id
+                      const isActive = isPageActive(page.path)
                       return (
                         <CommandItem
                           key={page.id}
                           value={`page-${page.id} ${page.label} ${page.keywords.join(' ')}`}
-                          onSelect={() => navigateTo(page.id)}
+                          onSelect={() => navigateTo(page.path)}
                           className={cn(
                             'flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors',
                             'data-[selected=true]:bg-shopee/10 data-[selected=true]:text-shopee',

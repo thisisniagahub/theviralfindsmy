@@ -74,7 +74,7 @@ export interface ApproveRequest {
 
 const AUTO_IDLE_MS = 300_000 // 300 seconds
 
-const DEFAULT_JOIN_KEY = 'theviralfinds2024'
+const DEFAULT_JOIN_KEY = process.env.OFFICE_JOIN_KEY || 'theviralfinds2024'
 const MAX_CONCURRENT_GUESTS = 3
 
 // ─── Initial Data ────────────────────────────────────────────────────────────
