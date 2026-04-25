@@ -775,15 +775,23 @@ async function handleRequest(req: Request): Promise<Response> {
       const rawBody = await getBody(req)
       const cleanBody = stripUserIdFromBody(rawBody)
       const body = validateRequestBody<typeof updateSettingsBody>(updateSettingsBody, cleanBody.updates || [])
+      const operations = []
       for (const u of body) {
         if (u.key && u.value !== undefined) {
-          const where = authenticatedUserId ? { userId: authenticatedUserId, key: u.key } : { key: u.key }
-          await db.appSetting.upsert({
-            where,
-            update: { value: u.value },
-            create: { key: u.key, value: u.value, userId: authenticatedUserId || '' }
-          })
+          const where = authenticatedUserId
+            ? { userId_key: { userId: authenticatedUserId, key: u.key } }
+            : { key: u.key }
+          operations.push(
+            db.appSetting.upsert({
+              where: where as any,
+              update: { value: u.value },
+              create: { key: u.key, value: u.value, userId: authenticatedUserId || '' },
+            })
+          )
         }
+      }
+      if (operations.length > 0) {
+        await db.$transaction(operations)
       }
       return json({ success: true })
     }
