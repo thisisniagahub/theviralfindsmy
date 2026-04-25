@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { updateSettingsSchema } from '@/lib/validations'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { logger } from '@/lib/logger'
 import { z } from 'zod'
 
 export async function GET() {
@@ -20,7 +21,7 @@ export async function GET() {
     const settings = await dbFetch('/settings')
     return NextResponse.json(settings)
   } catch (error) {
-    console.error('Settings GET error:', error)
+    logger.error('Settings GET error:', error)
     return NextResponse.json({ error: 'Failed to load settings' }, { status: 500 })
   }
 }
@@ -47,7 +48,7 @@ export async function PUT(request: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 })
     }
-    console.error('Settings PUT error:', error)
+    logger.error('Settings PUT error:', error)
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
   }
 }
