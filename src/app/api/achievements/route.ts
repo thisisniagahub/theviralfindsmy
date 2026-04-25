@@ -206,31 +206,30 @@ export async function GET() {
     return { ...a, progress }
   })
 
-  const unlockedCount = computedAchievements.filter((a) => a.unlocked).length
   const totalCount = computedAchievements.length
+  let unlockedCount = 0
 
   // Category breakdown
   const categoryStats = {
-    clicks: {
-      unlocked: computedAchievements.filter((a) => a.category === 'clicks' && a.unlocked).length,
-      total: computedAchievements.filter((a) => a.category === 'clicks').length,
-    },
-    earnings: {
-      unlocked: computedAchievements.filter((a) => a.category === 'earnings' && a.unlocked).length,
-      total: computedAchievements.filter((a) => a.category === 'earnings').length,
-    },
-    links: {
-      unlocked: computedAchievements.filter((a) => a.category === 'links' && a.unlocked).length,
-      total: computedAchievements.filter((a) => a.category === 'links').length,
-    },
-    social: {
-      unlocked: computedAchievements.filter((a) => a.category === 'social' && a.unlocked).length,
-      total: computedAchievements.filter((a) => a.category === 'social').length,
-    },
-    streak: {
-      unlocked: computedAchievements.filter((a) => a.category === 'streak' && a.unlocked).length,
-      total: computedAchievements.filter((a) => a.category === 'streak').length,
-    },
+    clicks: { unlocked: 0, total: 0 },
+    earnings: { unlocked: 0, total: 0 },
+    links: { unlocked: 0, total: 0 },
+    social: { unlocked: 0, total: 0 },
+    streak: { unlocked: 0, total: 0 },
+  }
+
+  for (const a of computedAchievements) {
+    if (a.unlocked) {
+      unlockedCount++
+    }
+
+    const stats = categoryStats[a.category]
+    if (stats) {
+      stats.total++
+      if (a.unlocked) {
+        stats.unlocked++
+      }
+    }
   }
 
   return NextResponse.json({
