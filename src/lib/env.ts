@@ -35,16 +35,7 @@ try {
   if (error instanceof z.ZodError) {
     const missing = (error as z.ZodError).issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join('\n  ')
     console.error(`[env] Invalid environment variables:\n  ${missing}`)
-    // In development, allow startup with warnings; in production, crash
-    if (process.env.NODE_ENV === 'production') {
-      throw error
-    }
-    // Fallback: create a partial env with defaults
-    env = envSchema.parse({
-      ...process.env,
-      DATABASE_URL: process.env.DATABASE_URL || 'file:./dev.db',
-      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-fallback-secret-key',
-    })
+    throw new Error(`Invalid environment variables:\n  ${missing}`)
   } else {
     throw error
   }
