@@ -3,11 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
 // ─── Enums ──────────────────────────────────────────────────────
+// Note: SQLite stores enums as TEXT but Prisma validates values at runtime
+// For PostgreSQL (Vercel): change provider to "postgresql" and add @db.Decimal precision
 
 enum LinkStatus {
   active
@@ -86,14 +88,14 @@ model AffiliateLink {
   productId         String?
   productName       String?
   productImage      String?
-  productPrice      Decimal?      @db.Decimal(10,2)
-  commission        Decimal?      @db.Decimal(10,2)
+  productPrice      Decimal?
+  commission        Decimal?
   category          String?
   campaignId        String?
   userId            String?
   clicks            Int           @default(0)
   conversions       Int           @default(0)
-  earnings          Decimal       @default(0) @db.Decimal(12,2)
+  earnings          Decimal       @default(0)
   status            LinkStatus    @default(active)
   shortCode         String        @unique
   expiresAt         DateTime?
@@ -118,8 +120,8 @@ model Campaign {
   name        String
   description String?
   status      CampaignStatus  @default(active)
-  budget      Decimal?        @db.Decimal(12,2)
-  spent       Decimal         @default(0) @db.Decimal(12,2)
+  budget      Decimal?
+  spent       Decimal         @default(0)
   startDate   DateTime?
   endDate     DateTime?
   links       AffiliateLink[]
@@ -157,8 +159,8 @@ model Conversion {
   linkId        String
   affiliateLink AffiliateLink   @relation(fields: [linkId], references: [id], onDelete: Cascade)
   orderId       String?
-  amount        Decimal         @db.Decimal(12,2)
-  commission    Decimal         @db.Decimal(12,2)
+  amount        Decimal
+  commission    Decimal
   status        ConversionStatus @default(pending)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -172,7 +174,7 @@ model Conversion {
 model Payout {
   id          String       @id @default(cuid())
   method      String       @default("bank_transfer")
-  amount      Decimal      @db.Decimal(12,2)
+  amount      Decimal
   status      PayoutStatus @default(pending)
   bankName    String?
   accountNo   String?
@@ -201,8 +203,8 @@ model AppSetting {
 model EarningGoal {
   id            String     @id @default(cuid())
   name          String
-  targetAmount  Decimal    @db.Decimal(12,2)
-  currentAmount Decimal    @default(0) @db.Decimal(12,2)
+  targetAmount  Decimal
+  currentAmount Decimal    @default(0)
   period        GoalPeriod @default(monthly)
   startDate     DateTime   @default(now())
   endDate       DateTime?
@@ -236,7 +238,7 @@ model AgentMemory {
   sessionId String?
   role      String
   content   String
-  metadata  Json?
+  metadata  String?  // JSON stored as text in SQLite
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -267,7 +269,7 @@ model LeaderboardEntry {
   id               String   @id @default(cuid())
   userId           String?
   userName         String
-  totalEarnings    Decimal  @default(0) @db.Decimal(12,2)
+  totalEarnings    Decimal  @default(0)
   totalClicks      Int      @default(0)
   totalConversions Int      @default(0)
   period           String   // "weekly", "monthly", "yearly"
@@ -282,14 +284,14 @@ model LeaderboardEntry {
 }
 
 model Referral {
-  id           String    @id @default(cuid())
-  referrerId   String?
+  id            String    @id @default(cuid())
+  referrerId    String?
   referredEmail String
   referredName  String?
-  status       String    @default("pending") // pending, registered, active
-  commission   Decimal?  @db.Decimal(12,2)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  status        String    @default("pending") // pending, registered, active
+  commission    Decimal?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([referrerId])
   @@index([status])
