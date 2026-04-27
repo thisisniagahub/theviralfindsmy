@@ -1,0 +1,1261 @@
+/* ========================================================================
+   Shopee Office — Pixel-Art Inspired Styling (Shopee Brand Theme)
+   Enhanced with Activity Feed, Commission Widget, Agent Command,
+   Office Health, and Pipeline Workflow styles
+   ======================================================================== */
+
+/* ===== Container ===== */
+.shopee-office-container {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  font-family: 'Courier New', monospace;
+  padding: 20px 0;
+  gap: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Game Wrapper ===== */
+.shopee-office-game-wrapper {
+  position: relative;
+  width: 1280px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.shopee-office-game-wrapper canvas {
+  image-rendering: pixelated;
+}
+
+.shopee-office-game-frame {
+  border: 4px solid #EE4D2D;
+  box-shadow:
+    0 0 0 2px #7a2210,
+    0 0 20px rgba(238, 77, 45, 0.3),
+    inset 0 0 30px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+/* Scanline overlay */
+.shopee-office-scanlines {
+  pointer-events: none;
+  position: absolute;
+  inset: 4px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  z-index: 2;
+  opacity: 0.5;
+}
+
+/* ===== Panels Grid ===== */
+.shopee-office-panels {
+  display: flex;
+  gap: 16px;
+  max-width: 1280px;
+  margin: 20px auto 0;
+}
+
+/* ===== Panel Base ===== */
+.shopee-office-panel {
+  background: #141722;
+  border: 3px solid #0e1119;
+  border-radius: 6px;
+  padding: 12px 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pixel corner decorations - Shopee orange */
+.shopee-office-panel::before,
+.shopee-office-panel::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #EE4D2D;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.shopee-office-panel::before {
+  top: 3px;
+  left: 3px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.shopee-office-panel::after {
+  bottom: 3px;
+  right: 3px;
+  border-left: none;
+  border-top: none;
+}
+
+/* Panel title - Shopee orange */
+.shopee-panel-title {
+  color: #EE4D2D;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 1px;
+  padding: 6px 0 10px;
+  border-bottom: 2px solid #2a2a3e;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px rgba(238, 77, 45, 0.3);
+}
+
+/* ===== Pixel Art Buttons ===== */
+.shopee-btn {
+  background: #2a2d3e;
+  color: #e0e0e0;
+  border: 2px solid #3a3f55;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.shopee-btn:hover {
+  background: #3a3f55;
+  border-color: #EE4D2D;
+  transform: translateY(-1px);
+}
+
+.shopee-btn:active {
+  transform: translateY(0);
+  background: #1a1d2e;
+}
+
+.shopee-btn-active {
+  border-color: #22c55e !important;
+  background: #1a2e1a !important;
+  color: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.3);
+}
+
+/* Status-specific button colors */
+.shopee-btn-idle {
+  border-color: #22c55e;
+}
+.shopee-btn-idle.shopee-btn-active {
+  background: #1a2e1a;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+}
+
+.shopee-btn-writing {
+  border-color: #f97316;
+}
+.shopee-btn-writing.shopee-btn-active {
+  background: #2e1f0a;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.4);
+}
+
+.shopee-btn-researching {
+  border-color: #a855f7;
+}
+.shopee-btn-researching.shopee-btn-active {
+  background: #1f0a2e;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+}
+
+.shopee-btn-executing {
+  border-color: #eab308;
+}
+.shopee-btn-executing.shopee-btn-active {
+  background: #2e2a0a;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+
+.shopee-btn-syncing {
+  border-color: #3b82f6;
+}
+.shopee-btn-syncing.shopee-btn-active {
+  background: #0a1a2e;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+.shopee-btn-error {
+  border-color: #ef4444;
+}
+.shopee-btn-error.shopee-btn-active {
+  background: #2e0a0a;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* ===== Agent Item ===== */
+.shopee-agent-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1e2130;
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid #2a2d3e;
+  transition: all 0.15s ease;
+}
+
+.shopee-agent-item:hover {
+  border-color: #EE4D2D44;
+  background: #252840;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(238, 77, 45, 0.15);
+}
+
+.shopee-agent-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.shopee-agent-status-dot-idle { background: #22c55e; }
+.shopee-agent-status-dot-writing { background: #f97316; }
+.shopee-agent-status-dot-researching { background: #a855f7; }
+.shopee-agent-status-dot-executing { background: #eab308; }
+.shopee-agent-status-dot-syncing { background: #3b82f6; }
+.shopee-agent-status-dot-error { background: #ef4444; animation: dotPulse 1s ease-in-out infinite; }
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
+
+.shopee-agent-name {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #e0e0e0;
+  font-weight: 600;
+}
+
+.shopee-agent-detail {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shopee-agent-tasks {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: #EE4D2D;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.shopee-agent-tasks-count {
+  font-size: 14px;
+  font-weight: bold;
+  display: block;
+}
+
+.shopee-agent-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.shopee-agent-action-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid #3a3f55;
+  background: #2a2d3e;
+  color: #888;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.shopee-agent-action-btn:hover {
+  border-color: #EE4D2D;
+  color: #EE4D2D;
+}
+
+.shopee-agent-action-btn.approve:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.shopee-agent-action-btn.reject:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ===== Memo Panel ===== */
+.shopee-memo-panel {
+  background-color: #f5f0e1;
+  background-image: url('/shopee-office/memo-bg.webp');
+  background-size: cover;
+  background-position: center;
+  color: #3b3b32;
+  border-color: #8b7355;
+  font-family: 'Courier New', monospace;
+}
+
+.shopee-memo-panel::before,
+.shopee-memo-panel::after {
+  border-color: #8b7355;
+}
+
+.shopee-memo-panel .shopee-panel-title {
+  color: #5c4a2a;
+  border-bottom-color: #c4b48e;
+  text-shadow: none;
+}
+
+.shopee-memo-content {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #3b3b32;
+}
+
+.shopee-memo-content p {
+  margin-bottom: 8px;
+}
+
+.shopee-memo-date {
+  text-align: right;
+  font-size: 10px;
+  color: #8b7355;
+  margin-top: 12px;
+  border-top: 1px dashed #c4b48e;
+  padding-top: 8px;
+}
+
+/* ===== Language Toggle ===== */
+.shopee-lang-toggle {
+  display: flex;
+  gap: 0;
+  border: 2px solid #3a3f55;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.shopee-lang-btn {
+  padding: 4px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  background: #1e2130;
+  color: #888;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shopee-lang-btn:hover {
+  background: #2a2d3e;
+  color: #e0e0e0;
+}
+
+.shopee-lang-btn-active {
+  background: #EE4D2D !important;
+  color: #ffffff !important;
+}
+
+/* ===== Status Text Overlay ===== */
+.shopee-status-overlay {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.75);
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #EE4D2D55;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Coordinates Toggle ===== */
+.shopee-coords-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.7);
+  color: #888;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid #3a3f55;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.shopee-coords-btn:hover {
+  color: #EE4D2D;
+  border-color: #EE4D2D;
+}
+
+.shopee-coords-btn-active {
+  color: #22c55e;
+  border-color: #22c55e;
+}
+
+/* ===== Panel-specific widths ===== */
+.shopee-panel-control {
+  flex: 0 0 260px;
+  min-width: 220px;
+}
+
+.shopee-panel-agents {
+  flex: 1;
+  min-width: 300px;
+}
+
+.shopee-panel-memo {
+  flex: 0 0 300px;
+  min-width: 260px;
+}
+
+/* ===== Scrollable Agent List ===== */
+.shopee-agents-list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: #EE4D2D55 #141722;
+}
+
+.shopee-agents-list:hover {
+  scrollbar-color: #EE4D2D88 #141722;
+}
+
+.shopee-agents-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shopee-agents-list::-webkit-scrollbar-track {
+  background: #141722;
+  border-radius: 3px;
+}
+
+.shopee-agents-list::-webkit-scrollbar-thumb {
+  background: #EE4D2D55;
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.shopee-agents-list::-webkit-scrollbar-thumb:hover {
+  background: #EE4D2D88;
+}
+
+/* ===== Status Grid ===== */
+.shopee-status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* ===== Pause indicator ===== */
+.shopee-pause-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid;
+}
+
+.shopee-pause-indicator.running {
+  color: #22c55e;
+  border-color: #22c55e33;
+  background: #22c55e11;
+}
+
+.shopee-pause-indicator.paused {
+  color: #eab308;
+  border-color: #eab30833;
+  background: #eab30811;
+}
+
+/* ===== Keyboard shortcut hint ===== */
+.shopee-shortcut-hint {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  font-size: 9px;
+  background: #1a1d2e;
+  border: 1px solid #3a3f55;
+  border-radius: 2px;
+  color: #666;
+  flex-shrink: 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .shopee-office-panels {
+    flex-direction: column;
+  }
+
+  .shopee-panel-control,
+  .shopee-panel-agents,
+  .shopee-panel-memo {
+    flex: 1;
+    min-width: 0;
+  }
+
+  @media (min-width: 768px) {
+    .shopee-office-panels {
+      flex-wrap: wrap;
+    }
+    .shopee-panel-control {
+      flex: 1 1 100%;
+    }
+    .shopee-panel-agents {
+      flex: 1 1 calc(50% - 8px);
+    }
+    .shopee-panel-memo {
+      flex: 1 1 calc(50% - 8px);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .shopee-office-container {
+    padding: 12px 0;
+    gap: 12px;
+  }
+
+  .shopee-office-game-frame {
+    border-width: 2px;
+  }
+
+  .shopee-office-scanlines {
+    inset: 2px;
+  }
+
+  .shopee-office-panels {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .shopee-panel-title {
+    font-size: 12px;
+  }
+
+  .shopee-status-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .shopee-agent-item {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Stats bar wraps on mobile */
+  .shopee-stats-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .shopee-productivity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Stack panels properly on all screen sizes */
+  .shopee-panel-control,
+  .shopee-panel-agents,
+  .shopee-panel-memo {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
+
+/* Hide scanline overlay on very small screens */
+@media (max-width: 480px) {
+  .shopee-office-scanlines {
+    display: none;
+  }
+
+  .shopee-stats-bar {
+    padding: 8px 12px;
+    margin: 0 auto 12px;
+  }
+
+  .shopee-productivity-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+}
+
+/* ========================================================================
+   NEW COMPONENTS & ENHANCEMENTS
+   ======================================================================== */
+
+/* ===== Glassmorphism Panel Variant ===== */
+.shopee-panel-glass {
+  background: rgba(20, 23, 34, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(238, 77, 45, 0.15);
+}
+
+.shopee-panel-glass:hover {
+  border-color: rgba(238, 77, 45, 0.3);
+}
+
+/* ===== Stats Bar ===== */
+.shopee-stats-bar {
+  display: flex;
+  gap: 12px;
+  max-width: 1280px;
+  margin: 0 auto 16px;
+  padding: 10px 16px;
+  background: rgba(238, 77, 45, 0.08);
+  border: 1px solid rgba(238, 77, 45, 0.2);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+}
+
+.shopee-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  font-size: 11px;
+  color: #ccc;
+}
+
+.shopee-stat-chip-value {
+  font-weight: bold;
+  color: #EE4D2D;
+}
+
+/* ===== Agent Avatar ===== */
+.shopee-agent-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.shopee-agent-avatar-ring {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid;
+  animation: avatarRingPulse 2s ease-in-out infinite;
+}
+
+@keyframes avatarRingPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ===== Productivity Widget ===== */
+.shopee-productivity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.shopee-productivity-card {
+  background: #1e2130;
+  border: 1px solid #2a2d3e;
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.shopee-productivity-card:hover {
+  border-color: #EE4D2D44;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(238, 77, 45, 0.15);
+}
+
+.shopee-productivity-value {
+  font-size: 20px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.shopee-productivity-label {
+  font-size: 9px;
+  color: #888;
+  font-family: 'Courier New', monospace;
+  margin-top: 2px;
+}
+
+/* ===== Agent Progress Bar ===== */
+.shopee-agent-progress {
+  height: 3px;
+  background: #2a2d3e;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.shopee-agent-progress-bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* ===== View Mode Tabs ===== */
+.shopee-view-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+}
+
+.shopee-view-tab:hover {
+  color: #ccc;
+  background: rgba(238, 77, 45, 0.08);
+}
+
+.shopee-view-tab[data-active] {
+  color: #EE4D2D;
+  background: rgba(238, 77, 45, 0.12);
+}
+
+.shopee-view-tab-icon {
+  font-size: 13px;
+}
+
+.shopee-view-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: #EE4D2D;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(238, 77, 45, 0.5);
+}
+
+/* ===== Shimmer Animation ===== */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===== Animations ===== */
+@keyframes borderGlow {
+  0%, 100% { box-shadow: 0 0 0 2px #7a2210, 0 0 15px rgba(238, 77, 45, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.4); }
+  50% { box-shadow: 0 0 0 2px #7a2210, 0 0 25px rgba(238, 77, 45, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.4); }
+}
+
+/* ========================================================================
+   v6.0 ENHANCEMENT STYLES
+   Activity Feed, Commission Widget, Agent Command, Office Health, Pipeline
+   ======================================================================== */
+
+/* ===== Custom scrollbar for new panels ===== */
+.shopee-office-panel ::-webkit-scrollbar {
+  width: 4px;
+}
+
+.shopee-office-panel ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shopee-office-panel ::-webkit-scrollbar-thumb {
+  background: #EE4D2D33;
+  border-radius: 2px;
+}
+
+.shopee-office-panel ::-webkit-scrollbar-thumb:hover {
+  background: #EE4D2D66;
+}
+
+/* ===== Enhanced Mobile Responsive for New Components ===== */
+@media (max-width: 1280px) {
+  /* Middle row wraps on medium screens */
+  .shopee-office-panels[style*="flex-wrap: wrap"] > * {
+    flex: 1 1 calc(50% - 8px) !important;
+    min-width: 280px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* All panels stack vertically on mobile */
+  .shopee-office-panels > * {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Reduce font sizes on mobile */
+  .shopee-panel-title {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Compact stats bar on mobile */
+  .shopee-stats-bar {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+
+  .shopee-stat-chip {
+    padding: 3px 8px;
+    font-size: 9px;
+  }
+
+  /* Ensure game canvas scales properly */
+  .shopee-office-game-frame {
+    max-height: 400px;
+  }
+
+  .shopee-office-game-frame canvas {
+    max-height: 400px;
+    object-fit: contain;
+  }
+}
+
+@media (max-width: 480px) {
+  .shopee-office-container {
+    padding: 8px 0;
+    gap: 8px;
+  }
+
+  /* Compact view tabs for mobile */
+  .shopee-view-tab {
+    padding: 4px 8px;
+    font-size: 10px;
+    gap: 2px;
+  }
+
+  .shopee-view-tab-icon {
+    font-size: 11px;
+  }
+
+  /* Smaller buttons on mobile */
+  .shopee-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .shopee-productivity-card {
+    padding: 6px;
+  }
+
+  .shopee-productivity-value {
+    font-size: 14px;
+  }
+}
+
+/* ===== Data Flow Animation for Pipeline ===== */
+@keyframes dataFlowRight {
+  0% { left: -6px; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: 32px; opacity: 0; }
+}
+
+/* ===== Pulse Animation for Live Indicators ===== */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+}
+
+/* ===== Commission Counter Glow ===== */
+@keyframes counterGlow {
+  0%, 100% { text-shadow: 0 0 12px rgba(255, 215, 0, 0.3); }
+  50% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 0 0 40px rgba(255, 215, 0, 0.2); }
+}
+
+/* ===== Chat Message Typing Animation ===== */
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; }
+  30% { opacity: 1; }
+}
+
+/* ===== Print Styles (hide unnecessary elements) ===== */
+@media print {
+  .shopee-office-game-wrapper,
+  .shopee-coords-btn,
+  .shopee-office-scanlines,
+  .shopee-pause-indicator,
+  .shopee-view-tab {
+    display: none !important;
+  }
+
+  .shopee-office-container {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ========================================================================
+   v7.0 PIXEL-AGENTS INSPIRED STYLES
+   Isometric Office, Activity Monitor, Chat Panel, Minimap, Themes, Performance
+   ======================================================================== */
+
+/* ===== Isometric Office ===== */
+.iso-viewport {
+  width: 100%;
+  height: 420px;
+  overflow: hidden;
+  background: #0a0e1a;
+  border-radius: 6px;
+  border: 1px solid #1e2338;
+  position: relative;
+  user-select: none;
+}
+
+.iso-world {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease-out;
+}
+
+.iso-floor {
+  display: grid;
+  grid-template-rows: repeat(4, auto);
+  gap: 12px;
+  padding: 20px;
+  transform: perspective(800px) rotateX(20deg) rotateZ(-5deg);
+  transform-origin: center center;
+}
+
+.iso-zone {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.iso-zone:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.iso-zone-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid;
+  border-bottom-color: inherit;
+}
+
+.iso-zone-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+.iso-zone-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  gap: 10px;
+}
+
+.iso-cell {
+  width: 120px;
+  height: 80px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.iso-cell:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.iso-agent-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.iso-agent-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  background: #0d1020;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.iso-agent-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.iso-status-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #0d1020;
+}
+
+.iso-agent-name {
+  font-family: monospace;
+  font-size: 8px;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iso-agent-status {
+  font-family: monospace;
+  font-size: 7px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.iso-desk-icon,
+.iso-plant-icon,
+.iso-coffee-icon,
+.iso-server-icon {
+  font-size: 24px;
+  opacity: 0.3;
+}
+
+.iso-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.iso-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace;
+  font-size: 8px;
+  color: #888;
+  text-transform: capitalize;
+}
+
+.iso-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* ===== Agent Chat Panel ===== */
+.chat-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chat-input {
+  flex: 1;
+  background: #0d1020;
+  border: 1px solid #2a2d3e;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-family: monospace;
+  font-size: 11px;
+  color: #e0e0e0;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.chat-input:focus {
+  border-color: #EE4D2D;
+}
+
+.chat-input::placeholder {
+  color: #555;
+}
+
+/* ===== Agent Performance ===== */
+.performance-score-ring {
+  position: relative;
+  width: 36px;
+  height: 36px;
+}
+
+.performance-score-ring svg {
+  transform: rotate(-90deg);
+}
+
+.performance-score-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+/* ===== Office Theme CSS Variables ===== */
+:root {
+  --office-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  --office-panel-bg: #141722;
+  --office-border: #0e1119;
+  --office-text: #e0e0e0;
+  --office-accent: #EE4D2D;
+  --office-glow: rgba(238, 77, 45, 0.3);
+}
+
+/* Day theme overrides */
+.office-theme-day .shopee-office-container {
+  background: var(--office-bg);
+}
+
+.office-theme-day .shopee-office-panel {
+  background: var(--office-panel-bg);
+  border-color: var(--office-border);
+  color: var(--office-text);
+}
+
+/* Neon theme accents */
+.office-theme-neon .shopee-office-panel {
+  border-color: #3a006633;
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.05);
+}
+
+.office-theme-neon .shopee-panel-title {
+  color: #00ff88;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+.office-theme-neon .shopee-office-game-frame {
+  border-color: #00ff88;
+  box-shadow: 0 0 0 2px #003322, 0 0 20px rgba(0, 255, 136, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== Responsive Isometric ===== */
+@media (max-width: 768px) {
+  .iso-viewport {
+    height: 320px;
+  }
+
+  .iso-zone-grid {
+    grid-template-columns: repeat(3, 90px);
+    gap: 6px;
+  }
+
+  .iso-cell {
+    width: 90px;
+    height: 60px;
+  }
+
+  .iso-agent-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .iso-agent-emoji {
+    font-size: 16px;
+  }
+
+  .iso-agent-name {
+    font-size: 7px;
+  }
+
+  .iso-floor {
+    gap: 8px;
+    padding: 12px;
+    transform: perspective(600px) rotateX(15deg) rotateZ(-3deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .iso-viewport {
+    height: 260px;
+  }
+
+  .iso-zone-grid {
+    grid-template-columns: repeat(3, 70px);
+    gap: 4px;
+  }
+
+  .iso-cell {
+    width: 70px;
+    height: 50px;
+  }
+
+  .iso-agent-avatar {
+    width: 24px;
+    height: 24px;
+  }
+
+  .iso-agent-emoji {
+    font-size: 14px;
+  }
+
+  .iso-agent-name {
+    display: none;
+  }
+
+  .iso-agent-status {
+    display: none;
+  }
+}
