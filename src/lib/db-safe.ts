@@ -6,36 +6,51 @@
  *
  * Solution: Proxy all DB queries through a separate microservice on port 3005.
  * API routes call this service via HTTP fetch instead of importing Prisma directly.
+ *
+ * On Vercel: DB_SERVICE_URL is not set, so dbFetch() will throw.
+ * API routes should check isDemoMode() first and return mock data.
  */
-
-import { env } from '@/lib/env'
-
-const DB_SERVICE_URL = env.DB_SERVICE_URL
-const DB_SERVICE_API_KEY = process.env.DB_SERVICE_API_KEY || 'tvf-internal-api-key-2024'
 
 /** Check if demo mode is active */
 export function isDemoMode(): boolean {
   return process.env.DEMO_MODE === 'true'
 }
 
+/** Check if the DB microservice is available */
+export function isDbServiceAvailable(): boolean {
+  const url = process.env.DB_SERVICE_URL
+  if (!url) return false
+  // Don't consider localhost URLs as available in production (Vercel)
+  if (process.env.NODE_ENV === 'production' && (url.includes('127.0.0.1') || url.includes('localhost'))) {
+    return false
+  }
+  return true
+}
+
 /** Get the DB service base URL */
 export function getDbServiceUrl(): string {
-  return DB_SERVICE_URL
+  return process.env.DB_SERVICE_URL || ''
 }
+
+const DB_SERVICE_API_KEY = process.env.DB_SERVICE_API_KEY || 'tvf-internal-api-key-2024'
 
 /**
  * Fetch data from the DB microservice.
  * This replaces direct Prisma calls in API routes.
  * Includes API key authentication and timeout handling.
+ *
+ * Throws if DB_SERVICE_URL is not configured or unreachable.
+ * Callers should check isDemoMode() first and handle the error.
  */
 export async function dbFetch<T = unknown>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
-  if (!DB_SERVICE_URL) {
+  const baseUrl = process.env.DB_SERVICE_URL
+  if (!baseUrl) {
     throw new Error('Database service not configured: DB_SERVICE_URL is not set')
   }
-  const url = `${DB_SERVICE_URL}${path}`
+  const url = `${baseUrl}${path}`
   const headers: Record<string, string> = {
     'x-api-key': DB_SERVICE_API_KEY,
     ...(options?.headers as Record<string, string> || {}),
