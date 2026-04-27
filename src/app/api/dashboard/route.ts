@@ -81,8 +81,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Dashboard API error:', error)
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || '30d'
-    return NextResponse.json(getDemoDashboard(period))
+    return NextResponse.json({ error: 'Failed to load dashboard data' }, { status: 500 })
   }
 }

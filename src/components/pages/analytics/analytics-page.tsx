@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowUpRight, Flame } from 'lucide-react'
-import { useQuery as useTanQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 
 import { type AnalyticsData, type LinkData } from './analytics-shared'
@@ -25,19 +24,19 @@ export function AnalyticsPage() {
   })
 
   // Fetch links for comparison dropdowns
-  const { data: linksData } = useTanQuery<{ links: LinkData[] }>({
+  const { data: linksData } = useQuery<{ links: LinkData[] }>({
     queryKey: ['links-all-compare'],
     queryFn: () => fetch('/api/links?limit=100').then((r) => r.json()),
   })
 
   // Fetch selected comparison links
-  const { data: linkA } = useTanQuery<LinkData>({
+  const { data: linkA } = useQuery<LinkData>({
     queryKey: ['compare-link-a', compareLinkA],
     queryFn: () => fetch(`/api/links/${compareLinkA}`).then((r) => r.json()),
     enabled: !!compareLinkA,
   })
 
-  const { data: linkB } = useTanQuery<LinkData>({
+  const { data: linkB } = useQuery<LinkData>({
     queryKey: ['compare-link-b', compareLinkB],
     queryFn: () => fetch(`/api/links/${compareLinkB}`).then((r) => r.json()),
     enabled: !!compareLinkB,

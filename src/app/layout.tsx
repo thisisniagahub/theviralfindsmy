@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Toaster } from '@/components/ui/toaster'
+import { Toaster } from '@/components/ui/sonner'
 import { ThemeClientProvider } from '@/components/providers/theme-provider'
 import { SessionClientProvider } from '@/components/providers/session-provider'
 import { QueryProvider } from '@/components/providers/query-provider'

@@ -1,7 +1,11 @@
 #!/bin/bash
 cd /home/z/my-project
-while true; do
+RETRY=0
+MAX_RETRIES=10
+while [ $RETRY -lt $MAX_RETRIES ]; do
   bun run dev
-  echo "Server crashed, restarting in 2s..." >> /home/z/my-project/dev.log
-  sleep 2
+  RETRY=$((RETRY + 1))
+  echo "Server crashed, restarting in $((RETRY * 2))s... (attempt $RETRY/$MAX_RETRIES)"
+  sleep $((RETRY * 2))
 done
+echo "Max retries reached. Check logs for errors."

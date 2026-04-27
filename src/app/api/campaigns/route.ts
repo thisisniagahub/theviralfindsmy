@@ -4,7 +4,7 @@ import { createCampaignSchema } from '@/lib/validations'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { z } from 'zod'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (isDemoMode()) {
     const now = new Date()
     const campaigns = [
@@ -15,7 +15,10 @@ export async function GET() {
     return NextResponse.json(campaigns)
   }
   try {
-    const data = await dbFetch('/campaigns')
+    const url = new URL(request.url)
+    const page = parseInt(url.searchParams.get('page') || '1')
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const data = await dbFetch(`/campaigns?page=${page}&limit=${limit}`)
     return NextResponse.json(data)
   } catch (error) {
     console.error('Campaigns GET error:', error)

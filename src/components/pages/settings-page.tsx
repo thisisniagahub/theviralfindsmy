@@ -29,6 +29,7 @@ export function SettingsPage() {
   const [formData, setFormData] = useState<Record<string, string>>({})
 
   // Sync formData from settings when they load from the API
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (settings && Object.keys(formData).length === 0) {
       queueMicrotask(() => setFormData(settings))

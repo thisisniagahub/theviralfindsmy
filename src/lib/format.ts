@@ -6,6 +6,7 @@
 
 /** Format a number as Malaysian Ringgit currency */
 export function formatCurrency(amount: number, currency = 'MYR'): string {
+  if (amount === null || amount === undefined || Number.isNaN(amount)) return 'RM 0.00'
   return new Intl.NumberFormat('en-MY', {
     style: 'currency',
     currency,

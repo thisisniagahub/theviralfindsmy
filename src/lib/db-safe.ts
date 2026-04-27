@@ -12,9 +12,7 @@
  */
 
 /** Check if demo mode is active */
-export function isDemoMode(): boolean {
-  return process.env.DEMO_MODE === 'true'
-}
+export { isDemoMode } from '@/lib/demo'
 
 /** Check if the DB microservice is available */
 export function isDbServiceAvailable(): boolean {

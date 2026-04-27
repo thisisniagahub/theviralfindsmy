@@ -7,6 +7,7 @@ import { NotificationProvider } from '@/components/providers/notification-provid
 import { CommandPalette } from '@/components/command-palette'
 import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -165,14 +166,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     { label: 'Earnings', path: '/earnings', icon: DollarSign },
                     { label: 'Shopee Integration', path: '/shopee-integration', icon: Plug },
                   ].map((item) => (
-                    <button
+                    <Link
                       key={item.path}
-                      onClick={() => router.push(item.path)}
+                      href={item.path}
                       className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-shopee transition-colors text-left"
                     >
                       <item.icon className="w-3 h-3 flex-shrink-0" />
                       {item.label}
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -180,19 +181,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <h4 className="font-semibold text-sm text-foreground mb-3">Support</h4>
                 <div className="space-y-2">
                   {[
-                    { label: 'Help Center', icon: HelpCircle },
-                    { label: 'API Docs', icon: FileText },
-                    { label: 'Terms of Service', icon: Shield },
-                    { label: 'Privacy Policy', icon: Lock },
+                    { label: 'Help Center', path: '/help', icon: HelpCircle },
+                    { label: 'API Docs', path: '/docs', icon: FileText },
+                    { label: 'Terms of Service', path: '/terms', icon: Shield },
+                    { label: 'Privacy Policy', path: '/privacy', icon: Lock },
                   ].map((item) => (
-                    <button
+                    <Link
                       key={item.label}
-                      onClick={() => toast.info('Coming soon', { description: `${item.label} page is under development.` })}
+                      href={item.path}
                       className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-shopee transition-colors"
+                      onClick={() => toast.info('Coming soon', { description: `${item.label} page is under development.` })}
                     >
                       <item.icon className="w-3 h-3 flex-shrink-0" />
                       {item.label}
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </div>
@@ -209,6 +211,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Floating Action Button - Mobile Only */}
           <motion.button
+            aria-label="Create new affiliate link"
             className="fixed bottom-20 right-4 z-30 lg:hidden w-14 h-14 rounded-full bg-shopee text-white shadow-lg shadow-shopee flex items-center justify-center"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -219,13 +222,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Mobile Bottom Tab Bar */}
           <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-border bg-background/95 backdrop-blur-lg safe-area-inset-bottom">
-            <div className="flex items-center justify-around h-16 px-2">
+            <div className="flex items-center justify-around h-16 px-2" role="tablist">
               {mobileNavItems.map((item) => {
                 const Icon = item.icon
                 const isActive = pathname === item.path
                 return (
                   <button
                     key={item.path}
+                    role="tab"
+                    aria-selected={isActive}
                     onClick={() => router.push(item.path)}
                     className={cn(
                       'flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-lg transition-colors min-w-[56px]',
@@ -265,6 +270,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="bg-card border border-border rounded-2xl shadow-2xl p-6 relative">
                 <button
                   onClick={completeTour}
+                  aria-label="Close tour"
                   className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground"
                 >
                   <X className="w-4 h-4" />

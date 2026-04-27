@@ -7,6 +7,7 @@
 
 // Import from parent project's generated Prisma client directly
 import { PrismaClient } from '../../node_modules/.prisma/client/index.js'
+import { z } from 'zod'
 
 const db = new PrismaClient({
   log: ['warn', 'error'],
@@ -14,7 +15,70 @@ const db = new PrismaClient({
 
 const PORT = 3005
 
-const API_KEY = process.env.DB_SERVICE_API_KEY || 'tvf-internal-api-key-2024'
+const API_KEY = process.env.DB_SERVICE_API_KEY
+if (!API_KEY) {
+  console.error('FATAL: DB_SERVICE_API_KEY environment variable is not set. Refusing to start.')
+  process.exit(1)
+}
+
+// ─── Zod validation schemas ─────────────────────────────────────
+
+const linkCreateSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  productUrl: z.string().min(1, 'productUrl is required'),
+  affiliateUrl: z.string().min(1, 'affiliateUrl is required'),
+  productId: z.string().optional().nullable(),
+  productName: z.string().optional().nullable(),
+  productImage: z.string().optional().nullable(),
+  productPrice: z.number().positive().optional().nullable(),
+  commission: z.number().positive().optional().nullable(),
+  category: z.string().optional().nullable(),
+  campaignId: z.string().optional().nullable(),
+  shortCode: z.string().optional(),
+  status: z.enum(['active', 'paused', 'expired']).default('active'),
+  expiresAt: z.string().optional().nullable(),
+})
+
+const linkUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  productUrl: z.string().min(1).optional(),
+  affiliateUrl: z.string().min(1).optional(),
+  productId: z.string().optional().nullable(),
+  productName: z.string().optional().nullable(),
+  productImage: z.string().optional().nullable(),
+  productPrice: z.number().positive().optional().nullable(),
+  commission: z.number().positive().optional().nullable(),
+  category: z.string().optional().nullable(),
+  campaignId: z.string().optional().nullable(),
+  status: z.enum(['active', 'paused', 'expired']).optional(),
+  expiresAt: z.string().optional().nullable(),
+})
+
+const campaignCreateSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  description: z.string().optional().nullable(),
+  budget: z.number().positive().optional().nullable(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  status: z.enum(['active', 'paused', 'completed']).default('active'),
+})
+
+const payoutCreateSchema = z.object({
+  amount: z.number().positive('amount must be positive'),
+  method: z.enum(['bank_transfer', 'ewallet']).default('bank_transfer'),
+  bankName: z.string().optional().nullable(),
+  accountNo: z.string().optional().nullable(),
+  accountName: z.string().optional().nullable(),
+})
+
+const goalCreateSchema = z.object({
+  name: z.string().min(1, 'name is required'),
+  targetAmount: z.number().positive('targetAmount must be positive'),
+  period: z.enum(['daily', 'weekly', 'monthly', 'yearly', 'custom']).default('monthly'),
+  endDate: z.string().optional().nullable(),
+})
+
+// ─── Helpers ────────────────────────────────────────────────────
 
 function checkAuth(req: Request): boolean {
   const authHeader = req.headers.get('x-api-key')
@@ -150,8 +214,13 @@ async function handleRequest(req: Request): Promise<Response> {
       return json({ links: linksWithExpiry, campaigns, pagination: { page, limit: safeLimit, total, totalPages: Math.ceil(total / safeLimit) } })
     }
     if (path === '/links' && method === 'POST') {
-      const body = await getBody(req)
-      const link = await db.affiliateLink.create({ data: { name: String(body.name || ''), productUrl: String(body.productUrl || ''), affiliateUrl: String(body.affiliateUrl || ''), productId: body.productId ? String(body.productId) : null, productName: body.productName ? String(body.productName) : null, productImage: body.productImage ? String(body.productImage) : null, productPrice: body.productPrice ? Number(body.productPrice) : null, commission: body.commission ? Number(body.commission) : null, category: body.category ? String(body.category) : null, campaignId: body.campaignId ? String(body.campaignId) : null, shortCode: String(body.shortCode || `link-${Date.now().toString(36)}`), status: String(body.status || 'active'), expiresAt: body.expiresAt ? new Date(String(body.expiresAt)) : null } })
+      const rawBody = await getBody(req)
+      const parsed = linkCreateSchema.safeParse(rawBody)
+      if (!parsed.success) {
+        return json({ error: 'Validation failed', details: parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`) }, 400)
+      }
+      const body = parsed.data
+      const link = await db.affiliateLink.create({ data: { name: body.name, productUrl: body.productUrl, affiliateUrl: body.affiliateUrl, productId: body.productId ?? null, productName: body.productName ?? null, productImage: body.productImage ?? null, productPrice: body.productPrice ?? null, commission: body.commission ?? null, category: body.category ?? null, campaignId: body.campaignId ?? null, shortCode: body.shortCode || `link-${Date.now().toString(36)}`, status: body.status, expiresAt: body.expiresAt ? new Date(body.expiresAt) : null } })
       return json(link, 201)
     }
 
@@ -161,14 +230,21 @@ async function handleRequest(req: Request): Promise<Response> {
       const id = linkMatch[1]
       if (method === 'GET') { const link = await db.affiliateLink.findUnique({ where: { id }, include: { campaign: true, _count: { select: { clickRecords: true, conversionRecords: true } } } }); if (!link) return json({ error: 'Link not found' }, 404); return json(link) }
       if (method === 'PUT') {
-        const body = await getBody(req)
-        // Whitelist allowed update fields to prevent mass assignment
-        const allowedFields = ['name', 'productUrl', 'affiliateUrl', 'productId', 'productName', 'productImage', 'productPrice', 'commission', 'category', 'campaignId', 'status', 'expiresAt'] as const
+        const rawBody = await getBody(req)
+        const parsed = linkUpdateSchema.safeParse(rawBody)
+        if (!parsed.success) {
+          return json({ error: 'Validation failed', details: parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`) }, 400)
+        }
+        const body = parsed.data
         const safeData: Record<string, unknown> = {}
-        for (const field of allowedFields) {
-          if (field in body) safeData[field] = body[field]
+        for (const [key, value] of Object.entries(body)) {
+          if (value !== undefined) safeData[key] = value
         }
         if (Object.keys(safeData).length === 0) return json({ error: 'No valid fields to update' }, 400)
+        // Convert expiresAt string to Date if present
+        if (safeData.expiresAt && typeof safeData.expiresAt === 'string') {
+          safeData.expiresAt = new Date(safeData.expiresAt as string)
+        }
         const link = await db.affiliateLink.update({ where: { id }, data: safeData })
         return json(link)
       }
@@ -202,7 +278,16 @@ async function handleRequest(req: Request): Promise<Response> {
       const campaignsWithStats = campaigns.map((c) => ({ ...c, linkCount: c.links.length, totalClicks: c.links.reduce((s, l) => s + l.clicks, 0), totalConversions: c.links.reduce((s, l) => s + l.conversions, 0), totalEarnings: c.links.reduce((s, l) => s + l.earnings, 0) }))
       return json({ campaigns: campaignsWithStats })
     }
-    if (path === '/campaigns' && method === 'POST') { const body = await getBody(req); const campaign = await db.campaign.create({ data: { name: String(body.name || ''), description: body.description ? String(body.description) : null, budget: body.budget ? Number(body.budget) : null, startDate: body.startDate ? new Date(String(body.startDate)) : null, endDate: body.endDate ? new Date(String(body.endDate)) : null, status: String(body.status || 'active') } }); return json(campaign, 201) }
+    if (path === '/campaigns' && method === 'POST') {
+      const rawBody = await getBody(req)
+      const parsed = campaignCreateSchema.safeParse(rawBody)
+      if (!parsed.success) {
+        return json({ error: 'Validation failed', details: parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`) }, 400)
+      }
+      const body = parsed.data
+      const campaign = await db.campaign.create({ data: { name: body.name, description: body.description ?? null, budget: body.budget ?? null, startDate: body.startDate ? new Date(body.startDate) : null, endDate: body.endDate ? new Date(body.endDate) : null, status: body.status } })
+      return json(campaign, 201)
+    }
 
     // ─── Conversions ───────────────────────────────────
     if (path === '/conversions' && method === 'GET') {
@@ -213,11 +298,29 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // ─── Payouts ───────────────────────────────────────
     if (path === '/payouts' && method === 'GET') { const payouts = await db.payout.findMany({ orderBy: { requestedAt: 'desc' } }); const totalPaid = payouts.filter(p => p.status === 'completed').reduce((s, p) => s + p.amount, 0); const totalPending = payouts.filter(p => p.status === 'pending').reduce((s, p) => s + p.amount, 0); return json({ payouts, summary: { totalPaid, totalPending, totalPayouts: payouts.length } }) }
-    if (path === '/payouts' && method === 'POST') { const body = await getBody(req); const payout = await db.payout.create({ data: { amount: Number(body.amount || 0), method: String(body.method || 'bank_transfer'), bankName: body.bankName ? String(body.bankName) : null, accountNo: body.accountNo ? String(body.accountNo) : null, accountName: body.accountName ? String(body.accountName) : null } }); return json(payout, 201) }
+    if (path === '/payouts' && method === 'POST') {
+      const rawBody = await getBody(req)
+      const parsed = payoutCreateSchema.safeParse(rawBody)
+      if (!parsed.success) {
+        return json({ error: 'Validation failed', details: parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`) }, 400)
+      }
+      const body = parsed.data
+      const payout = await db.payout.create({ data: { amount: body.amount, method: body.method, bankName: body.bankName ?? null, accountNo: body.accountNo ?? null, accountName: body.accountName ?? null } })
+      return json(payout, 201)
+    }
 
     // ─── Goals ─────────────────────────────────────────
     if (path === '/goals' && method === 'GET') { const goals = await db.earningGoal.findMany({ orderBy: { createdAt: 'desc' } }); const summary = { total: goals.length, active: goals.filter(g => g.status === 'active').length, achieved: goals.filter(g => g.status === 'achieved').length, totalTarget: goals.reduce((s, g) => s + g.targetAmount, 0), totalCurrent: goals.reduce((s, g) => s + g.currentAmount, 0) }; return json({ goals, summary }) }
-    if (path === '/goals' && method === 'POST') { const body = await getBody(req); const goal = await db.earningGoal.create({ data: { name: String(body.name || ''), targetAmount: Number(body.targetAmount || 0), period: String(body.period || 'monthly'), endDate: body.endDate ? new Date(String(body.endDate)) : null } }); return json(goal, 201) }
+    if (path === '/goals' && method === 'POST') {
+      const rawBody = await getBody(req)
+      const parsed = goalCreateSchema.safeParse(rawBody)
+      if (!parsed.success) {
+        return json({ error: 'Validation failed', details: parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`) }, 400)
+      }
+      const body = parsed.data
+      const goal = await db.earningGoal.create({ data: { name: body.name, targetAmount: body.targetAmount, period: body.period, endDate: body.endDate ? new Date(body.endDate) : null } })
+      return json(goal, 201)
+    }
 
     // ─── Settings ──────────────────────────────────────
     if (path === '/settings' && method === 'GET') { const settings = await db.appSetting.findMany(); const settingsMap: Record<string, string> = {}; for (const s of settings) settingsMap[s.key] = s.value; return json({ settings: settingsMap }) }
@@ -253,6 +356,12 @@ async function handleRequest(req: Request): Promise<Response> {
       const shortCode = redirectMatch[1]
       const link = await db.affiliateLink.findUnique({ where: { shortCode } })
       if (!link) return json({ error: 'Link not found' }, 404)
+      if (link.status === 'paused') return json({ error: 'Link is paused' }, 400)
+      if (link.expiresAt && new Date(link.expiresAt) < new Date()) {
+        await db.affiliateLink.update({ where: { id: link.id }, data: { status: 'expired' } })
+        return json({ error: 'Link has expired' }, 410)
+      }
+      if (link.status !== 'active') return json({ error: 'Link is not active' }, 400)
       await db.$transaction([
         db.clickRecord.create({ data: { linkId: link.id } }),
         db.affiliateLink.update({ where: { id: link.id }, data: { clicks: { increment: 1 } } }),

@@ -197,7 +197,7 @@ export function Sidebar() {
       <div className="lg:hidden">
         <Sheet>
           <SheetTrigger asChild>
-            <button className="mobile-menu-btn">
+            <button className="mobile-menu-btn" aria-label="Open navigation menu">
               <Menu className="w-4 h-4" />
             </button>
           </SheetTrigger>

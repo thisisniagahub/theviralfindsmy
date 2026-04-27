@@ -203,6 +203,7 @@ async function createOfficeScene(agentsData: AgentData[], _onStatusUpdate?: (age
     private agentEmojiTexts: Map<string, Phaser.GameObjects.Text> = new Map()
     private agentGlowTweens: Map<string, Phaser.Tweens.Tween> = new Map()
     private agentDotTweens: Map<string, Phaser.Tweens.Tween> = new Map()
+    private agentBobTweens: Map<string, Phaser.Tweens.Tween> = new Map()
     private detailPopup: Phaser.GameObjects.Container | null = null
     private typewriterText!: Phaser.GameObjects.Text
     private typewriterTarget = ''
@@ -438,6 +439,42 @@ async function createOfficeScene(agentsData: AgentData[], _onStatusUpdate?: (age
       })
     }
 
+    // ===== Cleanup all tweens on scene destroy =====
+    shutdown() {
+      // Stop all bob tweens
+      for (const [, tween] of this.agentBobTweens.entries()) {
+        if (tween) tween.stop()
+      }
+      this.agentBobTweens.clear()
+
+      // Stop all glow tweens
+      for (const [, tween] of this.agentGlowTweens.entries()) {
+        if (tween) tween.stop()
+      }
+      this.agentGlowTweens.clear()
+
+      // Stop all dot tweens
+      for (const [, tween] of this.agentDotTweens.entries()) {
+        if (tween) tween.stop()
+      }
+      this.agentDotTweens.clear()
+
+      // Remove all scene tweens
+      this.tweens.killAll()
+
+      // Clear timer events
+      if (this.speechBubbleTimer) this.speechBubbleTimer.remove()
+      if (this.catBubbleTimer) this.catBubbleTimer.remove()
+      if (this.earningsTimer) this.earningsTimer.remove()
+      if (this.statusAnimTimer) this.statusAnimTimer.remove()
+      if (this.typewriterTimer) this.typewriterTimer.remove()
+    }
+
+    destroy() {
+      this.shutdown()
+      super.destroy()
+    }
+
     // ===== Status Animation Indicators =====
     private dotFrame = 0
 
@@ -508,16 +545,21 @@ async function createOfficeScene(agentsData: AgentData[], _onStatusUpdate?: (age
         const agent = this.agentsDataRef.find((a) => a.id === id)
         if (!agent || agent.status === 'error') continue
 
+        // Reuse existing bob tween if available
+        const existingTween = this.agentBobTweens.get(id)
+        if (existingTween && existingTween.isPlaying()) continue
+
         // Only bob active agents
         const baseY = this.getAgentBaseY(agent)
         const bobOffset = agent.status === 'idle' ? 2 : 4
-        this.tweens.add({
+        const tween = this.tweens.add({
           targets: container,
           y: baseY + bobOffset,
           duration: 400,
           ease: 'Sine.easeInOut',
           yoyo: true,
         })
+        this.agentBobTweens.set(id, tween)
       }
     }
 

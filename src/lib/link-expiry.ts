@@ -56,7 +56,7 @@ export function getLinkExpiryStatus(
       color: 'text-red-500',
     }
   }
-  if (daysRemaining <= 3) {
+  if (daysRemaining <= 7) {
     return {
       isExpired: false,
       isExpiringSoon: true,

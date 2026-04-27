@@ -37,6 +37,7 @@ model AffiliateLink {
   @@index([campaignId])
   @@index([category])
   @@index([createdAt])
+  @@index([productId])
   @@map("affiliate_links")
 }
 
@@ -72,6 +73,7 @@ model ClickRecord {
   @@index([linkId])
   @@index([createdAt])
   @@index([device])
+  @@index([converted])
   @@map("click_records")
 }
 

@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (isDemoMode()) {
     return NextResponse.json({
       totalClicks: 6112,
@@ -40,7 +40,10 @@ export async function GET() {
     })
   }
   try {
-    const data = await dbFetch('/click-stats')
+    const url = new URL(request.url)
+    const page = parseInt(url.searchParams.get('page') || '1')
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const data = await dbFetch(`/click-stats?page=${page}&limit=${limit}`)
     return NextResponse.json(data)
   } catch (error) {
     console.error('Click stats error:', error)

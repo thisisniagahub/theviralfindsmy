@@ -343,24 +343,8 @@
     transparent 75%
   );
   background-size: 1rem 1rem;
-  background-color: linear-gradient(90deg, #EE4D2D, #FF6742);
-  animation: progressStripe 0.75s linear infinite, progressFill 1s ease-out forwards;
-  transition: width 0.4s ease;
-}
-/* Fallback: striped fill needs a solid base color underneath */
-.progress-bar-striped > .progress-fill {
-  background: linear-gradient(
-    45deg,
-    oklch(0 0 0 / 0.12) 25%,
-    transparent 25%,
-    transparent 50%,
-    oklch(0 0 0 / 0.12) 50%,
-    oklch(0 0 0 / 0.12) 75%,
-    transparent 75%
-  );
-  background-size: 1rem 1rem;
   background-color: #EE4D2D;
-  animation: progressStripe 0.75s linear infinite;
+  animation: progressStripe 0.75s linear infinite, progressFill 1s ease-out forwards;
   transition: width 0.4s ease;
 }
 .dark .progress-bar-striped > .progress-fill {

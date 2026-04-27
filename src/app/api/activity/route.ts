@@ -27,9 +27,10 @@ export async function GET(request: NextRequest) {
   }
   try {
     const { searchParams } = new URL(request.url)
-    const limit = searchParams.get('limit') || '20'
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
 
-    const data = await dbFetch(`/activity?limit=${encodeURIComponent(limit)}`)
+    const data = await dbFetch(`/activity?page=${page}&limit=${limit}`)
 
     return NextResponse.json(data)
   } catch (error) {

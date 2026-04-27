@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { updateGoalProgressSchema } from '@/lib/validations'
+import { z } from 'zod'
 
 export async function PUT(
   request: NextRequest,
@@ -24,10 +26,20 @@ export async function PUT(
     const { id } = await params
     const body = await request.json()
 
+    let validated
+    try {
+      validated = updateGoalProgressSchema.parse(body)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return NextResponse.json({ error: 'Validation failed', details: error.issues }, { status: 400 })
+      }
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+
     const goal = await dbFetch(`/goals/${encodeURIComponent(id)}/update-progress`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(validated),
     })
 
     return NextResponse.json(goal)

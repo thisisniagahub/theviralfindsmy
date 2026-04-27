@@ -4,7 +4,7 @@ import { createPayoutSchema } from '@/lib/validations'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { z } from 'zod'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (isDemoMode()) {
     const now = new Date()
     const payouts = [
@@ -29,7 +29,10 @@ export async function GET() {
     })
   }
   try {
-    const data = await dbFetch('/payouts')
+    const url = new URL(request.url)
+    const page = parseInt(url.searchParams.get('page') || '1')
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const data = await dbFetch(`/payouts?page=${page}&limit=${limit}`)
 
     return NextResponse.json(data)
   } catch (error) {

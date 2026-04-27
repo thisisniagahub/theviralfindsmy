@@ -14,7 +14,3 @@ export const db =
 // In serverless environments, consider using PgBouncer in transaction mode
 // and set connection_limit in DATABASE_URL (e.g., ?connection_limit=5)
 if (!globalForPrisma.prisma) globalForPrisma.prisma = db
-
-export function shouldUseDemoData(): boolean {
-  return process.env.DEMO_MODE === 'true'
-}

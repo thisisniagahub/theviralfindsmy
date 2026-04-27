@@ -99,6 +99,7 @@ export function Header() {
             size="icon"
             className="md:hidden h-9 w-9"
             onClick={() => setSearchOpen(!searchOpen)}
+            aria-label="Toggle search"
           >
             <Search className="w-4 h-4" />
           </Button>
@@ -189,7 +190,7 @@ export function Header() {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 gap-2 px-2">
+              <Button variant="ghost" className="h-9 gap-2 px-2" aria-label="User menu">
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="bg-shopee/10 text-shopee text-xs font-bold">{userInitials}</AvatarFallback>
                 </Avatar>
@@ -227,6 +228,7 @@ export function Header() {
               size="icon"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
               onClick={() => { setSearchOpen(false); setLocalSearchQuery('') }}
+              aria-label="Close search"
             >
               <X className="w-4 h-4" />
             </Button>

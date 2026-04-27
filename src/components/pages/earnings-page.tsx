@@ -446,7 +446,7 @@ export function EarningsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 hover:border-blue-30 hover:text-blue-600"
+                            className="text-xs h-7 hover:border-blue-300 hover:text-blue-600"
                             onClick={() => handleEditGoal(goal)}
                           >
                             <Edit3 className="w-3 h-3 mr-1" /> Edit
@@ -454,7 +454,7 @@ export function EarningsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-xs h-7 hover:border-red-30 hover:text-red-600"
+                            className="text-xs h-7 hover:border-red-300 hover:text-red-600"
                             onClick={() => deleteGoalMutation.mutate(goal.id)}
                           >
                             <Trash2 className="w-3 h-3" />
@@ -492,11 +492,12 @@ export function EarningsPage() {
       <Card className="border-border/50 shadow-sm">
         <CardHeader className="pb-2"><CardTitle className="text-base font-semibold">Earnings Breakdown</CardTitle></CardHeader>
         <CardContent className="pt-0">
+          {/* TODO: Replace with real API data */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { source: 'Direct Links', amount: 2450, pct: 45, color: 'bg-shopee' },
-              { source: 'Campaign Links', amount: 1890, pct: 35, color: 'bg-blue-500' },
-              { source: 'Social Media', amount: 1080, pct: 20, color: 'bg-purple-500' },
+              { source: 'Direct Links', amount: data?.summary?.totalEarned ? data.summary.totalEarned * 0.45 : 0, pct: 45, color: 'bg-shopee' },
+              { source: 'Campaign Links', amount: data?.summary?.totalEarned ? data.summary.totalEarned * 0.35 : 0, pct: 35, color: 'bg-blue-500' },
+              { source: 'Social Media', amount: data?.summary?.totalEarned ? data.summary.totalEarned * 0.20 : 0, pct: 20, color: 'bg-purple-500' },
             ].map((item) => (
               <div key={item.source} className="p-4 bg-muted/50 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">

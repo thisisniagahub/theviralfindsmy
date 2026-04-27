@@ -30,17 +30,7 @@ export async function GET() {
     return NextResponse.json(data)
   } catch (error) {
     console.error('Error fetching goals:', error)
-    return NextResponse.json({
-      goals: [],
-      summary: {
-        totalGoals: 0,
-        activeGoals: 0,
-        achievedGoals: 0,
-        totalTarget: 0,
-        totalCurrent: 0,
-        overallProgress: 0,
-      },
-    })
+    return NextResponse.json({ error: 'Failed to load goals' }, { status: 500 })
   }
 }
 
