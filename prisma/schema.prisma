@@ -7,7 +7,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ──────────────────────────────────────────────────────
+
+enum LinkStatus {
+  active
+  paused
+  expired
+}
+
+enum CampaignStatus {
+  active
+  paused
+  completed
+}
+
+enum ConversionStatus {
+  pending
+  confirmed
+  rejected
+  paid
+}
+
+enum PayoutStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+enum GoalStatus {
+  active
+  achieved
+  failed
+}
+
+enum GoalPeriod {
+  monthly
+  weekly
+  yearly
+  custom
+}
+
+enum UserRole {
+  admin
+  affiliate
+  viewer
+}
+
 // ─── Models ─────────────────────────────────────────────────────
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          UserRole @default(affiliate)
+  avatarUrl     String?
+  shopeeAffId   String?
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  links         AffiliateLink[]
+  clickRecords  ClickRecord[]
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@map("users")
+}
 
 model AffiliateLink {
   id                String        @id @default(cuid())
@@ -21,13 +90,15 @@ model AffiliateLink {
   commission        Decimal?      @db.Decimal(10,2)
   category          String?
   campaignId        String?
+  userId            String?
   clicks            Int           @default(0)
   conversions       Int           @default(0)
   earnings          Decimal       @default(0) @db.Decimal(12,2)
-  status            String        @default("active")
+  status            LinkStatus    @default(active)
   shortCode         String        @unique
   expiresAt         DateTime?
   campaign          Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  user              User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   clickRecords      ClickRecord[]
   conversionRecords Conversion[]
   createdAt         DateTime      @default(now())
@@ -38,6 +109,7 @@ model AffiliateLink {
   @@index([category])
   @@index([createdAt])
   @@index([productId])
+  @@index([userId])
   @@map("affiliate_links")
 }
 
@@ -45,7 +117,7 @@ model Campaign {
   id          String          @id @default(cuid())
   name        String
   description String?
-  status      String          @default("active")
+  status      CampaignStatus  @default(active)
   budget      Decimal?        @db.Decimal(12,2)
   spent       Decimal         @default(0) @db.Decimal(12,2)
   startDate   DateTime?
@@ -61,7 +133,9 @@ model Campaign {
 model ClickRecord {
   id            String        @id @default(cuid())
   linkId        String
+  userId        String?
   affiliateLink AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   ip            String?
   country       String?
   referer       String?
@@ -74,19 +148,20 @@ model ClickRecord {
   @@index([createdAt])
   @@index([device])
   @@index([converted])
+  @@index([userId])
   @@map("click_records")
 }
 
 model Conversion {
-  id            String        @id @default(cuid())
+  id            String          @id @default(cuid())
   linkId        String
-  affiliateLink AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  affiliateLink AffiliateLink   @relation(fields: [linkId], references: [id], onDelete: Cascade)
   orderId       String?
-  amount        Decimal       @db.Decimal(12,2)
-  commission    Decimal       @db.Decimal(12,2)
-  status        String        @default("pending")
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  amount        Decimal         @db.Decimal(12,2)
+  commission    Decimal         @db.Decimal(12,2)
+  status        ConversionStatus @default(pending)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([linkId])
   @@index([status])
@@ -95,18 +170,18 @@ model Conversion {
 }
 
 model Payout {
-  id          String   @id @default(cuid())
-  method      String   @default("bank_transfer")
-  amount      Decimal  @db.Decimal(12,2)
-  status      String   @default("pending")
+  id          String       @id @default(cuid())
+  method      String       @default("bank_transfer")
+  amount      Decimal      @db.Decimal(12,2)
+  status      PayoutStatus @default(pending)
   bankName    String?
   accountNo   String?
   accountName String?
-  requestedAt DateTime @default(now())
+  requestedAt DateTime     @default(now())
   processedAt DateTime?
   note        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([status])
   @@index([requestedAt])
@@ -124,16 +199,16 @@ model AppSetting {
 }
 
 model EarningGoal {
-  id            String   @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String
-  targetAmount  Decimal  @db.Decimal(12,2)
-  currentAmount Decimal  @default(0) @db.Decimal(12,2)
-  period        String   @default("monthly")
-  startDate     DateTime @default(now())
+  targetAmount  Decimal    @db.Decimal(12,2)
+  currentAmount Decimal    @default(0) @db.Decimal(12,2)
+  period        GoalPeriod @default(monthly)
+  startDate     DateTime   @default(now())
   endDate       DateTime?
-  status        String   @default("active")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        GoalStatus @default(active)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@index([status])
   @@index([period])
@@ -169,4 +244,54 @@ model AgentMemory {
   @@index([sessionId])
   @@index([createdAt])
   @@map("agent_memories")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String?
+  type        String   // e.g., "first_sale", "100_clicks", "top_earner"
+  title       String
+  description String
+  icon        String   // icon name
+  earnedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([earnedAt])
+  @@map("achievements")
+}
+
+model LeaderboardEntry {
+  id               String   @id @default(cuid())
+  userId           String?
+  userName         String
+  totalEarnings    Decimal  @default(0) @db.Decimal(12,2)
+  totalClicks      Int      @default(0)
+  totalConversions Int      @default(0)
+  period           String   // "weekly", "monthly", "yearly"
+  rank             Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([period])
+  @@index([rank])
+  @@unique([userId, period])
+  @@map("leaderboard_entries")
+}
+
+model Referral {
+  id           String    @id @default(cuid())
+  referrerId   String?
+  referredEmail String
+  referredName  String?
+  status       String    @default("pending") // pending, registered, active
+  commission   Decimal?  @db.Decimal(12,2)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([referrerId])
+  @@index([status])
+  @@map("referrals")
 }

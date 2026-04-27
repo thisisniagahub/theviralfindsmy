@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
 import { createCampaignSchema } from '@/lib/validations'
+import { cache } from '@/lib/cache'
 
 const updateCampaignSchema = createCampaignSchema.partial()
 
@@ -43,6 +44,9 @@ export async function PUT(
       body: JSON.stringify(validated.data),
     })
 
+    // Invalidate campaigns cache after update
+    cache.invalidate('campaigns')
+
     return NextResponse.json(campaign)
   } catch (error) {
     console.error('Campaign PUT error:', error)
@@ -60,6 +64,9 @@ export async function DELETE(
   try {
     const { id } = await params
     await dbFetch(`/campaigns/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    // Invalidate campaigns cache after delete
+    cache.invalidate('campaigns')
+
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Campaign DELETE error:', error)

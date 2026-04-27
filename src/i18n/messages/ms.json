@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Memuatkan...",
+    "error": "Sesuatu yang tidak kena",
+    "retry": "Cuba Lagi",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Padam",
+    "edit": "Sunting",
+    "search": "Cari",
+    "filter": "Tapis",
+    "noResults": "Tiada hasil ditemui",
+    "confirm": "Adakah anda pasti?",
+    "back": "Kembali",
+    "next": "Seterusnya",
+    "previous": "Sebelumnya"
+  },
+  "nav": {
+    "dashboard": "Papan Pemuka",
+    "products": "Produk",
+    "links": "Pautan Affiliate",
+    "analytics": "Analitik",
+    "earnings": "Pendapatan",
+    "campaigns": "Kempen",
+    "settings": "Tetapan",
+    "calculator": "Kalkulator",
+    "notifications": "Notifikasi",
+    "shopeeOffice": "Pejabat Shopee"
+  },
+  "auth": {
+    "signIn": "Log Masuk",
+    "signOut": "Log Keluar",
+    "email": "E-mel",
+    "password": "Kata Laluan",
+    "loginTitle": "Selamat Kembali",
+    "loginSubtitle": "Log masuk ke Papan Pemuka Affiliate Shopee anda",
+    "invalidCredentials": "E-mel atau kata laluan tidak sah",
+    "register": "Daftar Akaun",
+    "registerTitle": "Sertai TheViralFinds",
+    "name": "Nama Penuh",
+    "confirmPassword": "Sahkan Kata Laluan"
+  },
+  "dashboard": {
+    "title": "Papan Pemuka",
+    "totalEarnings": "Jumlah Pendapatan",
+    "totalClicks": "Jumlah Klik",
+    "totalConversions": "Jumlah Penukaran",
+    "conversionRate": "Kadar Penukaran",
+    "recentActivity": "Aktiviti Terkini",
+    "topProducts": "Produk Teratas",
+    "exportReport": "Eksport Laporan",
+    "welcome": "Selamat kembali"
+  },
+  "links": {
+    "title": "Pautan Affiliate",
+    "create": "Cipta Pautan",
+    "bulkAction": "Tindakan Pukal",
+    "shortCode": "Kod Pendek",
+    "product": "Produk",
+    "clicks": "Klik",
+    "conversions": "Penukaran",
+    "earnings": "Pendapatan",
+    "status": "Status",
+    "active": "Aktif",
+    "paused": "Dijeda",
+    "expired": "Tamat Tempoh"
+  }
+}

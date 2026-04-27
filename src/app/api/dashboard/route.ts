@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { cache, TTL } from '@/lib/cache'
 
 // Demo data for when Prisma is unavailable or in demo mode
 function getDemoDashboard(period: string) {
@@ -67,20 +68,29 @@ export async function GET(request: NextRequest) {
   const rateLimited = withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
 
+  const { searchParams } = new URL(request.url)
+  const period = searchParams.get('period') || '30d'
+  const cacheKey = `dashboard:${period}`
+
+  // Check cache first
+  const cached = cache.get<any>(cacheKey)
+  if (cached) return NextResponse.json(cached)
+
+  let data: any
+
   if (isDemoMode()) {
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || '30d'
-    return NextResponse.json(getDemoDashboard(period))
+    data = getDemoDashboard(period)
+  } else {
+    try {
+      data = await dbFetch(`/dashboard/stats?period=${encodeURIComponent(period)}`)
+    } catch (error) {
+      console.error('Dashboard API error:', error)
+      return NextResponse.json({ error: 'Failed to load dashboard data' }, { status: 500 })
+    }
   }
-  try {
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || '30d'
 
-    const data = await dbFetch(`/dashboard/stats?period=${encodeURIComponent(period)}`)
+  // Store in cache with 30s TTL
+  cache.set(cacheKey, data, TTL.SHORT)
 
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error('Dashboard API error:', error)
-    return NextResponse.json({ error: 'Failed to load dashboard data' }, { status: 500 })
-  }
+  return NextResponse.json(data)
 }

@@ -1,20 +1,75 @@
 /* eslint-disable no-console */
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const db = new PrismaClient()
 
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // Clean existing data
+  // Clean existing data (order matters due to foreign keys)
   await db.clickRecord.deleteMany()
   await db.conversion.deleteMany()
-  await db.payout.deleteMany()
   await db.affiliateLink.deleteMany()
   await db.campaign.deleteMany()
+  await db.payout.deleteMany()
   await db.appSetting.deleteMany()
   await db.earningGoal.deleteMany()
   await db.notification.deleteMany()
+  await db.achievement.deleteMany()
+  await db.leaderboardEntry.deleteMany()
+  await db.referral.deleteMany()
+  await db.user.deleteMany()
+
+  // Create default admin user
+  const adminPasswordHash = await bcrypt.hash('changeme123', 12)
+  const adminUser = await db.user.create({
+    data: {
+      id: 'user_admin',
+      email: 'admin@theviralfinds.my',
+      name: 'Ahmad Ali',
+      passwordHash: adminPasswordHash,
+      role: 'admin',
+      isActive: true,
+      lastLoginAt: new Date(),
+    },
+  })
+  console.log(`✅ Created admin user: ${adminUser.email}`)
+
+  // Create sample affiliate users
+  const affiliate1 = await db.user.create({
+    data: {
+      id: 'user_aff01',
+      email: 'siti@example.com',
+      name: 'Siti Nurhaliza',
+      passwordHash: await bcrypt.hash('password123', 12),
+      role: 'affiliate',
+      shopeeAffId: 'shopeeAff01',
+      isActive: true,
+    },
+  })
+  const affiliate2 = await db.user.create({
+    data: {
+      id: 'user_aff02',
+      email: 'wei@example.com',
+      name: 'Wei Ming',
+      passwordHash: await bcrypt.hash('password123', 12),
+      role: 'affiliate',
+      shopeeAffId: 'shopeeAff02',
+      isActive: true,
+    },
+  })
+  const viewerUser = await db.user.create({
+    data: {
+      id: 'user_view01',
+      email: 'viewer@example.com',
+      name: 'Raj Kumar',
+      passwordHash: await bcrypt.hash('password123', 12),
+      role: 'viewer',
+      isActive: true,
+    },
+  })
+  console.log(`✅ Created ${3} additional users`)
 
   // Create campaigns
   const campaigns = await db.campaign.createMany({
@@ -78,10 +133,11 @@ async function main() {
       commission: 8.99,
       category: 'Electronics',
       campaignId: 'camp_02',
+      userId: 'user_aff01',
       clicks: 342,
       conversions: 28,
       earnings: 251.72,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'earbuds01',
       expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // expires in 5 days
     },
@@ -97,10 +153,11 @@ async function main() {
       commission: 14.99,
       category: 'Beauty',
       campaignId: 'camp_03',
+      userId: 'user_aff01',
       clicks: 521,
       conversions: 42,
       earnings: 629.58,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'skincare02',
       expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // expires in 3 days
     },
@@ -116,10 +173,11 @@ async function main() {
       commission: 29.99,
       category: 'Electronics',
       campaignId: 'camp_02',
+      userId: 'user_aff02',
       clicks: 189,
       conversions: 15,
       earnings: 449.85,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'watch03',
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // expires in 7 days
     },
@@ -135,10 +193,11 @@ async function main() {
       commission: 5.99,
       category: 'Fashion',
       campaignId: 'camp_01',
+      userId: 'user_aff01',
       clicks: 276,
       conversions: 34,
       earnings: 203.66,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'hoodie04',
       expiresAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // expired 3 days ago
     },
@@ -156,7 +215,7 @@ async function main() {
       clicks: 145,
       conversions: 11,
       earnings: 87.89,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'lamp05',
     },
     {
@@ -171,10 +230,11 @@ async function main() {
       commission: 19.99,
       category: 'Fashion',
       campaignId: 'camp_01',
+      userId: 'user_aff02',
       clicks: 412,
       conversions: 38,
       earnings: 759.62,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'shoes06',
       expiresAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // expired 1 day ago
     },
@@ -190,10 +250,11 @@ async function main() {
       commission: 3.99,
       category: 'Beauty',
       campaignId: 'camp_03',
+      userId: 'user_aff01',
       clicks: 689,
       conversions: 56,
       earnings: 223.44,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'serum07',
       expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // expires in 2 days
     },
@@ -211,7 +272,7 @@ async function main() {
       clicks: 234,
       conversions: 19,
       earnings: 94.81,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'blender08',
     },
     {
@@ -229,7 +290,7 @@ async function main() {
       clicks: 178,
       conversions: 14,
       earnings: 97.86,
-      status: 'paused',
+      status: 'paused' as const,
       shortCode: 'mouse09',
     },
     {
@@ -246,7 +307,7 @@ async function main() {
       clicks: 156,
       conversions: 12,
       earnings: 107.88,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'yoga10',
     },
     {
@@ -263,7 +324,7 @@ async function main() {
       clicks: 523,
       conversions: 67,
       earnings: 307.53,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'noodle11',
     },
     {
@@ -280,7 +341,7 @@ async function main() {
       clicks: 890,
       conversions: 112,
       earnings: 222.88,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'case12',
     },
     {
@@ -297,7 +358,7 @@ async function main() {
       clicks: 198,
       conversions: 16,
       earnings: 111.84,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'diffuser13',
     },
     {
@@ -315,7 +376,7 @@ async function main() {
       clicks: 345,
       conversions: 29,
       earnings: 231.71,
-      status: 'expired',
+      status: 'expired' as const,
       shortCode: 'bag14',
     },
     {
@@ -332,7 +393,7 @@ async function main() {
       clicks: 267,
       conversions: 21,
       earnings: 335.79,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'protein15',
     },
     {
@@ -350,7 +411,7 @@ async function main() {
       clicks: 134,
       conversions: 9,
       earnings: 50.31,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'hub16',
     },
     {
@@ -368,7 +429,7 @@ async function main() {
       clicks: 410,
       conversions: 35,
       earnings: 238.00,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'matcha17',
     },
     {
@@ -386,7 +447,7 @@ async function main() {
       clicks: 203,
       conversions: 17,
       earnings: 322.83,
-      status: 'active',
+      status: 'active' as const,
       shortCode: 'kb18',
     },
   ]
@@ -412,6 +473,7 @@ async function main() {
 
     clickRecords.push({
       linkId: link.id,
+      userId: link.userId || null,
       ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
       country: countries[Math.floor(Math.random() * countries.length)],
       referer: referers[Math.floor(Math.random() * referers.length)],
@@ -425,7 +487,7 @@ async function main() {
   console.log(`✅ Created ${clickRecords.length} click records`)
 
   // Create conversions
-  const conversionStatuses = ['pending', 'confirmed', 'confirmed', 'confirmed', 'paid', 'rejected']
+  const conversionStatuses = ['pending', 'confirmed', 'confirmed', 'confirmed', 'paid', 'rejected'] as const
   const conversions = []
   for (let i = 0; i < 25; i++) {
     const linkIdx = Math.floor(Math.random() * affiliateLinks.length)
@@ -455,7 +517,7 @@ async function main() {
       id: 'pay_01',
       method: 'bank_transfer',
       amount: 500,
-      status: 'completed',
+      status: 'completed' as const,
       bankName: 'Maybank',
       accountNo: 'XXXX-XXXX-8901',
       accountName: 'Ahmad bin Ali',
@@ -467,7 +529,7 @@ async function main() {
       id: 'pay_02',
       method: 'bank_transfer',
       amount: 750,
-      status: 'completed',
+      status: 'completed' as const,
       bankName: 'Maybank',
       accountNo: 'XXXX-XXXX-8901',
       accountName: 'Ahmad bin Ali',
@@ -479,7 +541,7 @@ async function main() {
       id: 'pay_03',
       method: 'bank_transfer',
       amount: 1200,
-      status: 'processing',
+      status: 'processing' as const,
       bankName: 'Maybank',
       accountNo: 'XXXX-XXXX-8901',
       accountName: 'Ahmad bin Ali',
@@ -491,7 +553,7 @@ async function main() {
       id: 'pay_04',
       method: 'ewallet',
       amount: 300,
-      status: 'pending',
+      status: 'pending' as const,
       bankName: 'Touch n Go',
       accountNo: 'XXXX-XXXX-6789',
       accountName: 'Ahmad bin Ali',
@@ -502,7 +564,7 @@ async function main() {
       id: 'pay_05',
       method: 'bank_transfer',
       amount: 850,
-      status: 'pending',
+      status: 'pending' as const,
       bankName: 'CIMB',
       accountNo: 'XXXX-XXXX-3456',
       accountName: 'Ahmad bin Ali',
@@ -513,7 +575,7 @@ async function main() {
       id: 'pay_06',
       method: 'ewallet',
       amount: 200,
-      status: 'failed',
+      status: 'failed' as const,
       bankName: 'GrabPay',
       accountNo: 'XXXX-XXXX-5432',
       accountName: 'Ahmad bin Ali',
@@ -549,30 +611,30 @@ async function main() {
       name: 'Monthly Target',
       targetAmount: 3000,
       currentAmount: 2847.50,
-      period: 'monthly',
+      period: 'monthly' as const,
       startDate: new Date(now.getFullYear(), now.getMonth(), 1),
       endDate: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
-      status: 'active',
+      status: 'active' as const,
     },
     {
       id: 'goal_02',
       name: 'Ramadan Sale Bonus',
       targetAmount: 5000,
       currentAmount: 4200,
-      period: 'custom',
+      period: 'custom' as const,
       startDate: new Date('2025-02-15'),
       endDate: new Date('2025-04-15'),
-      status: 'active',
+      status: 'active' as const,
     },
     {
       id: 'goal_03',
       name: 'Q2 Goal',
       targetAmount: 15000,
       currentAmount: 8750,
-      period: 'yearly',
+      period: 'yearly' as const,
       startDate: new Date('2025-04-01'),
       endDate: new Date('2025-06-30'),
-      status: 'active',
+      status: 'active' as const,
     },
   ]
 
@@ -693,6 +755,94 @@ async function main() {
     await db.notification.create({ data: notif })
   }
   console.log(`✅ Created ${notifications.length} notifications`)
+
+  // Create achievements
+  const achievements = [
+    {
+      id: 'ach_01',
+      userId: 'user_admin',
+      type: 'first_sale',
+      title: 'First Sale',
+      description: 'Completed your very first affiliate sale!',
+      icon: '🏆',
+    },
+    {
+      id: 'ach_02',
+      userId: 'user_admin',
+      type: '100_clicks',
+      title: '100 Clicks Milestone',
+      description: 'Reached 100 total clicks on your affiliate links.',
+      icon: '🔥',
+    },
+    {
+      id: 'ach_03',
+      userId: 'user_aff01',
+      type: 'top_earner',
+      title: 'Top Earner',
+      description: 'Ranked as a top earner for the month.',
+      icon: '💰',
+    },
+    {
+      id: 'ach_04',
+      userId: 'user_aff02',
+      type: 'first_sale',
+      title: 'First Sale',
+      description: 'Completed your very first affiliate sale!',
+      icon: '🏆',
+    },
+    {
+      id: 'ach_05',
+      userId: 'user_admin',
+      type: 'streak_7',
+      title: '7-Day Streak',
+      description: 'Logged in 7 days in a row. Keep it up!',
+      icon: '⚡',
+    },
+  ]
+
+  for (const ach of achievements) {
+    await db.achievement.create({ data: ach })
+  }
+  console.log(`✅ Created ${achievements.length} achievements`)
+
+  // Create leaderboard entries
+  const leaderboardEntries = [
+    {
+      id: 'lb_01',
+      userId: 'user_admin',
+      userName: 'Ahmad Ali',
+      totalEarnings: 2847.50,
+      totalClicks: 5234,
+      totalConversions: 312,
+      period: 'monthly',
+      rank: 1,
+    },
+    {
+      id: 'lb_02',
+      userId: 'user_aff01',
+      userName: 'Siti Nurhaliza',
+      totalEarnings: 1653.02,
+      totalClicks: 2987,
+      totalConversions: 198,
+      period: 'monthly',
+      rank: 2,
+    },
+    {
+      id: 'lb_03',
+      userId: 'user_aff02',
+      userName: 'Wei Ming',
+      totalEarnings: 1209.47,
+      totalClicks: 1845,
+      totalConversions: 134,
+      period: 'monthly',
+      rank: 3,
+    },
+  ]
+
+  for (const entry of leaderboardEntries) {
+    await db.leaderboardEntry.create({ data: entry })
+  }
+  console.log(`✅ Created ${leaderboardEntries.length} leaderboard entries`)
 
   console.log('🎉 Database seeded successfully!')
 }

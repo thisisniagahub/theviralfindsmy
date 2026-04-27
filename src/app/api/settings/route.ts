@@ -2,11 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { updateSettingsSchema } from '@/lib/validations'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { cache, TTL } from '@/lib/cache'
 import { z } from 'zod'
 
 export async function GET() {
+  // Check cache first
+  const cached = cache.get<any>('settings')
+  if (cached) return NextResponse.json(cached)
+
+  let settings: any
+
   if (isDemoMode()) {
-    return NextResponse.json({
+    settings = {
       siteName: 'The Viral Finds',
       currency: 'MYR',
       timezone: 'Asia/Kuala_Lumpur',
@@ -14,15 +21,20 @@ export async function GET() {
       shopeeAffId: 'demo_aff_id',
       notificationEmail: 'admin@theviralfinds.com',
       autoPauseExpired: 'true',
-    })
+    }
+  } else {
+    try {
+      settings = await dbFetch('/settings')
+    } catch (error) {
+      console.error('Settings GET error:', error)
+      return NextResponse.json({ error: 'Failed to load settings' }, { status: 500 })
+    }
   }
-  try {
-    const settings = await dbFetch('/settings')
-    return NextResponse.json(settings)
-  } catch (error) {
-    console.error('Settings GET error:', error)
-    return NextResponse.json({ error: 'Failed to load settings' }, { status: 500 })
-  }
+
+  // Store in cache with 60s TTL
+  cache.set('settings', settings, TTL.MEDIUM)
+
+  return NextResponse.json(settings)
 }
 
 export async function PUT(request: NextRequest) {
@@ -41,6 +53,9 @@ export async function PUT(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
     })
+
+    // Invalidate settings cache after update
+    cache.invalidate('settings')
 
     return NextResponse.json({ success: true })
   } catch (error) {

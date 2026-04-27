@@ -1,0 +1,68 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "noResults": "No results found",
+    "confirm": "Are you sure?",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "links": "Affiliate Links",
+    "analytics": "Analytics",
+    "earnings": "Earnings",
+    "campaigns": "Campaigns",
+    "settings": "Settings",
+    "calculator": "Calculator",
+    "notifications": "Notifications",
+    "shopeeOffice": "Shopee Office"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "loginTitle": "Welcome Back",
+    "loginSubtitle": "Sign in to your Shopee Affiliate Dashboard",
+    "invalidCredentials": "Invalid email or password",
+    "register": "Create Account",
+    "registerTitle": "Join TheViralFinds",
+    "name": "Full Name",
+    "confirmPassword": "Confirm Password"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalEarnings": "Total Earnings",
+    "totalClicks": "Total Clicks",
+    "totalConversions": "Total Conversions",
+    "conversionRate": "Conversion Rate",
+    "recentActivity": "Recent Activity",
+    "topProducts": "Top Products",
+    "exportReport": "Export Report",
+    "welcome": "Welcome back"
+  },
+  "links": {
+    "title": "Affiliate Links",
+    "create": "Create Link",
+    "bulkAction": "Bulk Action",
+    "shortCode": "Short Code",
+    "product": "Product",
+    "clicks": "Clicks",
+    "conversions": "Conversions",
+    "earnings": "Earnings",
+    "status": "Status",
+    "active": "Active",
+    "paused": "Paused",
+    "expired": "Expired"
+  }
+}

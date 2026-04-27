@@ -3,8 +3,8 @@ import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
 // Routes that don't require authentication
-const publicRoutes = ['/login']
-const publicApiRoutes = ['/api/auth', '/api/redirect', '/api/products/search', '/api/route', '/api/health']
+const publicRoutes = ['/login', '/register']
+const publicApiRoutes = ['/api/auth', '/api/auth/register', '/api/redirect', '/api/products/search', '/api/route', '/api/health']
 
 // Security headers applied to all responses
 const securityHeaders = {

@@ -35,6 +35,7 @@ import { Menu } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useQuery } from '@tanstack/react-query'
 import { useSession, signOut } from 'next-auth/react'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 const navItems = [
   { id: 'dashboard', path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -127,19 +128,22 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* Bottom section */}
       <div className="p-3 space-y-2">
-        {/* Theme toggle */}
-        <Button
-          variant="ghost"
-          size={sidebarOpen ? 'sm' : 'icon'}
-          className="w-full justify-start gap-3"
-          onClick={() => setTheme((resolvedTheme || theme) === 'dark' ? 'light' : 'dark')}
-        >
-          <span className="relative w-4 h-4 inline-flex items-center justify-center">
-            <Moon className="w-4 h-4 dark:hidden" />
-            <Sun className="w-4 h-4 hidden dark:block" />
-          </span>
-          {sidebarOpen && <span className="text-sm">Toggle Theme</span>}
-        </Button>
+        {/* Theme & Language toggles */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size={sidebarOpen ? 'sm' : 'icon'}
+            className={sidebarOpen ? 'flex-1 justify-start gap-3' : 'justify-center'}
+            onClick={() => setTheme((resolvedTheme || theme) === 'dark' ? 'light' : 'dark')}
+          >
+            <span className="relative w-4 h-4 inline-flex items-center justify-center">
+              <Moon className="w-4 h-4 dark:hidden" />
+              <Sun className="w-4 h-4 hidden dark:block" />
+            </span>
+            {sidebarOpen && <span className="text-sm">Toggle Theme</span>}
+          </Button>
+          <LanguageSwitcher />
+        </div>
 
         {/* Collapse toggle (desktop only) */}
         <Button

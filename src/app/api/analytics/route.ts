@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { cache, TTL } from '@/lib/cache'
 
 export async function GET(request: NextRequest) {
   const rateLimited = withRateLimit(request, RATE_LIMITS.api)
   if (rateLimited) return rateLimited
+
+  const { searchParams } = new URL(request.url)
+  const period = searchParams.get('period') || '30d'
+  const cacheKey = `analytics:${period}`
+
+  // Check cache first
+  const cached = cache.get<any>(cacheKey)
+  if (cached) return NextResponse.json(cached)
+
+  let data: any
 
   if (isDemoMode()) {
     const days = 30
@@ -67,16 +78,18 @@ export async function GET(request: NextRequest) {
         heatmap.push({ day, hour, clicks: Math.max(0, Math.round(baseClicks * multiplier * (0.85 + Math.random() * 0.3))) })
       }
     }
-    return NextResponse.json({ performanceData, topProducts, sourceData, deviceData, categoryData, funnelData, heatmap })
+    data = { performanceData, topProducts, sourceData, deviceData, categoryData, funnelData, heatmap }
+  } else {
+    try {
+      data = await dbFetch(`/analytics?period=${encodeURIComponent(period)}`)
+    } catch (error) {
+      console.error('Analytics error:', error)
+      return NextResponse.json({ error: 'Failed to load analytics' }, { status: 500 })
+    }
   }
-  try {
-    const { searchParams } = new URL(request.url)
-    const period = searchParams.get('period') || '30d'
 
-    const data = await dbFetch(`/analytics?period=${encodeURIComponent(period)}`)
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error('Analytics error:', error)
-    return NextResponse.json({ error: 'Failed to load analytics' }, { status: 500 })
-  }
+  // Store in cache with 60s TTL
+  cache.set(cacheKey, data, TTL.MEDIUM)
+
+  return NextResponse.json(data)
 }

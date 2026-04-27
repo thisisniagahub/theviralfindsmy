@@ -2,28 +2,41 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withRateLimit, RATE_LIMITS } from '@/lib/api-utils'
 import { createCampaignSchema } from '@/lib/validations'
 import { dbFetch, isDemoMode } from '@/lib/db-safe'
+import { cache, TTL } from '@/lib/cache'
 import { z } from 'zod'
 
 export async function GET(request: NextRequest) {
+  const url = new URL(request.url)
+  const page = parseInt(url.searchParams.get('page') || '1')
+  const limit = parseInt(url.searchParams.get('limit') || '50')
+  const cacheKey = `campaigns:${page}:${limit}`
+
+  // Check cache first
+  const cached = cache.get<any>(cacheKey)
+  if (cached) return NextResponse.json(cached)
+
+  let data: any
+
   if (isDemoMode()) {
     const now = new Date()
-    const campaigns = [
+    data = [
       { id: 'camp-1', name: 'Beauty Week', description: 'Weekly beauty deals campaign', status: 'active', budget: 1500, spent: 890, startDate: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), endDate: new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString(), createdAt: new Date(now.getTime() - 30 * 86400000).toISOString(), updatedAt: now.toISOString(), totalClicks: 957, totalConversions: 69, totalEarnings: 922.10, linkCount: 7, links: [{ clicks: 456, conversions: 34, earnings: 456.80 }, { clicks: 267, conversions: 19, earnings: 267.30 }, { clicks: 234, conversions: 16, earnings: 198.00 }], _count: { links: 7 } },
       { id: 'camp-2', name: 'Tech Deals', description: 'Electronics and gadgets promotions', status: 'active', budget: 2000, spent: 1200, startDate: new Date(now.getFullYear(), now.getMonth(), 1).toISOString(), endDate: null, createdAt: new Date(now.getTime() - 20 * 86400000).toISOString(), updatedAt: now.toISOString(), totalClicks: 710, totalConversions: 52, totalEarnings: 685.70, linkCount: 4, links: [{ clicks: 389, conversions: 28, earnings: 398.40 }, { clicks: 198, conversions: 14, earnings: 178.20 }, { clicks: 123, conversions: 10, earnings: 109.10 }], _count: { links: 4 } },
       { id: 'camp-3', name: 'Summer Sports', description: 'Sports and fitness gear', status: 'paused', budget: 800, spent: 450, startDate: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(), endDate: new Date(now.getFullYear(), now.getMonth(), 0).toISOString(), createdAt: new Date(now.getTime() - 60 * 86400000).toISOString(), updatedAt: new Date(now.getTime() - 5 * 86400000).toISOString(), totalClicks: 312, totalConversions: 22, totalEarnings: 312.00, linkCount: 2, links: [{ clicks: 312, conversions: 22, earnings: 312.00 }], _count: { links: 2 } },
     ]
-    return NextResponse.json(campaigns)
+  } else {
+    try {
+      data = await dbFetch(`/campaigns?page=${page}&limit=${limit}`)
+    } catch (error) {
+      console.error('Campaigns GET error:', error)
+      return NextResponse.json({ error: 'Failed to load campaigns' }, { status: 500 })
+    }
   }
-  try {
-    const url = new URL(request.url)
-    const page = parseInt(url.searchParams.get('page') || '1')
-    const limit = parseInt(url.searchParams.get('limit') || '50')
-    const data = await dbFetch(`/campaigns?page=${page}&limit=${limit}`)
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error('Campaigns GET error:', error)
-    return NextResponse.json({ error: 'Failed to load campaigns' }, { status: 500 })
-  }
+
+  // Store in cache with 30s TTL
+  cache.set(cacheKey, data, TTL.SHORT)
+
+  return NextResponse.json(data)
 }
 
 export async function POST(request: NextRequest) {
@@ -62,6 +75,9 @@ export async function POST(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(validated),
     })
+
+    // Invalidate campaigns cache after create
+    cache.invalidate('campaigns')
 
     return NextResponse.json(campaign, { status: 201 })
   } catch (error) {

@@ -20,6 +20,7 @@ const envSchema = z.object({
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TWILIO_AUTH_TOKEN: z.string().optional(),
   SHOPEE_API_KEY: z.string().optional(),
+  SHOPEE_AFFILIATE_API_KEY: z.string().optional(),
   OFFICE_JOIN_KEY: z.string().optional().default('default-join-key'),
 
   // ─── Microservices (local dev only — not used on Vercel) ──────
